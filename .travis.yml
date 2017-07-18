@@ -29,6 +29,7 @@ matrix:
           python-dev
           python3-dev
           libgdk-pixbuf2.0-dev
+    install:
     script:
     # Install python dependancies
     - pip3 install -r requirements-linux.txt
