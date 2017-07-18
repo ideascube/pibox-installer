@@ -5,61 +5,6 @@ before_install:
 
 matrix:
   include:
-  - os: osx
-    language: generic
-    install:
-    # Package pibox-installer
-    # note: we use python35 because pyinstaller do not support 3.6 yet
-    - brew install qemu zoidbergwill/python/python35
-    - brew install pygobject3 --with-python3 gtk+3 adwaita-icon-theme
-    - python3 -m pip install -r requirements-macos.txt
-    - python3 -m pip install pyinstaller==3.2.1
-
-    # Download pibox-installer-vexpress-boot
-    - wget http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
-    - unzip pibox-installer-vexpress-boot.zip
-
-    # Bundle QEMU
-    - git clone https://github.com/auriamg/macdylibbundler/
-    - cd macdylibbundler/
-    - git checkout 3c79be6efb0867775bd0571011331946f76f36a6
-    - make
-    - cd ..
-    - mkdir qemu
-    - cd qemu
-    - cp /usr/local/bin/qemu-img .
-    - cp /usr/local/bin/qemu-system-arm .
-    - chmod u+w qemu-img
-    - chmod u+w qemu-system-arm
-    - ../macdylibbundler/dylibbundler -d . -p @executable_path/ -b -x ./qemu-system-arm  -x ./qemu-img
-    # Fix macdylibbundler issue
-    - install_name_tool -change /usr/local/Cellar/nettle/3.3/lib/libnettle.6.dylib @executable_path/libnettle.6.3.dylib ./libhogweed.4.3.dylib
-    - chmod u-w qemu-img
-    - chmod u-w qemu-system-arm
-    - otool -L *
-    - cd ..
-
-    # Run PyInstaller
-    - pyinstaller --log-level=DEBUG pibox-installer-macos.spec
-
-    # Sign application
-    - security create-keychain -p mysecretpassword build.keychain
-    - security default-keychain -s build.keychain
-    - security unlock-keychain -p mysecretpassword build.keychain
-    - security import pibox-installer.p12 -k build.keychain -P $MACOS_CERTIFICATE_PASSWORD -T /usr/bin/codesign
-    - security find-identity -v
-    - "codesign -s \"3rd Party Mac Developer Application: Wikimedia CH (L7HWM3SP3L)\" dist/pibox-installer.app"
-
-    # Install and run create-dmg
-    - npm install --global create-dmg@1.3.0
-    - create-dmg dist/pibox-installer.app || true
-
-    # Send dmg
-    - scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa pibox-installer-0.0.0.dmg pibox_ci@buildbot.wan.bsf-intranet.org:/srv/repos/pibox/$(date +"%Y-%m-%d")/pibox-installer-macos.dmg
-
-    - PIBOX_RELEASE=$(git tag -l --points-at HEAD | grep -x 'v[[:digit:]]\+.[[:digit:]]\+\(.[[:digit:]]\+\)*')
-    - if [ $PIBOX_RELEASE ]; then scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa pibox-installer-0.0.0.dmg pibox_ci@buildbot.wan.bsf-intranet.org:/srv/repos/pibox/pibox-installer-$PIBOX_RELEASE-macos.dmg; fi
-
   - os: linux
     language: python
     python: 3.4
@@ -84,43 +29,14 @@ matrix:
           python-dev
           python3-dev
           libgdk-pixbuf2.0-dev
-    env:
-    - QEMU_VERSION=2.9.0
-    - QEMU_DIR=qemu-$QEMU_VERSION
-    - QEMU_ARCHIVE=$QEMU_DIR.tar.xz
     script:
-    # Download pibox-installer-vexpress-boot
-    - wget http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
-    - unzip pibox-installer-vexpress-boot.zip
-
-    # Compile QEMU statically
-    - wget http://download.qemu-project.org/$QEMU_ARCHIVE
-    - tar -xf $QEMU_ARCHIVE
-    - rm $QEMU_ARCHIVE
-
-    - cd $QEMU_DIR
-    - ./configure
-        --target-list=arm-softmmu
-        --static
-        --disable-gtk
-        --disable-cocoa
-        --disable-libusb
-        --disable-glusterfs
-        --disable-smartcard
-        --disable-usb-redir
-        --python=python2
-    - make
-    - cp arm-softmmu/qemu-system-arm ..
-    - cp qemu-img ..
-    - cd ..
-
     # Install python dependancies
     - pip3 install -r requirements-linux.txt
 
     # Install and run pyinstaller
     # note: we use mgautierfr version because it resolves packaging pygobject
     - pip3 install https://github.com/mgautierfr/pyinstaller/archive/xlib_hook.zip
-    - pyinstaller --log-level=DEBUG pibox-installer-linux.spec
+    - pyinstaller --log-level=DEBUG gi_example.spec
     - cat build/pibox-installer-linux/warnpibox-installer-linux.txt
 
     # Archive
