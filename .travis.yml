@@ -37,7 +37,7 @@ matrix:
     # note: we use mgautierfr version because it resolves packaging pygobject
     - pip3 install https://github.com/mgautierfr/pyinstaller/archive/xlib_hook.zip
     - pyinstaller --log-level=DEBUG gi_example.spec
-    - cat build/pibox-installer-linux/warnpibox-installer-linux.txt
+    - cat build/pibox-installer-linux/warngi_example.txt
 
     # Archive
     - cd dist
@@ -47,5 +47,8 @@ matrix:
     # Deploy
     - scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa dist/pibox-installer.tar.gz pibox_ci@buildbot.wan.bsf-intranet.org:/srv/repos/pibox/$(date +"%Y-%m-%d")/pibox-installer-linux-debug.tar.gz
 
+    - git tag -l
+    - git tag -l --points-at HEAD
+    - git tag -l --points-at HEAD | grep -x 'v[[:digit:]]\+.[[:digit:]]\+\(.[[:digit:]]\+\)*'
     - PIBOX_RELEASE=$(git tag -l --points-at HEAD | grep -x 'v[[:digit:]]\+.[[:digit:]]\+\(.[[:digit:]]\+\)*')
     - if [ $PIBOX_RELEASE ]; then scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa dist/pibox-installer.tar.gz pibox_ci@buildbot.wan.bsf-intranet.org:/srv/repos/pibox/pibox-installer-$PIBOX_RELEASE-linux.tar.gz; fi
