@@ -48,8 +48,5 @@ matrix:
     # Deploy
     - scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa dist/pibox-installer.tar.gz pibox_ci@buildbot.wan.bsf-intranet.org:/srv/repos/pibox/$(date +"%Y-%m-%d")/pibox-installer-linux-debug.tar.gz
 
-    - git tag -l
-    - git tag -l --points-at HEAD
-    - git tag -l --points-at HEAD | grep -x 'v[[:digit:]]\+.[[:digit:]]\+\(.[[:digit:]]\+\)*'
-    - PIBOX_RELEASE=$(git tag -l --points-at HEAD | grep -x 'v[[:digit:]]\+.[[:digit:]]\+\(.[[:digit:]]\+\)*')
+    - PIBOX_RELEASE=$(git tag -l --points-at HEAD | grep -x 'v[[:digit:]]\+.[[:digit:]]\+\(.[[:digit:]]\+\)*') || true
     - if [ $PIBOX_RELEASE ]; then scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa dist/pibox-installer.tar.gz pibox_ci@buildbot.wan.bsf-intranet.org:/srv/repos/pibox/pibox-installer-$PIBOX_RELEASE-linux.tar.gz; fi
