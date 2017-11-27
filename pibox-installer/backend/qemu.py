@@ -193,7 +193,7 @@ class _RunningInstance:
         with self._cancel_event.lock() as cancel_register:
             self._qemu = subprocess.Popen([
                 qemu_system_arm_exe_path,
-                "-m", "1G",
+                "-m", "2G",
                 "-M", "vexpress-a9",
                 "-kernel", self._emulation._kernel,
                 "-dtb", self._emulation._dtb,
@@ -202,6 +202,7 @@ class _RunningInstance:
                 "-sd", self._emulation._image,
                 "-redir", "tcp:%d::22" % ssh_port,
                 "-display", "none",
+                "-smp", "2",
                 "-no-reboot",
                 ], stdin=stdin_reader, stdout=stdout_writer, stderr=subprocess.STDOUT, **startup_info_args())
             cancel_register.register(self._qemu.pid)
