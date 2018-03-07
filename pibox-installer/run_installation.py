@@ -69,6 +69,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
             emulation.resize_fs()
 
             emulation.exec_cmd("sudo sed -i s/mirrordirector/archive/ /etc/apt/sources.list")
+            emulation.exec_cmd("sudo sh -c 'echo \"Acquire::ForceIPv4 \\\"true\\\";\" >> /etc/apt/apt.conf.d/99force-ipv4'")
 
             ansiblecube_emulation_path = "/var/lib/ansible/local"
             emulation.exec_cmd("sudo mkdir --mode 0755 -p /var/lib/ansible/")
