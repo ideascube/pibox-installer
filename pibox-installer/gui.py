@@ -8,6 +8,7 @@ import tzlocal
 import os
 import sys
 import json
+import math
 import threading
 from util import CancelEvent
 import sd_card_info
@@ -499,6 +500,15 @@ class Application:
             self.component.build_path_chooser.set_filename(
                 os.path.abspath(config["build_dir"]))
 
+        # size
+        if "size" in config and config["size"] is not None:
+            try:
+                size = int(config["size"] / pow(1024, 3))
+            except Exception:
+                size = None
+            if size is not None:
+                self.component.size_entry.set_text(str(size))
+
         # content
         if "content" in config and isinstance(config["content"], dict):
 
@@ -575,6 +585,11 @@ class Application:
             lang for lang, button in self.iter_wikifundi_check_button()
             if button.get_active()]
 
+        try:
+            size = int(self.component.size_entry.get_text()) * pow(1024, 3)
+        except Exception:
+            size = None
+
         return {
             "project_name": self.component.project_name_entry.get_text(),
             "language": language,
@@ -597,6 +612,7 @@ class Application:
             },
             "build_dir":
                 relpathto(self.component.build_path_chooser.get_filename()),
+            "size": size,
             "content": {
                 "zims": zim_install,  # content-ids list
                 "kalite": kalite_active_langs,  # languages list
