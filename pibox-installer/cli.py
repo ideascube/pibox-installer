@@ -1,6 +1,7 @@
 import os
 import argparse
 import sys
+import json
 import yaml
 import data
 from backend import catalog
@@ -8,6 +9,89 @@ from run_installation import run_installation
 from util import CancelEvent
 from util import get_free_space_in_dir
 from util import compute_space_required
+
+
+def set_config(config, args):
+    if not isinstance(config, dict):
+            return
+
+    # project_name
+    if "project_name" in config:
+        args.name = config.get("project_name")
+
+    # language
+    if "language" in config:
+        args.language = config.get("language")
+
+    # timezone
+    if "timezone" in config:
+        args.timezone = config.get("timezone")
+
+    # wifi
+    if "wifi" in config and isinstance(config["wifi"], dict):
+        if "password" in config["wifi"]:
+            if "protected" not in config["wifi"] \
+                    or config["wifi"]["protected"]:
+                args.wifi_pwd = config["wifi"]["password"]
+
+    # admin account
+    if "admin_account" in config \
+            and isinstance(config["admin_account"], dict):
+        if "custom" in config["admin_account"] \
+                and config["admin_account"]["custom"] is not None:
+
+            # we need both login and password
+            if "login" in config["admin_account"] \
+                    and config["admin_account"]["login"] is not None \
+                    and"password" in config["admin_account"] \
+                    and config["admin_account"]["password"] is not None:
+                args.admin_account = [config["admin_account"]["login"],
+                                      config["admin_account"]["password"]]
+
+    # branding
+    if "branding" in config and isinstance(config["branding"], dict):
+        if "logo" in config["branding"] \
+                and config["branding"]["logo"] is not None:
+            args.logo = os.path.abspath(config["branding"]["logo"])
+
+        if "favicon" in config["branding"] \
+                and config["branding"]["favicon"] is not None:
+            args.favicon = os.path.abspath(config["branding"]["favicon"])
+
+        if "css" in config["branding"] \
+                and config["branding"]["css"] is not None:
+            args.css = os.path.abspath(config["branding"]["css"])
+
+    # build_dir
+    if "build_dir" in config and config["build_dir"] is not None:
+        args.build_dir = os.path.abspath(config["build_dir"])
+
+    if "size" in config and config["size"] is not None:
+        args.size = config["size"]
+
+    # content
+    if "content" in config and isinstance(config["content"], dict):
+
+        if "kalite" in config["content"] \
+                and isinstance(config["content"]["kalite"], list):
+            args.kalite = config["content"]["kalite"]
+
+        if "wikifundi" in config["content"] \
+                and isinstance(config["content"]["wikifundi"], list):
+            args.wikifundi = config["content"]["wikifundi"]
+
+        if "edupi" in config["content"] \
+                and config["content"]["edupi"] is not None:
+            args.edupi = config["content"]["edupi"]
+
+        if "aflatoun" in config["content"] \
+                and config["content"]["aflatoun"] is not None:
+            args.aflatoun = config["content"]["aflatoun"]
+
+        if "zims" in config["content"] \
+                and isinstance(config["content"]["zims"], list):
+                args.zim_install = config["content"]["zims"]
+
 
 class Logger:
     def step(step):
@@ -53,8 +137,20 @@ parser.add_argument("--css", help="set css style")
 parser.add_argument("--build-dir", help="set build directory (default current)", default=".")
 parser.add_argument("--catalog", help="show catalog and exit", action="store_true")
 parser.add_argument("--admin-account", help="create admin account [LOGIN, PWD]", nargs=2)
+parser.add_argument("--config", help="use a JSON config file to set parameters (superseeds cli parameters)")
+
 
 args = parser.parse_args()
+
+if args.config:
+    try:
+        with open(args.config, 'r') as fd:
+            config = json.load(fd)
+    except Exception:
+        print("Failed to parse JSON file {}".format(args.config))
+        exit(1)
+    else:
+        set_config(config, args)
 
 if args.catalog:
     for catalog in catalogs:
