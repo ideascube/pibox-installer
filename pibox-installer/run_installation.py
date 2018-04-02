@@ -2,7 +2,7 @@ from backend import ansiblecube
 from backend import qemu
 from backend.util import subprocess_pretty_check_call
 import data
-from util import ReportHook
+from util import ReportHook, md5
 from datetime import datetime
 import os
 import urllib.request
@@ -43,15 +43,27 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         image_building_path = os.path.join(build_dir, "pibox-{}.BUILDING.img".format(today))
         image_error_path = os.path.join(build_dir, "pibox-{}.ERROR.img".format(today))
 
+        # check whether raspbian is already present
+        raspbian_present = False
+        if os.path.exists(data.raspbian_zip_path):
+            # check whether it's the proper file
+            local_md5 = md5(data.raspbian_zip_path)
+            if local_md5 == data.rapbian_md5sum:
+                raspbian_present = True
+
         # Download Raspbian
-        logger.step("Download Raspbian-lite image")
-        hook = ReportHook(logger.raw_std).reporthook
-        (zip_filename, _) = urllib.request.urlretrieve(data.raspbian_url, reporthook=hook)
-        with ZipFile(zip_filename) as zipFile:
-            logger.std("extract " + data.raspbian_zip_path)
-            extraction = zipFile.extract(data.raspbian_zip_path, build_dir)
-            shutil.move(extraction, image_building_path)
-        os.remove(zip_filename)
+        if not raspbian_present:
+            logger.step("Download Raspbian-lite image")
+            hook = ReportHook(logger.raw_std).reporthook
+            (zip_filename, _) = urllib.request.urlretrieve(data.raspbian_url, reporthook=hook)
+            with ZipFile(zip_filename) as zipFile:
+                logger.std("extract " + data.raspbian_zip_path)
+                extraction = zipFile.extract(data.raspbian_zip_path, build_dir)
+                shutil.move(extraction, image_building_path)
+            os.remove(zip_filename)
+        else:
+            logger.step("Reusing already present Raspbian-lite image")
+            shutil.copy(data.raspbian_zip_path, image_building_path)
 
         # Instance emulator
         emulator = qemu.Emulator(data.vexpress_boot_kernel, data.vexpress_boot_dtb, image_building_path, logger)

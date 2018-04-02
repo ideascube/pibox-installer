@@ -4,6 +4,7 @@ import threading
 import signal
 import sys
 import ctypes
+import hashlib
 import platform
 import data
 
@@ -117,3 +118,11 @@ class ReportHook():
         if line != self._last_line:
             self._last_line = line
             self._writter(line)
+
+
+def md5(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
