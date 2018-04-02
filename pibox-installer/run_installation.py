@@ -48,7 +48,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         if os.path.exists(data.raspbian_zip_path):
             # check whether it's the proper file
             local_md5 = md5(data.raspbian_zip_path)
-            if local_md5 == data.rapbian_md5sum:
+            if local_md5 == data.raspbian_md5sum:
                 raspbian_present = True
 
         # Download Raspbian
