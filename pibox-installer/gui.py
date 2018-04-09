@@ -445,10 +445,9 @@ class Application:
 
         # timezone
         if "timezone" in config:
-            timezone = config.get("timezone")
             match_tz = [tz_id for tz_id, tz
                         in enumerate(self.component.timezone_tree_store)
-                        if tz[0] == timezone]
+                        if tz[0] == config.get("timezone")]
             if match_tz:
                 self.component.timezone_combobox.set_active(match_tz[0])
 
@@ -464,43 +463,37 @@ class Application:
         # admin account
         if "admin_account" in config \
                 and isinstance(config["admin_account"], dict):
-            if "custom" in config["admin_account"] \
-                    and config["admin_account"]["custom"] is not None:
+            if config["admin_account"].get("custom") is not None:
                 self.component.admin_account_switch.set_state(
                     config["admin_account"]["custom"])
-            if "login" in config["admin_account"] \
-                    and config["admin_account"]["login"] is not None:
+            if config["admin_account"].get("login") is not None:
                 self.component.admin_account_login_entry.set_text(
                     config["admin_account"]["login"])
-            if "password" in config["admin_account"] \
-                    and config["admin_account"]["password"] is not None:
+            if config["admin_account"].get("password") is not None:
                 self.component.admin_account_pwd_entry.set_text(
                     config["admin_account"]["password"])
 
         # branding
         if "branding" in config and isinstance(config["branding"], dict):
-            if "logo" in config["branding"] \
-                    and config["branding"]["logo"] is not None:
+            if config["branding"].get("logo") is not None:
                 self.component.logo_chooser.set_filename(
                     os.path.abspath(config["branding"]["logo"]))
 
-            if "favicon" in config["branding"] \
-                    and config["branding"]["favicon"] is not None:
+            if config["branding"].get("favicon") is not None:
                 self.component.favicon_chooser.set_filename(
                     os.path.abspath(config["branding"]["favicon"]))
 
-            if "css" in config["branding"] \
-                    and config["branding"]["css"] is not None:
+            if config["branding"].get("css") is not None:
                 self.component.css_chooser.set_filename(
                     os.path.abspath(config["branding"]["css"]))
 
         # build_dir
-        if "build_dir" in config and config["build_dir"] is not None:
+        if config.get("build_dir") is not None:
             self.component.build_path_chooser.set_filename(
                 os.path.abspath(config["build_dir"]))
 
         # size
-        if "size" in config and config["size"] is not None:
+        if config.get("size") is not None:
             try:
                 size = int(config["size"] / pow(1024, 3))
             except Exception:
@@ -521,13 +514,11 @@ class Application:
                 for lang, button in self.iter_wikifundi_check_button():
                     button.set_active(lang in config["content"]["wikifundi"])
 
-            if "edupi" in config["content"] \
-                    and config["content"]["edupi"] is not None:
+            if config["content"].get("edupi") is not None:
                 self.component.edupi_switch.set_active(
                     config["content"]["edupi"])
 
-            if "aflatoun" in config["content"] \
-                    and config["content"]["aflatoun"] is not None:
+            if config["content"].get("aflatoun") is not None:
                 self.component.aflatoun_switch.set_active(
                     config["content"]["aflatoun"])
 
