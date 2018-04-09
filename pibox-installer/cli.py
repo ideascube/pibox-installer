@@ -31,10 +31,9 @@ def set_config(config, args):
 
     # wifi
     if "wifi" in config and isinstance(config["wifi"], dict):
-        if "password" in config["wifi"]:
-            if "protected" not in config["wifi"] \
-                    or config["wifi"]["protected"]:
-                args.wifi_pwd = config["wifi"]["password"]
+        if "password" in config["wifi"] \
+                and config["wifi"].get("protected", True):
+            args.wifi_pwd = config["wifi"]["password"]
 
     # admin account
     if "admin_account" in config \

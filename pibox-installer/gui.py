@@ -108,8 +108,10 @@ class Application:
         self.component.menu_quit.connect("activate", lambda widget: self.component.window.close())
         self.component.menu_about.connect("activate", self.activate_menu_about)
 
-        self.component.menu_load_config.connect("activate", self.activate_menu_load_config)
-        self.component.menu_save_config.connect("activate", self.activate_menu_save_config)
+        self.component.menu_load_config.connect(
+            "activate", self.activate_menu_config, False)
+        self.component.menu_save_config.connect(
+            "activate", self.activate_menu_config, True)
 
         # wifi password
         self.component.wifi_password_switch.connect("notify::active", lambda switch, state: self.component.wifi_password_revealer.set_reveal_child(not switch.get_active()))
@@ -368,25 +370,17 @@ class Application:
         dialog.run()
         dialog.destroy()
 
-    def activate_menu_load_config(self, widget):
+    def activate_menu_config(self, widget, for_save=False):
+        def _save(dialog):
+            try:
+                with open(dialog.get_filename(), 'w') as fd:
+                    json.dump(self.get_config(), fd, indent=4)
+            except Exception:
+                self.display_error_message(
+                    "Unable to save JSON configuration to file",
+                    "Please check that the path is reachable and writable.")
 
-        dialog = Gtk.FileChooserNative.new(
-            "Select Pibox config file to load",
-            self.component.window,  # make it tied to parent and modal
-            Gtk.FileChooserAction.OPEN,
-            "OK",
-            "Cancel")
-        dialog.set_modal(True)  # does not seem to have effect
-
-        filter_json = Gtk.FileFilter()
-        filter_json.set_name("JSON files")
-        filter_json.add_mime_type("application/json")
-        filter_json.add_pattern("*.json")
-        dialog.add_filter(filter_json)
-
-        response = dialog.run()
-
-        if response == Gtk.ResponseType.ACCEPT:
+        def _load(dialog):
             try:
                 with open(dialog.get_filename(), 'r') as fd:
                     config = json.load(fd)
@@ -397,15 +391,20 @@ class Application:
                     "and in proper JSON format")
             else:
                 self.set_config(config)
-        dialog.destroy()
 
-    def activate_menu_save_config(self, widget):
+        if for_save:
+            title = "Select Pibox config file to load"
+            action = Gtk.FileChooserAction.SAVE
+            on_accept = _save
+        else:
+            title = "Select Pibox config file to load"
+            action = Gtk.FileChooserAction.OPEN
+            on_accept = _load
+
         dialog = Gtk.FileChooserNative.new(
-            "Choose file to save Pibox config to",
+            title,
             self.component.window,  # make it tied to parent and modal
-            Gtk.FileChooserAction.SAVE,
-            "OK",
-            "Cancel")
+            action, "OK", "Cancel")
         dialog.set_modal(True)  # does not seem to have effect
 
         filter_json = Gtk.FileFilter()
@@ -417,13 +416,7 @@ class Application:
         response = dialog.run()
 
         if response == Gtk.ResponseType.ACCEPT:
-            try:
-                with open(dialog.get_filename(), 'w') as fd:
-                    json.dump(self.get_config(), fd, indent=4)
-            except Exception:
-                self.display_error_message(
-                    "Unable to save JSON configuration to file",
-                    "Please check that the path is reachable and writable.")
+            on_accept(dialog)
         dialog.destroy()
 
     def set_config(self, config):
@@ -439,12 +432,14 @@ class Application:
         for key, items in {
                 'language': data.ideascube_languages,
                 'timezone': self.component.timezone_tree_store}.items():
-            match = [item_id for item_id, item
-                     in enumerate(data.ideascube_languages)
-                     if item[0] == config.get(key)]
-            if match:
+            try:
+                item_tuple = dict(items)[config[key]]
+                item_id = items.index(item_tuple)
+            except (KeyError, ValueError):
+                pass
+            else:
                 getattr(self.component, '{}_combobox'.format(key)) \
-                    .set_active(match[0])
+                    .set_active(item_id)
 
         # wifi
         if "wifi" in config and isinstance(config["wifi"], dict):
