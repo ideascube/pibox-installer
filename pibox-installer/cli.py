@@ -37,36 +37,30 @@ def set_config(config, args):
     # admin account
     if "admin_account" in config \
             and isinstance(config["admin_account"], dict):
-        if "custom" in config["admin_account"] \
-                and config["admin_account"]["custom"] is not None:
+        if config["admin_account"].get("custom") is not None:
 
             # we need both login and password
-            if "login" in config["admin_account"] \
-                    and config["admin_account"]["login"] is not None \
-                    and"password" in config["admin_account"] \
-                    and config["admin_account"]["password"] is not None:
+            if config["admin_account"].get("login") is not None \
+                    and config["admin_account"].get("password") is not None:
                 args.admin_account = [config["admin_account"]["login"],
                                       config["admin_account"]["password"]]
 
     # branding
     if "branding" in config and isinstance(config["branding"], dict):
-        if "logo" in config["branding"] \
-                and config["branding"]["logo"] is not None:
+        if config["branding"].get("logo") is not None:
             args.logo = os.path.abspath(config["branding"]["logo"])
 
-        if "favicon" in config["branding"] \
-                and config["branding"]["favicon"] is not None:
+        if config["branding"].get("favicon") is not None:
             args.favicon = os.path.abspath(config["branding"]["favicon"])
 
-        if "css" in config["branding"] \
-                and config["branding"]["css"] is not None:
+        if config["branding"].get("css") is not None:
             args.css = os.path.abspath(config["branding"]["css"])
 
     # build_dir
-    if "build_dir" in config and config["build_dir"] is not None:
+    if config.get("build_dir") is not None:
         args.build_dir = os.path.abspath(config["build_dir"])
 
-    if "size" in config and config["size"] is not None:
+    if config.get("size") is not None:
         args.size = config["size"]
 
     # content
@@ -80,12 +74,10 @@ def set_config(config, args):
                 and isinstance(config["content"]["wikifundi"], list):
             args.wikifundi = config["content"]["wikifundi"]
 
-        if "edupi" in config["content"] \
-                and config["content"]["edupi"] is not None:
+        if config["content"].get("edupi") is not None:
             args.edupi = config["content"]["edupi"]
 
-        if "aflatoun" in config["content"] \
-                and config["content"]["aflatoun"] is not None:
+        if config["content"].get("aflatoun") is not None:
             args.aflatoun = config["content"]["aflatoun"]
 
         if "zims" in config["content"] \
