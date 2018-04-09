@@ -437,10 +437,9 @@ class Application:
 
         # language
         if "language" in config:
-            language = config.get("language")
             match_lang = [lang_id for lang_id, lang
                           in enumerate(data.ideascube_languages)
-                          if lang[0] == language]
+                          if lang[0] == config.get("language")]
             if match_lang:
                 self.component.language_combobox.set_active(match_lang[0])
 
