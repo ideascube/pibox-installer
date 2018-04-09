@@ -435,21 +435,16 @@ class Application:
             self.component.project_name_entry.set_text(
                 config.get("project_name"))
 
-        # language
-        if "language" in config:
-            match_lang = [lang_id for lang_id, lang
-                          in enumerate(data.ideascube_languages)
-                          if lang[0] == config.get("language")]
-            if match_lang:
-                self.component.language_combobox.set_active(match_lang[0])
-
-        # timezone
-        if "timezone" in config:
-            match_tz = [tz_id for tz_id, tz
-                        in enumerate(self.component.timezone_tree_store)
-                        if tz[0] == config.get("timezone")]
-            if match_tz:
-                self.component.timezone_combobox.set_active(match_tz[0])
+        # value in list (language, timezone)
+        for key, items in {
+                'language': data.ideascube_languages,
+                'timezone': self.component.timezone_tree_store}.items():
+            match = [item_id for item_id, item
+                     in enumerate(data.ideascube_languages)
+                     if item[0] == config.get(key)]
+            if match:
+                getattr(self.component, '{}_combobox'.format(key)) \
+                    .set_active(match[0])
 
         # wifi
         if "wifi" in config and isinstance(config["wifi"], dict):
@@ -466,26 +461,19 @@ class Application:
             if config["admin_account"].get("custom") is not None:
                 self.component.admin_account_switch.set_state(
                     config["admin_account"]["custom"])
-            if config["admin_account"].get("login") is not None:
-                self.component.admin_account_login_entry.set_text(
-                    config["admin_account"]["login"])
-            if config["admin_account"].get("password") is not None:
-                self.component.admin_account_pwd_entry.set_text(
-                    config["admin_account"]["password"])
+
+            for key, arg_key in {'login': 'login', 'password': 'pwd'}.items():
+                if config["admin_account"].get(key) is not None:
+                    getattr(self.component, 'admin_account_{}_entry'
+                            .format(arg_key)) \
+                        .set_text(config["admin_account"][key])
 
         # branding
         if "branding" in config and isinstance(config["branding"], dict):
-            if config["branding"].get("logo") is not None:
-                self.component.logo_chooser.set_filename(
-                    os.path.abspath(config["branding"]["logo"]))
-
-            if config["branding"].get("favicon") is not None:
-                self.component.favicon_chooser.set_filename(
-                    os.path.abspath(config["branding"]["favicon"]))
-
-            if config["branding"].get("css") is not None:
-                self.component.css_chooser.set_filename(
-                    os.path.abspath(config["branding"]["css"]))
+            for key in ('logo', 'favicon', 'css'):
+                if config["branding"].get(key) is not None:
+                    getattr(self.component, '{}_chooser'.format(key)) \
+                        .set_filename(os.path.abspath(config["branding"][key]))
 
         # build_dir
         if config.get("build_dir") is not None:
@@ -504,23 +492,19 @@ class Application:
         # content
         if "content" in config and isinstance(config["content"], dict):
 
-            if "kalite" in config["content"] \
-                    and isinstance(config["content"]["kalite"], list):
-                for lang, button in self.iter_kalite_check_button():
-                    button.set_active(lang in config["content"]["kalite"])
+            # langs-related contents
+            for key in ('kalite', 'wikifundi'):
+                if key in config["content"] \
+                        and isinstance(config["content"][key], list):
+                    for lang, button in getattr(
+                            self, 'iter_{}_check_button'.format(key))():
+                        button.set_active(lang in config["content"][key])
 
-            if "wikifundi" in config["content"] \
-                    and isinstance(config["content"]["wikifundi"], list):
-                for lang, button in self.iter_wikifundi_check_button():
-                    button.set_active(lang in config["content"]["wikifundi"])
-
-            if config["content"].get("edupi") is not None:
-                self.component.edupi_switch.set_active(
-                    config["content"]["edupi"])
-
-            if config["content"].get("aflatoun") is not None:
-                self.component.aflatoun_switch.set_active(
-                    config["content"]["aflatoun"])
+            # boolean contents (switches)
+            for key in ('edupi', 'aflatoun'):
+                if config["content"].get(key) is not None:
+                    getattr(self.component, '{}_switch'.format(key)) \
+                        .set_active(config["content"][key])
 
             if "zims" in config["content"] \
                     and isinstance(config["content"]["zims"], list):
