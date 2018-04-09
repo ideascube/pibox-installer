@@ -15,17 +15,19 @@ def set_config(config, args):
     if not isinstance(config, dict):
             return
 
-    # project_name
-    if "project_name" in config:
-        args.name = config.get("project_name")
+    # direct arguments
+    for key, arg_key in {'project_name': 'name',
+                         'timezone': 'timezone',
+                         'language': 'language',
+                         'size': 'size'}.items():
+        if key in config:
+            setattr(args, arg_key, config.get(key))
 
-    # language
-    if "language" in config:
-        args.language = config.get("language")
-
-    # timezone
-    if "timezone" in config:
-        args.timezone = config.get("timezone")
+    # branding files
+    if "branding" in config and isinstance(config["branding"], dict):
+        for key in ('logo', 'favicon', 'css'):
+            if config["branding"].get(key) is not None:
+                setattr(args, key, os.path.abspath(config["branding"][key]))
 
     # wifi
     if "wifi" in config and isinstance(config["wifi"], dict):
@@ -45,44 +47,25 @@ def set_config(config, args):
                 args.admin_account = [config["admin_account"]["login"],
                                       config["admin_account"]["password"]]
 
-    # branding
-    if "branding" in config and isinstance(config["branding"], dict):
-        if config["branding"].get("logo") is not None:
-            args.logo = os.path.abspath(config["branding"]["logo"])
-
-        if config["branding"].get("favicon") is not None:
-            args.favicon = os.path.abspath(config["branding"]["favicon"])
-
-        if config["branding"].get("css") is not None:
-            args.css = os.path.abspath(config["branding"]["css"])
-
     # build_dir
     if config.get("build_dir") is not None:
         args.build_dir = os.path.abspath(config["build_dir"])
 
-    if config.get("size") is not None:
-        args.size = config["size"]
-
     # content
     if "content" in config and isinstance(config["content"], dict):
 
-        if "kalite" in config["content"] \
-                and isinstance(config["content"]["kalite"], list):
-            args.kalite = config["content"]["kalite"]
+        # list contents (langs)
+        for key, arg_key in {'kalite': 'kalite',
+                             'wikifundi': 'wikifundi',
+                             'zims': 'zim_install'}.items():
+            if key in config["content"] \
+                    and isinstance(config["content"][key], list):
+                setattr(args, arg_key, config["content"][key])
 
-        if "wikifundi" in config["content"] \
-                and isinstance(config["content"]["wikifundi"], list):
-            args.wikifundi = config["content"]["wikifundi"]
-
-        if config["content"].get("edupi") is not None:
-            args.edupi = config["content"]["edupi"]
-
-        if config["content"].get("aflatoun") is not None:
-            args.aflatoun = config["content"]["aflatoun"]
-
-        if "zims" in config["content"] \
-                and isinstance(config["content"]["zims"], list):
-                args.zim_install = config["content"]["zims"]
+        # bool contents (switch)
+        for key in ('edupi', 'aflatoun'):
+            if config["content"].get(key) is not None:
+                setattr(args, key, config["content"][key])
 
 
 class Logger:
