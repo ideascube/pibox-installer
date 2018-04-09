@@ -528,9 +528,7 @@ class Application:
                 nb_zims = len(self.component.zim_tree_view.get_model())
                 index = 0
                 nb_selected = 0
-                while True:
-                    if index >= (nb_zims - nb_selected):
-                        break
+                while index < (nb_zims - nb_selected):
                     try:
                         zim = self.component.zim_tree_view.get_model()[index]
                     except IndexError:
