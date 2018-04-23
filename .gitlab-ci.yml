@@ -1,0 +1,6 @@
+before_script:
+  - /bin/true
+
+simple:
+  script:
+    - date
