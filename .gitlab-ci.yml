@@ -1,0 +1,22 @@
+stages:
+  # - setup
+  - build
+
+# setup_docker:
+#   stage: setup
+#   - apt-get update -qq
+#   - apt-get install -y -qq sudo python python-virtualenv wget unzip exfat-utils e2fsprogs util-linux mount build-essential pkg-config
+#   - apt-get install -y -qq libpixman-1-dev libgdk-pixbuf2.0-dev libglib2.0-dev zlib1g-dev
+
+createimage:
+  stage: build
+  variables:
+    QEMU_RAM: 2000M
+  script:
+    - ./make-image.sh setup
+    - ./make-image.sh run 4
+  only:
+    - schedules
+    - web
+  tags:
+    - loop
