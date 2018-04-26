@@ -221,7 +221,7 @@ function compile_qemu {
 	# copies qemu-system-arm and qemu-img to $ROOT
 	local qemu_archive=$ROOT/`basename ${QEMU_URL}`
 	wget -O ${qemu_archive} -c $QEMU_URL && 
-		tar -xf ${qemu_archive} &&
+		tar -xf ${qemu_archive} -C ${ROOT} &&
 		# rm ${qemu_archive} &&
 		cd $ROOT/qemu-${QEMU_DL_VERSION} && ./configure \
 		    --target-list=arm-softmmu \
