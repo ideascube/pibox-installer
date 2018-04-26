@@ -53,7 +53,8 @@ vexpress_dir=`echo ${vexpress_zip} | sed 's/\.zip//'`
 ansible_zip=$ROOT/oneUpdateFile${ANSIBLECUBE_VERSION}.zip
 
 build_img=$ROOT/pibox-kiwix-`date +"%Y-%m-%d"`-BUILDING.img
-zip_file=${build_img}.zip
+final_img=`echo ${build_img} | sed 's/\-BUILDING//'`
+zip_file=${final_img}.zip
 
 data_part_size=`python -c "print(${SD_SIZE_GB} - ${SYSPART_SIZE_GB})"`
 
@@ -189,24 +190,6 @@ END_OF_CMD
 		fail "Unable to create third partition"
 	fi
 
-	echo "  -- preparing loop device for image"
-	loopdev=`sudo losetup --partscan --show --find $build_img`
-	if [ $? -ne 0 -o -z "${loopdev}" ] ; then
-		fail "Unable to get loop device"
-	else
-		echo "   loop device is ${loopdev}"
-	fi
-
-	echo "  - resizing filesystem for / partition"
-	sudo e2fsck -p -f ${loopdev}p2 || fail "Unable to fsck / partition"
-	sudo resize2fs ${loopdev}p2 || fail "Unable to resize filesystem for /"
-
-	echo "  -- formatting 3rd partition in exfat"
-	sudo mkfs.exfat ${loopdev}p3 || fail "Unable to create exfat filesystem for third partition"
-	
-	echo "  -- releasing loop device for image"
-	sudo losetup -d ${loopdev} || fail "Unable to release loop device"
-
 	echo "Setting-up python tools"
 	if [ ! -d $VIRTUAL_ENV ] ; then
 		virtualenv $VIRTUAL_ENV || fail "Unable to create virtualenv"
@@ -217,7 +200,7 @@ END_OF_CMD
 	$VIRTUAL_ENV/bin/python $ROOT/create_pibox_master.py "$build_img" "${QEMU_PATH}" "${QEMU_RAM}"
 
 	if [ $? -eq 0 -a -f $build_img ] ; then
-		zip -9 ${zip_file} $build_img
+		zip -9 ${zip_file} ${final_img}
 		ls -lh $zip_file
 	fi
 }
