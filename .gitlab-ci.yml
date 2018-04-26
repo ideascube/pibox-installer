@@ -8,8 +8,8 @@ createimage:
   variables:
     QEMU_RAM: 2000M
   script:
-    - ./make-image.sh setup
-    - ./make-image.sh run 4
+    - ./make-base-image/make-image.sh setup
+    - ./make-base-image/make-image.sh run 4
   only:
     - schedules
     - web
