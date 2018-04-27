@@ -20,6 +20,10 @@ if [ -z "${QEMU_RAM}" ] ; then
 	QEMU_RAM="2000M"
 fi
 
+if [ -z "${HAS_LOOP}" ] ; then
+	HAS_LOOP=1
+fi
+
 ########
 
 function dirof {
@@ -190,6 +194,26 @@ END_OF_CMD
 		fail "Unable to create third partition"
 	fi
 
+	if [ ${HAS_LOOP} -eq 1 ] ; then
+		echo "  -- preparing loop device for image"
+		loopdev=`sudo losetup --partscan --show --find $build_img`
+		if [ $? -ne 0 -o -z "${loopdev}" ] ; then
+			fail "Unable to get loop device"
+		else
+			echo "   loop device is ${loopdev}"
+		fi
+
+		echo "  - resizing filesystem for / partition"
+		sudo e2fsck -p -f ${loopdev}p2 || fail "Unable to fsck / partition"
+		sudo resize2fs ${loopdev}p2 || fail "Unable to resize filesystem for /"
+
+		echo "  -- formatting 3rd partition in exfat"
+		sudo mkfs.exfat ${loopdev}p3 || fail "Unable to create exfat filesystem for third partition"
+		
+		echo "  -- releasing loop device for image"
+		sudo losetup -d ${loopdev} || fail "Unable to release loop device"
+	fi
+
 	echo "Setting-up python tools"
 	if [ ! -d $VIRTUAL_ENV ] ; then
 		virtualenv $VIRTUAL_ENV || fail "Unable to create virtualenv"
@@ -294,7 +318,11 @@ function find_qemu {
 function setup {
 	# checks that required tools are present
 	echo "looking for base dependencies..."
-	declare -a local deps=("wget" "unzip" "python" "virtualenv" "fdisk" "e2fsck" "resize2fs" "losetup" "mkfs.exfat")
+	if [ ${HAS_LOOP} -eq 1 ] ; then
+		declare -a local deps=("wget" "unzip" "python" "virtualenv" "fdisk" "e2fsck" "resize2fs" "losetup" "mkfs.exfat")
+	else
+		declare -a local deps=("wget" "unzip" "python" "virtualenv" "fdisk")
+	fi
 	local missing_dep=0
 	for dep in "${deps[@]}"
 	do
@@ -307,8 +335,7 @@ function setup {
 			fi
 	done
 	if [ $missing_dep -eq 1 ] ; then
-		# fail "You are missing some base package(s) for this tool. Please install them first."
-		echo "You are missing some base package(s) for this tool. Please install them first."
+		fail "You are missing some base package(s) for this tool. Please install them first."
 	fi
 
 	# find best match for qemu

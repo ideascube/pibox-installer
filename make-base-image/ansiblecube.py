@@ -9,7 +9,7 @@ import json
 
 # machine must provide write_file and exec_cmd functions
 def run(machine, name, timezone, wifi_pwd, edupi, wikifundi, aflatoun, kalite,
-        zim_install, ansiblecube_path, admin_account):
+        zim_install, admin_account, resize, ansiblecube_path):
 
     # install base packages
     machine.exec_cmd("sudo apt-get update")
@@ -32,6 +32,8 @@ def run(machine, name, timezone, wifi_pwd, edupi, wikifundi, aflatoun, kalite,
 
     ansible_args = "--inventory hosts"
     ansible_args += " --tags master,configure"
+    if resize:
+        ansible_args += ",resize"
     ansible_args += " --extra-vars \"%s\"" % json.dumps(extra_vars)
     ansible_args += " main.yml"
 

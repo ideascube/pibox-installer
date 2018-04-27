@@ -86,7 +86,7 @@ class _CancelEventRegister:
         self._pids.remove(pid)
 
 
-def run_in_qemu(image_building_path, qemu_binary, qemu_ram,
+def run_in_qemu(image_building_path, qemu_binary, qemu_ram, resize,
                 logger, cancel_event):
 
     image_final_path = image_building_path.replace('-BUILDING', '')
@@ -131,8 +131,9 @@ def run_in_qemu(image_building_path, qemu_binary, qemu_ram,
                 aflatoun=False,
                 kalite=None,
                 zim_install=[],
-                ansiblecube_path=ansiblecube_emulation_path,
-                admin_account=None)
+                admin_account=None,
+                resize=resize,
+                ansiblecube_path=ansiblecube_emulation_path)
 
             # add /data partition to /etc/fstab
             logger.step("Add auto-mount for /data")
@@ -164,7 +165,7 @@ def run_in_qemu(image_building_path, qemu_binary, qemu_ram,
     return error
 
 
-def main(image_building_path, qemu_path='.', qemu_ram='2G'):
+def main(image_building_path, qemu_path='.', qemu_ram='2G', resize=True):
     print("starting with target:", image_building_path)
 
     if not os.path.exists(image_building_path):
@@ -176,6 +177,7 @@ def main(image_building_path, qemu_path='.', qemu_ram='2G'):
         image_building_path,
         os.path.join(qemu_path, "qemu-system-arm"),
         qemu_ram,
+        bool(resize),
         Logger, cancel_event)
 
     if error:
