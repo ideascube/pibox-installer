@@ -20,8 +20,10 @@ if [ -z "${QEMU_RAM}" ] ; then
 	QEMU_RAM="2000M"
 fi
 
-if [ -z "${HAS_LOOP}" ] ; then
+if [ ! -z "${HAS_LOOP}" ] ; then
 	HAS_LOOP=1
+else
+	HAS_LOOP=0
 fi
 
 ########
@@ -258,7 +260,7 @@ function compile_qemu {
 		    --disable-usb-redir \
 		    --python=python2 &&
 		make &&
-		cp -v arm-softmmu/qemu-system-arm $ROOT/ && cp -v qemu-img $ROOT/ && cd - && return 0
+		mv -v arm-softmmu/qemu-system-arm $ROOT/ && mv -v qemu-img $ROOT/ && cd - && return 0
 
 	return 1
 }
