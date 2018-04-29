@@ -2,11 +2,11 @@ stages:
   # - setup
   - build
 
-setup_docker:
-  stage: setup
-  - apt-get update -qq
-  - apt-get install -y -qq sudo python python-virtualenv wget unzip util-linux mount build-essential pkg-config kbd
-  - apt-get install -y -qq libpixman-1-dev libgdk-pixbuf2.0-dev libglib2.0-dev zlib1g-dev
+# setup_docker:
+#   stage: setup
+#   - apt-get update -qq
+#   - apt-get install -y -qq sudo python python-virtualenv wget unzip util-linux mount build-essential pkg-config kbd
+#   - apt-get install -y -qq libpixman-1-dev libgdk-pixbuf2.0-dev libglib2.0-dev zlib1g-dev
 
 createimage:
   stage: build
