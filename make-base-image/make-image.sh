@@ -32,6 +32,7 @@ function dirof {
 	echo "$( cd "$(dirname "$1")" ; pwd -P )"
 }
 ROOT=$(dirof $0)
+PARENT=$(dirname ${ROOT})
 
 ANSIBLECUBE_VERSION=0.5  # ansiblecube version/branch to use
 RASPBIAN_VERSION="2017-07-05/2017-07-05-raspbian-jessie-lite"
@@ -48,12 +49,12 @@ ANSIBLECUBE_URL=https://framagit.org/ideascube/ansiblecube/repository/oneUpdateF
 QEMU_BINARY="qemu-system-arm"
 QEMU_PATH=""  # populated later-on
 
-VIRTUAL_ENV=$ROOT/pibox-img-creator_env
+VIRTUAL_ENV=$ROOT/image_env
 
 raspbian_zip=$ROOT/`basename ${RASPBIAN_URL}`
 raspbian_img=`echo ${raspbian_zip} | sed 's/\.zip$/.img/'`
 
-vexpress_zip=$ROOT/`basename ${VEXPRESS_URL}`
+vexpress_zip=${PARENT}/`basename ${VEXPRESS_URL}`
 vexpress_dir=`echo ${vexpress_zip} | sed 's/\.zip//'`
 
 ansible_zip=$ROOT/oneUpdateFile${ANSIBLECUBE_VERSION}.zip
@@ -116,7 +117,7 @@ function run {
 	echo "Downloading Qemu dependencies (vexpress)"
 	wget -O ${vexpress_zip} -c ${VEXPRESS_URL}
 	if [ ! -d ${vexpress_dir} ] ; then
-		unzip ${vexpress_zip}
+		unzip -d ${vexpress_dir} ${vexpress_zip}
 	fi
 
 	echo "Downloading raspbian image"
@@ -236,12 +237,12 @@ END_OF_CMD
 }
 
 function clean {
-	rm -rf $ROOT/$vexpress_dir
-	rm -f $ROOT/$vexpress_zip
-	rm -f $ROOT/$raspbian_img
-	rm -f $ROOT/$raspbian_zip
-	rm -f $ROOT/$build_img
-	rm -f $ROOT/$zip_file
+	rm -rf ${vexpress_dir}
+	rm -f ${vexpress_zip}
+	rm -f $raspbian_img
+	rm -f $raspbian_zip
+	rm -f $build_img
+	rm -f $zip_file
 	rm -rf $ROOT/ansiblecube
 	rm -rf $ROOT/qemu-${QEMU_DL_VERSION}
 }

@@ -119,15 +119,19 @@ class ReportHook():
             self._writter(line)
 
 class CLILogger:
-    def step(step):
+    @classmethod
+    def step(cls, step):
         print("\033[00;34m--> " + step + "\033[00m")
 
-    def err(err):
+    @classmethod
+    def err(cls, err):
         print("\033[00;31m" + err + "\033[00m")
 
-    def raw_std(std):
+    @classmethod
+    def raw_std(cls, std):
         sys.stdout.write(std)
 
-    def std(std):
+    @classmethod
+    def std(cls, std):
         print(std)
 

@@ -10,8 +10,7 @@
     - adds /data partition to fstab
 '''
 
-from __future__ import (unicode_literals, absolute_import,
-                        division, print_function)
+from __future__ import (unicode_literals, division, print_function)
 import os
 import re
 import sys
@@ -26,7 +25,7 @@ _vexpress_boot_dir = "pibox-installer-vexpress-boot"
 vexpress_boot_kernel = os.path.join(pibox_root, _vexpress_boot_dir, "zImage")
 vexpress_boot_dtb = os.path.join(pibox_root, _vexpress_boot_dir,
                                  "vexpress-v2p-ca15_a7.dtb")
-ansiblecube_path = os.path.join(pibox_root, "ansibleacube")
+ansiblecube_path = os.path.join(pibox_root, "ansiblecube")
 
 sys.path.append(os.path.join(pibox_root, 'pibox-installer'))
 from backend.ansiblecube import run_for_image
