@@ -54,8 +54,9 @@ VIRTUAL_ENV=$ROOT/image_env
 raspbian_zip=$ROOT/`basename ${RASPBIAN_URL}`
 raspbian_img=`echo ${raspbian_zip} | sed 's/\.zip$/.img/'`
 
-vexpress_zip=${PARENT}/`basename ${VEXPRESS_URL}`
-vexpress_dir=`echo ${vexpress_zip} | sed 's/\.zip//'`
+vexpress_zip=$ROOT/`basename ${VEXPRESS_URL}`
+vexpress_dir_name=$(basename `echo ${vexpress_zip} | sed 's/\.zip//'`)
+vexpress_dir=${PARENT}/${vexpress_dir_name}
 
 ansible_zip=$ROOT/oneUpdateFile${ANSIBLECUBE_VERSION}.zip
 
@@ -117,7 +118,7 @@ function run {
 	echo "Downloading Qemu dependencies (vexpress)"
 	wget -O ${vexpress_zip} -c ${VEXPRESS_URL}
 	if [ ! -d ${vexpress_dir} ] ; then
-		unzip -d ${vexpress_dir} ${vexpress_zip}
+		unzip ${vexpress_zip} && mv $ROOT/${vexpress_dir_name}/ ${vexpress_dir}
 	fi
 
 	echo "Downloading raspbian image"

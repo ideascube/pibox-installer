@@ -11,8 +11,8 @@ stages:
 createimage:
   stage: build
   variables:
-    QEMU_RAM: 2000M
-    HAS_LOOP: yes
+    QEMU_RAM: '2000M'
+    HAS_LOOP: 'yes'
   script:
     - cd ./make-base-image/
     - ./make-image.sh setup
