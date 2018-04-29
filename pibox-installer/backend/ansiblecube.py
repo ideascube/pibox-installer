@@ -3,7 +3,7 @@ import json
 ansiblecube_path = "/var/lib/ansible/local"
 
 
-def run_for_image(machine, name, timezone, resize):
+def run_for_image(machine, resize):
     tags = ['master', 'configure']
     if resize:
         tags.append('resize')

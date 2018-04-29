@@ -28,7 +28,7 @@ vexpress_boot_dtb = os.path.join(pibox_root, _vexpress_boot_dir,
 ansiblecube_path = os.path.join(pibox_root, "ansiblecube")
 
 sys.path.append(os.path.join(pibox_root, 'pibox-installer'))
-from backend.ansiblecube import run_for_image
+from backend.ansiblecube import run_for_image, ansiblecube_emulation_path
 from backend.qemu import Emulator
 from util import CLILogger, CancelEvent
 
@@ -61,28 +61,12 @@ def run_in_qemu(image_building_path, qemu_binary, qemu_ram, resize,
             emulation.exec_cmd("sudo /bin/systemctl enable ssh")
 
             logger.step("Copy ansiblecube")
-            ansiblecube_emulation_path = "/var/lib/ansible/local"
             emulation.exec_cmd("sudo mkdir --mode 0755 -p /var/lib/ansible/")
-            emulation.put_dir(ansiblecube_path,
-                              ansiblecube_emulation_path)
+            emulation.put_dir(ansiblecube_path, ansiblecube_emulation_path)
 
             # Run ansiblecube
             logger.step("Run ansiblecube")
-            run_for_image(
-                machine=emulation,
-                resize=resize,
-                ansiblecube_path=ansiblecube_emulation_path)
-
-            # add /data partition to /etc/fstab
-            logger.step("Add auto-mount for /data")
-            blkid = emulation.exec_cmd("sudo blkid /dev/mmcblk0p3",
-                                       capture_stdout=True)
-            if 'PARTUUID' in blkid:
-                part_uuid = re.findall(r'PARTUUID="([a-z0-9\-]+)"', blkid)[-1]
-                emulation.exec_cmd(
-                    "sudo sh -c 'echo \"PARTUUID={partid} /data "
-                    "exfat defaults,noatime 0 1\" >> /etc/fstab'"
-                    .format(partid=part_uuid))
+            run_for_image(machine=emulation, resize=resize)
 
     except Exception as e:
         raise
