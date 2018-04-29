@@ -28,7 +28,8 @@ vexpress_boot_dtb = os.path.join(pibox_root, _vexpress_boot_dir,
 ansiblecube_path = os.path.join(pibox_root, "ansiblecube")
 
 sys.path.append(os.path.join(pibox_root, 'pibox-installer'))
-from backend.ansiblecube import run_for_image, ansiblecube_emulation_path
+from backend.ansiblecube import (
+    run_for_image, ansiblecube_path as ansiblecube_emulation_path)
 from backend.qemu import Emulator
 from util import CLILogger, CancelEvent
 
