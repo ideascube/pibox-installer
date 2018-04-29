@@ -117,3 +117,17 @@ class ReportHook():
         if line != self._last_line:
             self._last_line = line
             self._writter(line)
+
+class CLILogger:
+    def step(step):
+        print("\033[00;34m--> " + step + "\033[00m")
+
+    def err(err):
+        print("\033[00;31m" + err + "\033[00m")
+
+    def raw_std(std):
+        sys.stdout.write(std)
+
+    def std(std):
+        print(std)
+

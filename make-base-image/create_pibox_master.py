@@ -15,75 +15,23 @@ from __future__ import (unicode_literals, absolute_import,
 import os
 import re
 import sys
-import signal
-import threading
-
-import qemu
-import ansiblecube
 
 try:
     text_type = unicode  # Python 2
 except NameError:
     text_type = str      # Python 3
 
+pibox_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _vexpress_boot_dir = "pibox-installer-vexpress-boot"
-vexpress_boot_kernel = os.path.join(_vexpress_boot_dir, "zImage")
-vexpress_boot_dtb = os.path.join(_vexpress_boot_dir,
+vexpress_boot_kernel = os.path.join(pibox_root, _vexpress_boot_dir, "zImage")
+vexpress_boot_dtb = os.path.join(pibox_root, _vexpress_boot_dir,
                                  "vexpress-v2p-ca15_a7.dtb")
-ansiblecube_path = os.path.join("ansiblecube")
+ansiblecube_path = os.path.join(pibox_root, "ansibleacube")
 
-
-class Logger:
-    @classmethod
-    def step(cls, step):
-        print("\033[00;34m--> " + step + "\033[00m")
-
-    @classmethod
-    def err(cls, err):
-        print("\033[00;31m" + err + "\033[00m")
-
-    @classmethod
-    def raw_std(cls, std):
-        sys.stdout.write(std)
-
-    @classmethod
-    def std(cls, std):
-        print(std)
-
-
-# Thread safe class to register pid to cancel in case of abort
-class CancelEvent:
-    def __init__(self):
-        self._lock = threading.Lock()
-        self._pids = []
-
-    def lock(self):
-        return _CancelEventRegister(self._lock, self._pids)
-
-    def cancel(self):
-        self._lock.acquire()
-        for pid in self._pids:
-            os.kill(pid, signal.SIGTERM)
-
-
-class _CancelEventRegister:
-    def __init__(self, lock, pids):
-        self._lock = lock
-        self._pids = pids
-
-    def __enter__(self):
-        self._lock.acquire()
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self._lock.release()
-
-    def register(self, pid):
-        if self._pids.count(pid) == 0:
-            self._pids.append(pid)
-
-    def unregister(self, pid):
-        self._pids.remove(pid)
+sys.path.append(os.path.join(pibox_root, 'pibox-installer'))
+from backend.ansiblecube import run_for_image
+from backend.qemu import Emulator
+from util import CLILogger, CancelEvent
 
 
 def run_in_qemu(image_building_path, qemu_binary, qemu_ram, resize,
@@ -94,12 +42,12 @@ def run_in_qemu(image_building_path, qemu_binary, qemu_ram, resize,
 
     try:
         # Instance emulator
-        emulator = qemu.Emulator(vexpress_boot_kernel,
-                                 vexpress_boot_dtb,
-                                 image_building_path,
-                                 qemu_binary,
-                                 qemu_ram,
-                                 logger)
+        emulator = Emulator(vexpress_boot_kernel,
+                            vexpress_boot_dtb,
+                            image_building_path,
+                            qemu_binary,
+                            qemu_ram,
+                            logger)
 
         # Run emulation
         with emulator.run(cancel_event) as emulation:
@@ -121,17 +69,8 @@ def run_in_qemu(image_building_path, qemu_binary, qemu_ram, resize,
 
             # Run ansiblecube
             logger.step("Run ansiblecube")
-            ansiblecube.run(
+            run_for_image(
                 machine=emulation,
-                name="default",
-                timezone="UTC",
-                wifi_pwd=None,
-                edupi=False,
-                wikifundi=None,
-                aflatoun=False,
-                kalite=None,
-                zim_install=[],
-                admin_account=None,
                 resize=resize,
                 ansiblecube_path=ansiblecube_emulation_path)
 
@@ -178,7 +117,7 @@ def main(image_building_path, qemu_path='.', qemu_ram='2G', resize=True):
         os.path.join(qemu_path, "qemu-system-arm"),
         qemu_ram,
         bool(resize),
-        Logger, cancel_event)
+        CLILogger, cancel_event)
 
     if error:
         print("ERROR: unable to properly create image")

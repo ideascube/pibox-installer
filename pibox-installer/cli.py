@@ -8,19 +8,8 @@ from run_installation import run_installation
 from util import CancelEvent
 from util import get_free_space_in_dir
 from util import compute_space_required
+from util import CLILogger
 
-class Logger:
-    def step(step):
-        print("\033[00;34m--> " + step + "\033[00m")
-
-    def err(err):
-        print("\033[00;31m" + err + "\033[00m")
-
-    def raw_std(std):
-        sys.stdout.write(std)
-
-    def std(std):
-        print(std)
 
 try:
     catalogs = catalog.get_catalogs()
@@ -97,7 +86,7 @@ try:
             edupi=args.edupi,
             zim_install=args.zim_install,
             size=args.size,
-            logger=Logger,
+            logger=CLILogger,
             cancel_event=cancel_event,
             sd_card=None,
             logo=args.logo,

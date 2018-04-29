@@ -214,6 +214,10 @@ END_OF_CMD
 		
 		echo "  -- releasing loop device for image"
 		sudo losetup -d ${loopdev} || fail "Unable to release loop device"
+
+		local extra_opts=""
+	else
+		local extra_opts=" resize"
 	fi
 
 	echo "Setting-up python tools"
@@ -223,7 +227,7 @@ END_OF_CMD
 	wget -O ${ROOT}/get-pip.py -c https://bootstrap.pypa.io/get-pip.py
 	$VIRTUAL_ENV/bin/python ${ROOT}/get-pip.py
 	$VIRTUAL_ENV/bin/pip install paramiko
-	$VIRTUAL_ENV/bin/python $ROOT/create_pibox_master.py "$build_img" "${QEMU_PATH}" "${QEMU_RAM}"
+	$VIRTUAL_ENV/bin/python $ROOT/create_pibox_master.py "$build_img" "${QEMU_PATH}" "${QEMU_RAM}"${extra_opts}
 
 	if [ $? -eq 0 -a -f $build_img ] ; then
 		zip -9 ${zip_file} ${final_img}

@@ -70,24 +70,23 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
 
             emulation.exec_cmd("sudo sed -i s/mirrordirector/archive/ /etc/apt/sources.list")
 
-            ansiblecube_emulation_path = "/var/lib/ansible/local"
             emulation.exec_cmd("sudo mkdir --mode 0755 -p /var/lib/ansible/")
-            emulation.put_dir(data.ansiblecube_path, ansiblecube_emulation_path)
+            emulation.put_dir(data.ansiblecube_path,
+                              ansiblecube.ansiblecube_path)
 
             # Run ansiblecube
             logger.step("Run ansiblecube")
-            ansiblecube.run(
-                    machine=emulation,
-                    name=name,
-                    timezone=timezone,
-                    wifi_pwd=wifi_pwd,
-                    kalite=kalite,
-                    wikifundi=wikifundi,
-                    edupi=edupi,
-                    aflatoun=aflatoun,
-                    ansiblecube_path=ansiblecube_emulation_path,
-                    zim_install=zim_install,
-                    admin_account=admin_account)
+            ansiblecube.run_for_user(
+                machine=emulation,
+                name=name,
+                timezone=timezone,
+                wifi_pwd=wifi_pwd,
+                kalite=kalite,
+                wikifundi=wikifundi,
+                edupi=edupi,
+                aflatoun=aflatoun,
+                zim_install=zim_install,
+                admin_account=admin_account)
 
             # Write ideascube configuration
             with open(data.pibox_ideascube_conf, "r") as f:

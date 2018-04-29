@@ -1,3 +1,5 @@
+from __future__ import (unicode_literals, absolute_import,
+                        division, print_function)
 import os
 import subprocess
 import collections
@@ -40,10 +42,10 @@ def generate_random_name():
     return r
 
 def get_free_port():
-    with socket.socket() as s:
-        s.bind(("",0))
-        port = s.getsockname()[1]
-
+    s = socket.socket()
+    s.bind(("", 0))
+    port = s.getsockname()[1]
+    s.close()
     return port
 
 class Emulator:
@@ -56,11 +58,13 @@ class Emulator:
     # password=raspberry
     # prompt end by ":~$ "
     # sudo doesn't require password
-    def __init__(self, kernel, dtb, image, logger):
+    def __init__(self, kernel, dtb, image, binary, ram, logger):
         self._kernel = kernel
         self._dtb = dtb
         self._image = image
         self._logger = logger
+        self._binary = binary
+        self._ram = ram
 
     def run(self, cancel_event):
         return _RunningInstance(self, self._logger, cancel_event)
@@ -192,15 +196,17 @@ class _RunningInstance:
 
         with self._cancel_event.lock() as cancel_register:
             self._qemu = subprocess.Popen([
-                qemu_system_arm_exe_path,
-                "-m", "2G",
+                self._emulation._binary,
+                "-m", self._emulation._ram,
                 "-M", "vexpress-a15",
                 "-kernel", self._emulation._kernel,
                 "-dtb", self._emulation._dtb,
                 "-append", "root=/dev/mmcblk0p2 console=ttyAMA0 console=tty",
                 "-serial", "stdio",
-                "-sd", self._emulation._image,
-                "-redir", "tcp:%d::22" % ssh_port,
+                "-drive", "format=raw,if=sd,file={}"
+                .format(self._emulation._image),
+                "-net", "nic",
+                "-net", "user,id=eth0,hostfwd=tcp::{}-:22".format(ssh_port),
                 "-display", "none",
                 "-no-reboot",
                 "-smp", "2",
@@ -278,8 +284,10 @@ class _RunningInstance:
                 sftp_client.mkdir(dir_remote_path)
 
             for filename in filenames:
-                file_local_path = os.path.join(localpath, localdirpath, filename)
-                file_remote_path = posixpath.join(tmpremotepath, remotedirpath, filename)
+                file_local_path = os.path.normpath(
+                    os.path.join(localdirpath, filename))
+                file_remote_path = os.path.normpath(
+                    posixpath.join(tmpremotepath, remotedirpath, filename))
                 self._logger.std("copy local file {} to tmp file {}".format(file_local_path, file_remote_path))
                 sftp_client.put(file_local_path, file_remote_path)
         sftp_client.close()
@@ -324,56 +332,6 @@ class _RunningInstance:
 
         if capture_stdout:
             return stdout_buffer
-
-    def resize_fs(self):
-        self._logger.step("Resize partition")
-
-        stdout = self.exec_cmd("sudo LANG=C fdisk -l /dev/mmcblk0", capture_stdout=True)
-
-        lines = stdout.splitlines()
-
-        number_of_sector_match = []
-        second_partition_match = []
-        for line in lines:
-            number_of_sector_match += re.findall(r"^Disk /dev/mmcblk0:.*, (\d+) sectors$", line)
-            second_partition_match += re.findall(r"^/dev/mmcblk0p2 +(\d+) +(\d+) +\d+ +\S+ +\d+ +Linux$", line)
-
-        if len(number_of_sector_match) != 1:
-            raise QemuException("cannot find the number of sector of disk")
-        number_of_sector = int(number_of_sector_match[0])
-
-        if len(second_partition_match) != 1:
-            raise QemuException("cannot find start and/or end of root partition of disk")
-        second_partition_start = int(second_partition_match[0][0])
-        second_partition_end = int(second_partition_match[0][1])
-
-        if second_partition_end + 1 == number_of_sector:
-            self._logger.std("nothing to do")
-        else:
-
-            # d  delete partition
-            # 2  second partition
-            # n  create partition
-            # p  primary partition
-            # 2  second partition
-            # %  start of partition
-            #    resize to max
-            # w  write change
-            fdiskCmd = """sudo LANG=C fdisk /dev/mmcblk0 <<END_OF_CMD
-d
-2
-n
-p
-2
-%d
-
-w
-END_OF_CMD""" % second_partition_start
-            self.exec_cmd(fdiskCmd, check=False)
-            self._reboot()
-
-        self._logger.step("Resize filesystem")
-        self.exec_cmd("sudo resize2fs /dev/mmcblk0p2")
 
     def _reboot(self):
         self._logger.std("reboot qemu")
