@@ -21,6 +21,8 @@ def run(machine, tags, extra_vars={}, secret_kwargs={}):
         run_ansible_pull_cmd = ansible_pull_cmd.format(**secret_kwargs)
         displayed_ansible_pull_cmd = ansible_pull_cmd.format(
             **{k: '****' for k, v in secret_kwargs.items()})
+    else:
+        run_ansible_pull_cmd = displayed_ansible_pull_cmd = ansible_pull_cmd
 
     machine.exec_cmd(run_ansible_pull_cmd, displayed_ansible_pull_cmd)
 
