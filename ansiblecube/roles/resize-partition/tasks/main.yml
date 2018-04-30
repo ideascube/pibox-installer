@@ -13,7 +13,7 @@
 
 - name: Analyze disk partition table
   become: yes
-  shell: sudo fdisk -l {{ disk }} | python /tmp/partition_boundaries.py {{ root_partition_size }} {{ disk_size }}
+  shell: fdisk -l {{ disk }} | python /tmp/partition_boundaries.py {{ root_partition_size }} {{ disk_size }}
   register: disk_partition_infos  
   tags: ['resize']
 
@@ -23,13 +23,17 @@
     state: absent
   tags: ['resize']
 
+# should raise an error becoume acting on mounted partitions
 - name: Recreating third partition
-  shell: /bin/echo -e "d\n3\nn\np\n3\n{{ disk_partition_infos.stdout.split()[2] }}\n{{ disk_partition_infos.stdout.split()[3] }}\nt\n3\n7\nw" | sudo fdisk {{ disk }}
+  become: yes
+  shell: /bin/echo -e "d\n3\nn\np\n3\n{{ disk_partition_infos.stdout.split()[2] }}\n{{ disk_partition_infos.stdout.split()[3] }}\nt\n3\n7\nw" | fdisk {{ disk }}
+  ignore_errors: True
   tags: ['resize']
 
 - name: check filesystem on root partition
   become: yes
   command: e2fsck -p -f {{ root_partition }}
+  ignore_errors: True
   tags: ['resize']
 
 - name: resize filesystem on root partition
