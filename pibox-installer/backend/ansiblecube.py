@@ -10,7 +10,8 @@ def run(machine, tags, extra_vars={}, secret_kwargs={}):
     # TODO: move this to a more appropriate location
     #   simple shortcut to set tld for online demo
     if 'PIBOX_DEMO' in os.environ:
-        extra_vars.update({'tld': 'demo.kiwix.ml'})
+        extra_vars.update({'tld': 'kiwix.ml',
+                           'project_name': 'demo'})
 
     machine.exec_cmd("sudo apt-get update")
 
