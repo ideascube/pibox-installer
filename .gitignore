@@ -4,3 +4,6 @@ build
 venv
 archive
 launch.sh
+.cache
+.pytest_cache
+$HOME
