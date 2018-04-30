@@ -41,11 +41,13 @@ def get_partitions_boundaries(lines, root_size, disk_size=None):
     # parse all lines
     number_of_sector_match = []
     second_partition_match = []
+    target_reg = r'[0-9a-zA-Z\.\-\_]+\.img' \
+        if '.img' in "\n".join(lines) else r'\/dev\/[0-9a-z]+'
     for line in lines:
         number_of_sector_match += re.findall(
-            r"^Disk [0-9a-zA-Z\.\-\_]+\.img:.*, (\d+) sectors$", line)
+            r"^Disk {}:.*, (\d+) sectors$".format(target_reg), line)
         second_partition_match += re.findall(
-            r"^[0-9a-zA-Z\.\-\_]+\.img\d +(\d+) +(\d+) +\d+ +\S+ +\d+ +Linux$",
+            r"^{}\d +(\d+) +(\d+) +\d+ +\S+ +\d+ +Linux$".format(target_reg),
             line)
 
     # ensure we retrieved nb of sectors correctly
