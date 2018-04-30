@@ -50,11 +50,11 @@ wikifundi_fqdn: wikifundi.{{ fqdn }}
 sites_fqdn: sites.{{ fqdn }}
 
 # content & features
-captive_portal: yes
-has_custom_branding: no
+captive_portal: true
+has_custom_branding: false
 custom_branding_path: /tmp
 kalite_languages: []
 wikifundi_languages: []
 aflatoun_languages: []
 packages: []
-edupi: no
+edupi: false

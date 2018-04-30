@@ -150,7 +150,7 @@
       regexp: '^    server_name sites.ideasbox.lan'
       line: "    server_name sites.{{ fqdn }} sites.{{ hostname }};"
       state: present
-  notify: restart nginx
+    notify: restart nginx
   tags: ['master', 'configure']
 
 - name: Copy ideascube_leftover_files.service systemd unit
