@@ -6,7 +6,8 @@ lan_interface: eth0
 client_interface: wlan1
 cert_domain: ideascube.lan
 hostname: ideasbox
-fqdn: "{{ hostname }}.lan"
+tld: "lan"
+fqdn: "{{ hostname }}.{{ tld }}"
 hotspot_name: ideasbox
 project_name: ideasbox
 ideascube_id: pibox

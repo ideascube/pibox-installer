@@ -1,3 +1,4 @@
+import os
 import json
 
 ansiblecube_path = "/var/lib/ansible/local"
@@ -5,6 +6,11 @@ ansiblecube_path = "/var/lib/ansible/local"
 
 def run(machine, tags, extra_vars={}, secret_kwargs={}):
     ''' machine must provide write_file and exec_cmd functions '''
+
+    # TODO: move this to a more appropriate location
+    #   simple shortcut to set tld for online demo
+    if 'PIBOX_DEMO' in os.environ:
+        extra_vars.update({'tld': 'demo.kiwix.ml'})
 
     machine.exec_cmd("sudo apt-get update")
 

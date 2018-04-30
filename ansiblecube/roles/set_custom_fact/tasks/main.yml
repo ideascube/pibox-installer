@@ -24,7 +24,7 @@
 
   - set_fact:
       hostname: "{{ project_name_safe }}"
-      fqdn: "{{ project_name_safe }}.lan"
+      fqdn: "{{ project_name_safe }}.{{ tld }}"
       hotspot_name: "{{ project_name }}"
     name: Set hostname and hostpot_name
 
