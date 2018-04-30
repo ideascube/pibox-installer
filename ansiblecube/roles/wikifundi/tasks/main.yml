@@ -1,0 +1,98 @@
+---
+- name: Install dependencies
+  apt: name={{ item }} state=latest
+  with_items:
+    - nginx
+    - php5-fpm
+    - memcached
+    - nodejs
+    - imagemagick
+    - texlive
+    - texlive-latex-extra
+    - php-pear
+    - php5-curl
+    - php5-sqlite
+    - libav-tools
+    - librsvg2-bin
+    - poppler-utils
+    - npm
+    - redis-server
+    - dvipng
+    - lua5.1
+    - build-essential
+    - ocaml
+    - cjk-latex
+    - texlive-fonts-recommended
+    - texlive-lang-greek
+    - texlive-latex-recommended
+  tags: ['master', 'configure']
+
+- name: Link node to nodejs binary
+  file: src=/usr/bin/nodejs dest=/usr/bin/node state=link
+  tags: ['master', 'configure']
+
+- name: Download africapack
+  unarchive:
+    src: http://download.kiwix.org/other/wikifundi/{{ item }}.africapack.kiwix.org_2017-01.tar.bz2
+    dest: /var/www
+    remote_src: True
+    owner: www-data
+  with_items: "{{ wikifundi_languages | default(omit) }}"
+  tags: ['content']
+
+- name: Change lua path and TMP in LocalSettings.custom.php
+  replace:
+    name: /var/www/{{ item }}.africapack.kiwix.org/w/LocalSettings.custom.php
+    regexp: '^\<\?php$'
+    replace: '<?php\nputenv("TMP={$wgUploadDirectory}/temp");\n$wgScribuntoEngineConf[''luastandalone''][''luaPath''] = "/usr/bin/lua5.1";'
+    owner: www-data
+  with_items: "{{ wikifundi_languages | default(omit) }}"
+  tags: ['content']
+
+- name: Copy nginx vhosts
+  template: src=wikifundi.vhost.j2 dest=/etc/nginx/sites-available/{{ item }}.wikifundi
+  with_items: "{{ wikifundi_languages | default(omit) }}"
+  tags: ['content']
+
+- name: Enable nginx vhosts
+  file: src=/etc/nginx/sites-available/{{ item }}.wikifundi dest=/etc/nginx/sites-enabled/{{ item }}.wikifundi state=link
+  with_items: "{{ wikifundi_languages | default(omit) }}"
+  notify: restart nginx
+  tags: ['content']
+
+- name: Get the Math renderer correctly
+  shell:
+    cd /var/www/{{ item }}.africapack.kiwix.org/w/extensions/Math/math;
+    sudo make clean all;
+    cd /var/www/{{ item }}.africapack.kiwix.org/w/extensions/Math/texvccheck;
+    sudo make clean all;
+  with_items: "{{ wikifundi_languages | default(omit) }}"
+  tags: ['content']
+
+- name: Download Parsoid
+  unarchive:
+    src: http://download.kiwix.org/other/wikifundi/parsoid_2016-08.tar.bz2
+    dest: /var/www
+    remote_src: True
+    owner: www-data
+  tags: ['master', 'configure']
+
+- name: Setup parsoid service
+  copy: src=parsoid.service dest=/etc/systemd/system/parsoid.service
+  tags: ['master', 'configure']
+
+- name: Enable and Start Parsoid
+  systemd:
+    name=parsoid
+    state=started
+    daemon_reload=yes
+    enabled=yes
+  tags: ['master', 'configure']
+
+- name: Enable and Start php-fpm
+  systemd:
+    name=php5-fpm
+    state=started
+    daemon_reload=yes
+    enabled=yes
+  tags: ['master', 'configure']

@@ -1,0 +1,8 @@
+---
+- ini_file: dest=/etc/ansible/facts.d/installed_software.fact
+            section=software
+            option={{ task }}
+            value={{ task_version }}
+
+- name: reload ansible_local
+  setup: filter=ansible_local gather_timeout=240

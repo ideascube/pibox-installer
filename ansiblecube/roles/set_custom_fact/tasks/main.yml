@@ -1,0 +1,73 @@
+---
+- debug: msg="Start playbook {{ ansible_date_time["date"] }} - {{ ansible_date_time["time"] }}"
+  tags: ['master', 'configure', 'content']
+
+- name: ensure custom facts directory exists
+  file: path=/etc/ansible/facts.d recurse=yes state=directory
+  tags: ['master']
+
+- name: Create installed_software.fact file
+  file: path=/etc/ansible/facts.d/installed_software.fact state=touch
+  tags: ['master']
+
+- name: reload ansible_local
+  setup: filter=ansible_local gather_timeout=240
+  tags: ['master', 'configure']
+
+# set hostname and variants
+- block:
+
+  - set_fact:
+      project_name: "{{ project_name }}"
+      project_name_safe: "{{ project_name |replace(\"_\", \"-\")|lower }}"
+    name: Set project_name and project_name_safe facts
+
+  - set_fact:
+      hostname: "{{ project_name_safe }}"
+      fqdn: "{{ project_name_safe }}.lan"
+      hotspot_name: "{{ project_name }}"
+    name: Set hostname and hostpot_name
+
+  - set_fact:
+      kiwix_server_name: kiwix.{{ hostname }}
+      kalite_server_name: khanacademy.{{hostname}}
+      aflatoun_server_name: aflatoun.{{hostname}}
+      edupi_server_name: edupi.{{hostname}}
+      wikifundi_server_name: wikifundi.{{hostname}}
+      kiwix_fqdn: kiwix.{{ fqdn }}
+      kalite_fqdn: khanacademy.{{fqdn}}
+      aflatoun_fqdn: aflatoun.{{fqdn}}
+      edupi_fqdn: edupi.{{fqdn}}
+      wikifundi_fqdn: wikifundi.{{fqdn}}
+    name: Update names and fqdns for all projects
+
+  - lineinfile:
+      dest: /etc/hosts
+      line: "127.0.0.1  {{ hostname }} {{ fqdn }}"
+      state: present
+    name: Ensure hostname is in /etc/hosts
+
+  - hostname:
+      name: "{{ fqdn }}"
+    name: Set hostname using to {{ fqdn }}
+    notify: restart systemd-logind
+
+  - name: reload ansible_hostname
+    setup: filter=ansible_hostname gather_timeout=240
+
+  tags: ['master', configure']
+
+- debug: msg="My name is {{ ansible_hostname }}"
+  tags: ['master', configure']
+
+- name: Register hostname in facts
+  ini_file: dest=/etc/ansible/facts.d/installed_software.fact
+    section=management
+    option=hostname
+    value={{ fqdn }}
+  when: ansible_local.installed_software.management.hostname is undefined
+  tags: ['master', configure']
+
+- name: reload ansible_local
+  setup: filter=ansible_local gather_timeout=240
+  tags: ['master', configure', 'content']

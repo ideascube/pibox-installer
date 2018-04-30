@@ -1,0 +1,16 @@
+---
+- name: Install nginx web server
+  apt: name=nginx state=latest force=yes
+  tags: ['master']
+
+- name: Remove default nginx vhost config file (if configured).
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: restart nginx
+  tags: ['master']
+
+- name: Upload nginx.conf
+  copy: src=nginx.conf dest=/etc/nginx/nginx.conf backup=yes
+  notify: restart nginx
+  tags: ['master']

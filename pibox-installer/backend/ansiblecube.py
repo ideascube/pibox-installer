@@ -3,6 +3,28 @@ import json
 ansiblecube_path = "/var/lib/ansible/local"
 
 
+def run(machine, tags, extra_vars={}, secret_kwargs={}):
+    ''' machine must provide write_file and exec_cmd functions '''
+
+    machine.exec_cmd("sudo apt-get update")
+
+    ansible_args = "--inventory hosts"
+    ansible_args += " --tags {}".format(",".join(tags))
+    ansible_args += " --extra-vars '{}'".format(json.dumps(extra_vars))
+    ansible_args += " main.yml"
+
+    ansible_pull_cmd = (
+        "sudo sh -c 'cd {} && /usr/local/bin/ansible-playbook {}'"
+        .format(ansiblecube_path, ansible_args))
+
+    if secret_kwargs:
+        run_ansible_pull_cmd = ansible_pull_cmd.format(**secret_kwargs)
+        displayed_ansible_pull_cmd = ansible_pull_cmd.format(
+            **{k: '****' for k, v in secret_kwargs.items()})
+
+    machine.exec_cmd(run_ansible_pull_cmd, displayed_ansible_pull_cmd)
+
+
 def run_for_image(machine, resize):
     tags = ['master', 'configure']
     if resize:
@@ -48,25 +70,3 @@ def run_for_user(machine, name, timezone, wifi_pwd,
                            'admin_password': "{pwd}"})
 
     run(machine, ['configure', 'content'], extra_vars, admin_account)
-
-
-def run(machine, tags, extra_vars={}, secret_kwargs={}):
-    ''' machine must provide write_file and exec_cmd functions '''
-
-    machine.exec_cmd("sudo apt-get update")
-
-    ansible_args = "--inventory hosts"
-    ansible_args += " --tags {}".format(",".join(tags))
-    ansible_args += " --extra-vars \"%s\"" % json.dumps(extra_vars)
-    ansible_args += " main.yml"
-
-    ansible_pull_cmd = (
-        "sudo sh -c 'cd {} && /usr/local/bin/ansible-playbook {}'"
-        .format(ansiblecube_path, ansible_args))
-
-    if secret_kwargs:
-        run_ansible_pull_cmd = ansible_pull_cmd.format(**secret_kwargs)
-        displayed_ansible_pull_cmd = ansible_pull_cmd.format(
-            **{k: '****' for k, v in secret_kwargs.items()})
-
-    machine.exec_cmd(run_ansible_pull_cmd, displayed_ansible_pull_cmd)

@@ -1,0 +1,58 @@
+---
+# Network
+hotspot_ip: 192.168.2.1
+hotspot_interface: wlan0
+lan_interface: eth0
+client_interface: wlan1
+cert_domain: ideascube.lan
+hostname: ideasbox
+fqdn: "{{ hostname }}.lan"
+hotspot_name: ideasbox
+project_name: ideasbox
+ideascube_id: pibox
+
+# System
+disk: /dev/mmcblk0
+root_partition: "{{ disk }}p2"
+data_partition: "{{ disk }}p3"
+data_path: /data
+disk_size: 4
+root_partition_size: 3
+username: ideascube
+password: $6$YcJS1HjRAv/$1bUosoPalzHEvfpx71UhnG6vCeckTGbA5U1i6UpA8X21Jrv7fYRPyNrq/YWuiBp3xQWd5kRRhrKKPHcbTkkfQ/
+kiwix_tools_uri: https://download.kiwix.org/release/kiwix-tools
+timezone: "Europe/Paris"
+
+# versions
+kiwix_version: "0.4.0"
+kalite_version: "0.16.9"
+ideascube_version: "0.37.1"
+edupi_version: "1.4.1"
+
+# Apps path
+zim_path: /var/ideascube/kiwix
+
+# Domain names
+kiwix_server_name: kiwix.{{ hostname }}
+kalite_server_name: khanacademy.{{ hostname }}
+aflatoun_server_name: aflatoun.{{ hostname }}
+edupi_server_name: edupi.{{ hostname }}
+wikifundi_server_name: wikifundi.{{ hostname }}
+sites_server_name: sites.{{ hostname }}
+
+kiwix_fqdn: kiwix.{{ fqdn }}
+kalite_fqdn: khanacademy.{{ fqdn }}
+aflatoun_fqdn: aflatoun.{{ fqdn }}
+edupi_fqdn: edupi.{{ fqdn }}
+wikifundi_fqdn: wikifundi.{{ fqdn }}
+sites_fqdn: sites.{{ fqdn }}
+
+# content & features
+captive_portal: yes
+has_custom_branding: no
+custom_branding_path: /tmp
+kalite_languages: []
+wikifundi_languages: []
+aflatoun_languages: []
+packages: []
+edupi: no

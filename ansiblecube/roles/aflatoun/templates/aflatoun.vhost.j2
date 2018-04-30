@@ -1,0 +1,58 @@
+# NGINX configuration for KA Lite
+#
+# Upstream Aflatoun server uses port 7007
+# Nginx proxy for Aflatoun uses port 8008
+#
+# If you want the website to be accessible at a different port, change
+#  PROXY_PORT = nnnn setting in /var/ka-lite/.aflatoun/settings.py
+# and change the below accordingly.
+
+server {
+
+    listen 80;
+    server_name {{ aflatoun_fqdn }} {{ aflatoun_server_name }};
+
+    # Default value, overwritten in nginx.d
+    set $aflatoun_home /home/ideascube/.aflatoun/;
+    # include /etc/ka-lite/nginx.d/*.conf;
+
+    location /static {
+        alias   $aflatoun_home/httpsrv/static/;
+    }
+
+    location /media {
+        alias   $aflatoun_home/httpsrv/media/;
+    }
+
+    location /content {
+        alias   $aflatoun_home/content/;
+    }
+
+    location /content/khan {
+        alias   $aflatoun_home/content/assessment/khan/;
+    }
+
+    location /favicon.ico {
+        empty_gif;
+    }
+
+    location / {
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Scheme $scheme;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_pass http://localhost:8009;
+        #error_page 502 = @502;
+    }
+
+    location @502 {
+        types { }
+        default_type "text/html";
+        return 502 "
+        <BR>
+        <H1>Aflatoun might be busy - wait a few moments and then reload this page
+        <BR><BR>
+        <H2>If Aflatoun is still busy, get help from the system administrator
+        <H3>Error code: nginx 502 Bad Gateway (maybe the Aflatoun webserver is not working correctly)";
+    }
+
+}

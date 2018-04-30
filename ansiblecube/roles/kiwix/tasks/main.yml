@@ -1,0 +1,53 @@
+---
+- debug: msg="kiwix_version {{ kiwix_version }}"
+  tags: ['master']
+
+- name: Downloading kiwix binaries {{ kiwix_version }} x86_64 architecture
+  get_url: url={{kiwix_tools_uri}}/kiwix-tools_linux64-{{ kiwix_version }}.tar.gz dest=/tmp/kiwix-tools.tar.gz timeout=30 backup=yes force=yes
+    checksum="md5:a884e2d1e9e193d825ffb883e805b514"
+  when: ansible_architecture == 'x86_64'
+  tags: ['master']
+
+- name: Downloading kiwix binaries {{ kiwix_version }} armhf architecture
+  get_url: url={{kiwix_tools_uri}}/kiwix-tools_armhf-{{ kiwix_version }}.tar.gz dest=/tmp/kiwix-tools.tar.gz timeout=30 backup=yes force=yes
+    checksum="md5:0425c97e2a4eaa01c726c9169eaf5a0b"
+  when: ansible_architecture == "armhf" or ansible_architecture == "armv7l"
+  tags: ['master']
+
+- name: Copying downloaded kiwix-tools
+  shell: tar -x --strip-components 1 -f /tmp/kiwix-tools.tar.gz && mv /tmp/kiwix-serve /usr/local/bin/kiwix-serve && chmod 755 /usr/local/bin/kiwix-serve chdir=/tmp
+  tags: ['master']
+
+- name: Create a kiwix directory in ideascube folder
+  file: path={{zim_path}}/ owner={{username}} group={{username}} state=directory
+  tags: ['master']
+
+- name: Setup startup file
+  template: src=kiwix-server.service.j2 dest=/etc/systemd/system/kiwix-server.service
+  tags: ['master']
+
+- name: Remove nginx configuration otherwise, if hostname var change it won't be overrided
+  file: path=/etc/nginx/sites-available/kiwix state=absent
+  tags: ['master', 'configure']
+
+- name: Copy nginx vhost
+  template: src=nginx.vhost.j2 dest=/etc/nginx/sites-available/kiwix
+  tags: ['master', 'configure']
+
+- name: Ensure that Ideascube cache folder belong to ideascube user 
+  file: path=/var/cache/ideascube/catalog/ 
+    owner={{ username }} group={{ username }} state=directory recurse=yes
+  tags: ['master']
+
+- name: Nginx enable Virtual host
+  file: src=/etc/nginx/sites-available/kiwix dest=/etc/nginx/sites-enabled/kiwix state=link
+  notify: restart nginx
+  tags: ['master', 'configure']
+
+- name: Enable service kiwix
+  service: name=kiwix-server enabled=yes
+  notify: restart kiwix
+  tags: ['master', 'configure']
+
+- include: post_install.yml task=kiwix task_version="{{ kiwix_version }}"
+  tags: ['master']

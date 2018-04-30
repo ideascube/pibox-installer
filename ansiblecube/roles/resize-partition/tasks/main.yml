@@ -1,0 +1,67 @@
+---
+- name: Unmount {{ data_path }} partition
+  become: yes
+  command: umount {{ data_path }}
+  ignore_errors: True
+  tags: ['master', 'resize']
+
+- name: Copy partition table analysis script
+  copy:
+    src: partition_boundaries.py
+    dest: /tmp/partition_boundaries.py
+  tags: ['resize']
+
+- name: Analyze disk partition table
+  become: yes
+  shell: sudo fdisk -l {{ disk }} | python /tmp/partition_boundaries.py {{ root_partition_size }} {{ disk_size }}
+  register: disk_partition_infos  
+  tags: ['resize']
+
+- name: Delete partition table analysis script
+  file:
+    path: /tmp/partition_boundaries.py
+    state: absent
+  tags: ['resize']
+
+- name: Recreating third partition
+  shell: /bin/echo -e "d\n3\nn\np\n3\n{{ disk_partition_infos.stdout.split()[2] }}\n{{ disk_partition_infos.stdout.split()[3] }}\nt\n3\n7\nw" | sudo fdisk {{ disk }}
+  tags: ['resize']
+
+- name: check filesystem on root partition
+  become: yes
+  command: e2fsck -p -f {{ root_partition }}
+  tags: ['resize']
+
+- name: resize filesystem on root partition
+  become: yes
+  command: resize2fs {{ root_partition }}
+  tags: ['resize']
+
+
+- name: Formatting third partition (exfat)
+  become: yes
+  command: mkfs.exfat {{ data_partition }}
+  tags: ['resize']
+
+- name: Mounting third partition to {{ data_path }}
+  mount:
+    src: "{{ data_partition }}"
+    name: "{{ data_path }}"
+    fstype: exfat
+    state: mounted
+    opts: noatime
+  tags: ['master', 'resize']
+
+- name: Find partition UUID for {{ data_partition }}
+  become: yes
+  command: blkid {{ data_partition }}
+  register: blkidline
+  tags: ['master', 'resize']
+
+- name: Add {{ data_path }} to fstab
+  become: yes
+  lineinfile:
+    dest: /etc/fstab
+    line: PARTUUID={{ blkidline.stdout.rsplit('"')[-2] }} {{ data_path }} exfat defaults,noatime 0 1
+    state: present
+  tags: ['master', 'resize']

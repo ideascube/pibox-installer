@@ -1,0 +1,45 @@
+---
+- hosts: localhost
+
+  pre_tasks:
+    - name: Set the LED steady before upgrading !!!
+      shell: echo default-on >/sys/class/leds/a20-olinuxino-lime2:green:usr/trigger
+      when: ansible_architecture == 'armv7l' and ansible_lsb.id == 'Debian'
+      ignore_errors: yes
+      tags: ['always']
+
+  roles:
+    - set_custom_fact
+    
+    - resize-partition
+
+    - system
+    - nginx
+    - uwsgi
+    - ideascube
+    - kiwix
+
+    - role: captive_portal
+      when: captive_portal|bool
+
+    - role: package_management
+      when: packages | length
+
+    - role: kalite
+      when: kalite_languages | length
+
+    - role: aflatoun
+      when: aflatoun_languages | length
+
+    - role: wikifundi
+      when: wikifundi_languages | length
+
+    - role: edupi
+      when: edupi|bool
+
+  post_tasks:
+    - name: Heartbeat mode on KoomBook LED, update is over !!!
+      shell: echo heartbeat >/sys/class/leds/a20-olinuxino-lime2:green:usr/trigger
+      when: ansible_architecture == 'armv7l' and ansible_lsb.id == 'Debian'
+      ignore_errors: yes
+      tags: ['always']

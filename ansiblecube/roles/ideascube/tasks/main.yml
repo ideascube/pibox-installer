@@ -1,0 +1,181 @@
+---
+- name: Configure the ideascube package repository
+  template: src=ideascube.list.j2 dest=/etc/apt/sources.list.d/ideascube.list owner=root group=root mode=644
+  tags: ['master']
+
+#### Install last ideascube package
+
+- name: Install ideascube
+  apt: name=ideascube={{ ideascube_version}} force=yes update_cache=yes dpkg_options="force-confnew"
+  register: has_been_installed
+  tags: ['master']
+
+- name: Get ideascube version
+  shell: dpkg-query -W  ideascube  | awk '{print $2}' ; echo
+  register: ideascube_newversion
+  tags: ['master']
+
+- block:
+
+  - debug: msg="Customize branding"
+
+  - name: Ensure the branding directory exists
+    file: path=/usr/share/ideascube/static/branding
+      state=directory
+      owner=root
+      group=root
+      mode=0755
+    tags: ['configure']
+
+  - stat: 
+      path: "{{ custom_branding_path }}/{{ item }}"
+    with_items:
+     - favicon.png
+     - header-logo.png
+     - style.css
+    register: branding_files_stat
+
+  - copy:
+      src: "{{ custom_branding_path }}/{{ item.item }}"
+      dest: "/usr/share/ideascube/static/branding/{{ item.item }}"
+      owner: ideascube
+      group: ideascube
+      mode: 0644
+    when: item.stat.exists
+    with_items: "{{ branding_files_stat.results }}"
+
+  when: has_custom_branding | bool
+  tags: ['configure']
+
+- name: Create ideascube configuration file
+  template:
+    src: pibox.py.j2
+    dest: /opt/venvs/ideascube/lib/python3.4/site-packages/ideascube/conf/{{ ideascube_id }}.py
+    owner: root
+    group: root
+    mode: 644
+  tags: ['master', 'configure']
+
+- name: Change IDEASCUBE_ID
+  lineinfile: dest=/etc/default/ideascube
+              regexp='IDEASCUBE_ID='
+              line='IDEASCUBE_ID={{ ideascube_id }}'
+              state=present
+  notify: restart uwsgi
+  tags: ['master']
+
+- name: Run Ideascube migrations after the first installation
+  become: yes
+  become_user: ideascube
+  command: ideascube migrate --database={{ item }}
+  with_items:
+  - default
+  - transient
+  when: has_been_installed.changed == True
+  tags: ['master']
+
+- name: Install Ideascube super user
+  become: yes
+  become_user: ideascube
+  no_log: True
+  command: ideascube shell -c "from ideascube.models import User; User.objects.create_superuser('{{ admin_account }}', '{{ admin_password }}')"
+  when: admin_account is defined
+  tags: ['configure']
+
+- name: Ensure that Ideascube folder belong the ideascube user
+  file:
+    path: /var/ideascube/main/
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    recurse: yes
+    state: directory
+  tags: ['master']
+
+- name: Ensure that Ideascube cache folder belong the ideascube user
+  file:
+    path: /var/cache/ideascube/
+    owner: "{{ username }}"
+    group: "{{ username }}"
+    recurse: yes
+    state: directory
+  tags: ['master']
+
+- name: Set Ideascube name
+  become: yes
+  become_user: ideascube
+  command: ideascube config set server site-name {{ hostname }}
+  tags: ['master', 'configure']
+
+- name: Ensure a kiwix library file is built
+  become: yes
+  become_user: ideascube
+  no_log: True
+  command: ideascube shell -c "from ideascube.serveradmin.catalog import Kiwix ; Kiwix.commit()"
+  tags: ['master', 'content']
+
+- name: Enable the Ideascube Nginx site
+  file: src=/etc/nginx/sites-available/ideascube dest=/etc/nginx/sites-enabled/ideascube state=link force=yes
+  notify: restart nginx
+  tags: ['master']
+
+- name: Enable the Ideascube uWSGI app
+  file: src=/etc/uwsgi/apps-available/ideascube.ini dest=/etc/uwsgi/apps-enabled/ideascube.ini state=link force=yes
+  notify: restart uwsgi
+  tags: ['master']
+
+- name: Add router_cache to plugin uwsgi list
+  lineinfile: dest=/etc/uwsgi/apps-available/ideascube.ini
+              regexp='^plugins'
+              line='plugins         = pam,python3,router_cache'
+              state=present
+  notify: restart uwsgi
+  tags: ['master']
+
+- name: Create and set up a cache for uwsgi
+  blockinfile: block="{{ lookup('file', 'uwsgi-cache.ini') }}" dest="/etc/uwsgi/apps-available/ideascube.ini"
+  notify: restart uwsgi
+  tags: ['master']
+
+- block:
+  - name: Fix nginx vhost for ideascube
+    lineinfile:
+      dest: /etc/nginx/sites-available/ideascube
+      regexp: '^    server_name ideasbox.lan'
+      line: "    server_name {{ fqdn }} {{ hostname }};"
+      state: present
+
+  - name: Fix nginx vhost for ideascube (static files)
+    lineinfile:
+      dest: /etc/nginx/sites-available/ideascube
+      regexp: '^    server_name sites.ideasbox.lan'
+      line: "    server_name sites.{{ fqdn }} sites.{{ hostname }};"
+      state: present
+  notify: restart nginx
+  tags: ['master', 'configure']
+
+- name: Copy ideascube_leftover_files.service systemd unit
+  copy: src=ideascube_leftover_files.service dest=/etc/systemd/system/ideascube_leftover_files.service
+  tags: ['master']
+
+- name: Copy ideascube_leftover_files.timer systemd unit
+  copy: src=ideascube_leftover_files.timer dest=/etc/systemd/system/ideascube_leftover_files.timer
+  tags: ['master']
+
+- name: Enable unit ideascube_leftover_files.timer
+  service: name=ideascube_leftover_files.timer enabled=yes
+  tags: ['master']
+
+- name: Copy remove_staticfiles_json.sh
+  copy: src=remove_staticfiles_json.sh dest=/usr/local/bin/remove_staticfiles_json.sh mode=0755
+  tags: ['master']
+
+- name: Copy remove_staticfiles_json.service
+  copy: src=remove_staticfiles_json.service dest=/etc/systemd/system/remove_staticfiles_json.service
+  tags: ['master']
+
+- name: Enable unit remove_staticfiles_json.service
+  service: name=remove_staticfiles_json.service enabled=yes
+  tags: ['master']
+
+- include: post_install.yml task=ideascube task_version="{{ ideascube_newversion.stdout }}"
+  tags: ['master']

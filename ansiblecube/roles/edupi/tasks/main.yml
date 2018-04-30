@@ -1,0 +1,102 @@
+---
+- name: Install dependencies
+  apt: name={{ item }} state=latest
+  with_items:
+    - nginx
+    - python3-pip
+    - libmagickwand-dev
+    - virtualenv
+    - npm
+    - nodejs
+  tags: ['master', 'configure']
+
+- name: Link node to nodejs binary
+  file: src=/usr/bin/nodejs dest=/usr/bin/node state=link
+  tags: ['master', 'configure']
+
+- name: Install bower
+  npm: name=bower global=yes state=latest
+  tags: ['master', 'configure']
+
+- name: Create directories
+  become: yes
+  become_user: ideascube
+  file: path={{ item }} state=directory
+  with_items:
+    - /home/ideascube/.edupi/
+    - /home/ideascube/.edupi/database
+    - /home/ideascube/.edupi/static
+    - /home/ideascube/.edupi/media
+    - /home/ideascube/.edupi/stats
+  tags: ['master', 'configure']
+
+- name: Download edupi
+  become: yes
+  become_user: ideascube
+  git: repo=https://github.com/Orange-Foundation/edupi.git
+    dest=/home/ideascube/.edupi/edupi/
+    version=v{{ edupi_version }}
+  tags: ['master', 'configure']
+
+- name: Replace allowed hosts
+  become: yes
+  become_user: ideascube
+  replace:
+    name: /home/ideascube/.edupi/edupi/edupi/settings.py
+    regexp: '^ALLOWED_HOSTS = \[''edupi.fondationorange.org''\]$'
+    replace: 'ALLOWED_HOSTS = [''.{{ fqdn }}'', ''{{ fqdn }}'', ''{{ hostname }}'', ''localhost'']'
+  tags: ['configure']
+
+- name: Create python3.4 environment
+  become: yes
+  become_user: ideascube
+  command: virtualenv --python=python3.4 /home/ideascube/.edupi/env
+  tags: ['master', 'configure']
+
+- name: Install requirements
+  become: yes
+  become_user: ideascube
+  pip:
+    requirements: /home/ideascube/.edupi/edupi/requirements.txt
+    chdir: /home/ideascube/.edupi
+    executable: /home/ideascube/.edupi/env/bin/pip
+  tags: ['master', 'configure']
+
+- name: Manage install bower
+  become: yes
+  become_user: ideascube
+  command: /home/ideascube/.edupi/env/bin/python3 /home/ideascube/.edupi/edupi/manage.py bower install
+  tags: ['master', 'configure']
+
+- name: Manage migrate
+  become: yes
+  become_user: ideascube
+  command: /home/ideascube/.edupi/env/bin/python3 /home/ideascube/.edupi/edupi/manage.py migrate
+  tags: ['master', 'configure']
+
+- name: Manage collectstatic
+  become: yes
+  become_user: ideascube
+  command: /home/ideascube/.edupi/env/bin/python3 /home/ideascube/.edupi/edupi/manage.py collectstatic --noinput
+  tags: ['master', 'configure']
+
+- name: Setup edupi service
+  copy: src=edupi.service dest=/etc/systemd/system/edupi.service
+  tags: ['master', 'configure']
+
+- name: Enable and Start Edupi
+  systemd:
+    name=edupi
+    state=started
+    daemon_reload=yes
+    enabled=yes
+  tags: ['master', 'configure']
+
+- name: Copy nginx vhost
+  template: src=edupi.vhost.j2 dest=/etc/nginx/sites-available/edupi
+  tags: ['master', 'configure']
+
+- name: Nginx enable Virtual host
+  file: src=/etc/nginx/sites-available/edupi dest=/etc/nginx/sites-enabled/edupi state=link
+  notify: restart nginx
+  tags: ['master', 'configure']
