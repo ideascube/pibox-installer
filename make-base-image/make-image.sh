@@ -34,7 +34,6 @@ function dirof {
 ROOT=$(dirof $0)
 PARENT=$(dirname ${ROOT})
 
-ANSIBLECUBE_VERSION=0.5  # ansiblecube version/branch to use
 RASPBIAN_VERSION="2017-07-05/2017-07-05-raspbian-jessie-lite"
 # RASPBIAN_VERSION="2018-03-14/2018-03-13-raspbian-stretch-lite"
 QEMU_DL_VERSION="2.11.1"
@@ -43,7 +42,6 @@ QEMU_DL_VERSION="2.11.1"
 RASPBIAN_URL="http://downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-${RASPBIAN_VERSION}.zip"
 VEXPRESS_URL="http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip"
 QEMU_URL=http://download.qemu-project.org/qemu-${QEMU_DL_VERSION}.tar.xz
-ANSIBLECUBE_URL=https://framagit.org/ideascube/ansiblecube/repository/oneUpdateFile${ANSIBLECUBE_VERSION}/archive.zip
 
 # temp vars
 QEMU_BINARY="qemu-system-arm"
@@ -57,8 +55,6 @@ raspbian_img=`echo ${raspbian_zip} | sed 's/\.zip$/.img/'`
 vexpress_zip=$ROOT/`basename ${VEXPRESS_URL}`
 vexpress_dir_name=$(basename `echo ${vexpress_zip} | sed 's/\.zip//'`)
 vexpress_dir=${PARENT}/${vexpress_dir_name}
-
-ansible_zip=$ROOT/oneUpdateFile${ANSIBLECUBE_VERSION}.zip
 
 build_img=$ROOT/pibox-kiwix-`date +"%Y-%m-%d"`-BUILDING.img
 final_img=`echo ${build_img} | sed 's/\-BUILDING//'`
@@ -125,13 +121,6 @@ function run {
 	wget -O ${raspbian_zip} -c ${RASPBIAN_URL}
 	if [ ! -f $raspbian_img ] ; then
 		unzip ${raspbian_zip}
-	fi
-
-	echo "Downloading latest ansiblecube (${ANSIBLECUBE_VERSION})"
-	wget -O ${ansible_zip} -c ${ANSIBLECUBE_URL}
-	if [ ! -d $ROOT/ansiblecube ] ; then
-		unzip ${ansible_zip}
-		mv $ROOT/ansiblecube-oneUpdateFile${ANSIBLECUBE_VERSION}* $ROOT/ansiblecube
 	fi
 
 	echo "Copying raspbian image to $build_img"
@@ -244,7 +233,6 @@ function clean {
 	rm -f $raspbian_zip
 	rm -f $build_img
 	rm -f $zip_file
-	rm -rf $ROOT/ansiblecube
 	rm -rf $ROOT/qemu-${QEMU_DL_VERSION}
 }
 
