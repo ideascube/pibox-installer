@@ -61,11 +61,12 @@
   tags: ['content']
 
 - name: Get the Math renderer correctly
+  become: yes
   shell:
     cd /var/www/{{ item }}.africapack.kiwix.org/w/extensions/Math/math;
-    sudo make clean all;
+    make clean all;
     cd /var/www/{{ item }}.africapack.kiwix.org/w/extensions/Math/texvccheck;
-    sudo make clean all;
+    make clean all;
   with_items: "{{ wikifundi_languages | default(omit) }}"
   tags: ['content']
 
