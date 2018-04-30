@@ -18,7 +18,7 @@ def run_for_image(machine, resize):
 
     # prepare ansible files
     machine.exec_cmd("sudo mkdir --mode 0755 -p /etc/ansible")
-    machine.exec_cmd("sudo cp /hosts /etc/ansible/hosts"
+    machine.exec_cmd("sudo cp {path}/hosts /etc/ansible/hosts"
                      .format(path=ansiblecube_path))
     machine.exec_cmd("sudo mkdir --mode 0755 -p /etc/ansible/facts.d")
 
