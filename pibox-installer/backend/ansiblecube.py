@@ -10,7 +10,8 @@ def run(machine, tags, extra_vars={}, secret_kwargs={}):
 
     ansible_args = "--inventory hosts"
     ansible_args += " --tags {}".format(",".join(tags))
-    ansible_args += " --extra-vars '{}'".format(json.dumps(extra_vars))
+    ansible_args += " --extra-vars \"{}\"".format(
+        json.dumps(extra_vars).replace('"', '\\"'))
     ansible_args += " main.yml"
 
     ansible_pull_cmd = (
