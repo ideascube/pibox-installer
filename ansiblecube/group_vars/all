@@ -22,6 +22,8 @@ username: ideascube
 password: $6$YcJS1HjRAv/$1bUosoPalzHEvfpx71UhnG6vCeckTGbA5U1i6UpA8X21Jrv7fYRPyNrq/YWuiBp3xQWd5kRRhrKKPHcbTkkfQ/
 kiwix_tools_uri: https://download.kiwix.org/release/kiwix-tools
 timezone: "Europe/Paris"
+language: "en"
+language_name: "English"
 
 # versions
 kiwix_version: "0.4.0"

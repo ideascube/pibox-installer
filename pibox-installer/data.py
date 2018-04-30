@@ -13,8 +13,6 @@ _vexpress_boot_dir = "pibox-installer-vexpress-boot"
 vexpress_boot_kernel = os.path.join(data_dir, _vexpress_boot_dir, "zImage")
 vexpress_boot_dtb = os.path.join(data_dir, _vexpress_boot_dir, "vexpress-v2p-ca15_a7.dtb")
 
-pibox_ideascube_conf = os.path.join(data_dir, "pibox_ideascube_conf.py")
-
 pibox_logo = os.path.join(data_dir, "pibox-installer-logo.png")
 
 raspbian_url = "http://downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2017-03-03/2017-03-02-raspbian-jessie-lite.zip"

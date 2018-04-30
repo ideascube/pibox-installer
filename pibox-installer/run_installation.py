@@ -65,110 +65,35 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
 
         # Run emulation
         with emulator.run(cancel_event) as emulation:
-            # Resize filesystem
-            emulation.resize_fs()
 
-            emulation.exec_cmd("sudo sed -i s/mirrordirector/archive/ /etc/apt/sources.list")
-
-            emulation.exec_cmd("sudo mkdir --mode 0755 -p /var/lib/ansible/")
-            emulation.put_dir(data.ansiblecube_path,
-                              ansiblecube.ansiblecube_path)
-
-            # Run ansiblecube
             logger.step("Run ansiblecube")
             ansiblecube.run_for_user(
                 machine=emulation,
                 name=name,
                 timezone=timezone,
-                wifi_pwd=wifi_pwd,
+                language=language,
+                language_name=dict(data.ideascube_languages)[language],
+
                 kalite=kalite,
                 wikifundi=wikifundi,
                 edupi=edupi,
                 aflatoun=aflatoun,
                 zim_install=zim_install,
-                admin_account=admin_account)
 
-            # Write ideascube configuration
-            with open(data.pibox_ideascube_conf, "r") as f:
-                pibox_ideascube_conf = f.read()
+                wifi_pwd=wifi_pwd,
+                admin_account=admin_account,
 
-            pibox_ideascube_conf_fmt = pibox_ideascube_conf.replace("'", "'\\''")
-            pibox_conf_path = "/opt/venvs/ideascube/lib/python3.4/site-packages/ideascube/conf/pibox.py"
-            emulation.exec_cmd("sudo sh -c 'cat > {} <<END_OF_CMD3267\n{}\nEND_OF_CMD3267'".format(pibox_conf_path, pibox_ideascube_conf_fmt))
-            emulation.exec_cmd("sudo chown ideascube:ideascube {}".format(pibox_conf_path))
+                logo=logo,
+                favicon=favicon,
+                css=css)
 
-            extra_app_cards = []
-            if kalite != None:
-                extra_app_cards.append('khanacademy')
+        # mount image's 3rd partition on host
 
-            custom_cards = []
-            if aflatoun == True:
-                custom_cards.append({
-                    'category': 'learn',
-                    'url': 'http://aflatoun.koombook.lan',
-                    'title': 'Aflatoun',
-                    'description': 'Social and Financial Education for Children and Young People',
-                    'fa': 'book',
-                    'is_staff': False
-                    })
-            if wikifundi != None:
-                if "en" in wikifundi:
-                    custom_cards.append({
-                        'category': 'create',
-                        'url': 'http://en.wikifundi.koombook.lan',
-                        'title': 'Wikifundi',
-                        'description': 'Offline editable environment that provides a similar experience to editing Wikipedia online',
-                        'fa': 'wikipedia-w',
-                        'is_staff': False
-                        })
-                if "fr" in wikifundi:
-                    custom_cards.append({
-                        'category': 'create',
-                        'url': 'http://fr.wikifundi.koombook.lan',
-                        'title': 'Wikifundi',
-                        'description': 'Environnement qui vous permet de créer des articles Wikipédia hors-ligne',
-                        'fa': 'wikipedia-w',
-                        'is_staff': False
-                        })
-            if edupi == True:
-                custom_cards.append({
-                    'category': 'manage',
-                    'url': 'http://edupi.koombook.lan',
-                    'title': 'Edupi',
-                    'description': 'Content management application',
-                    'fa': 'folder',
-                    'is_staff': False
-                    })
+        # download contents onto mount point
 
-            kb_conf = ("from .pibox import *  # pragma: no flakes\n\n"
-                       "EXTRA_APP_CARDS = {extra_app_cards}\n\n"
-                       "CUSTOM_CARDS = {custom_cards}\n\n"
-                       "LANGUAGE_CODE = '{language}'\n\n"
-                       "LANGUAGES = [('{language}', '{language_name}')]\n").format(
-                        extra_app_cards=extra_app_cards,
-                        custom_cards=custom_cards,
-                        language=language,
-                        language_name=dict(data.ideascube_languages)[language])
+        # unmount partition
 
-            kb_conf_fmt = kb_conf.replace("'", "'\\''")
-            kb_conf_path = "/opt/venvs/ideascube/lib/python3.4/site-packages/ideascube/conf/kb.py"
-            emulation.exec_cmd("sudo sh -c 'cat > {} <<END_OF_CMD3267\n{}\nEND_OF_CMD3267'".format(kb_conf_path, kb_conf_fmt))
-            emulation.exec_cmd("sudo chown ideascube:ideascube {}".format(kb_conf_path))
-
-            if logo is not None:
-                logo_emulation_path = "/usr/share/ideascube/static/branding/header-logo.png"
-                emulation.put_file(logo, logo_emulation_path)
-                emulation.exec_cmd("sudo chown ideascube:ideascube {}".format(logo_emulation_path))
-
-            if favicon is not None:
-                favicon_emulation_path = "/usr/share/ideascube/static/branding/favicon.png"
-                emulation.put_file(favicon, favicon_emulation_path)
-                emulation.exec_cmd("sudo chown ideascube:ideascube {}".format(favicon_emulation_path))
-
-            if css is not None:
-                css_emulation_path = "/usr/share/ideascube/static/branding/style.css"
-                emulation.put_file(css, css_emulation_path)
-                emulation.exec_cmd("sudo chown ideascube:ideascube {}".format(css_emulation_path))
+        # rerun emulation for discovery
 
         # Write image to SD Card
         if sd_card:

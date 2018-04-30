@@ -254,7 +254,7 @@ class _RunningInstance:
     def _shutdown(self):
         self.exec_cmd("sudo shutdown -P 0")
         self._client.close()
-        self._qemu.wait(timeout)
+        self._qemu.wait()  # TODO: implement timeout
         with self._cancel_event.lock() as cancel_register:
             cancel_register.unregister(self._qemu.pid)
         self._qemu = None

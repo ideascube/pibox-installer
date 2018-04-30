@@ -49,19 +49,33 @@ def run_for_image(machine, resize):
     run(machine, tags, extra_vars)
 
 
-def run_for_user(machine, name, timezone, wifi_pwd,
+def run_for_user(machine, name, timezone, language, language_name,
+                 wifi_pwd,
                  edupi, wikifundi, aflatoun, kalite, zim_install,
-                 admin_account):
+                 admin_account, logo=None, favicon=None, css=None):
+
+    branding = {'favicon.png': favicon,
+                'header-logo.png': logo, 'style.css': css}
+
+    for fname, item in [(k, v) for k, v in branding.items() if v is not None]:
+        has_custom_branding = True
+        machine.put_file(item, "/tmp/{}".format(fname))
+
     extra_vars = {
         'project_name': name,
         'timezone': timezone,
+        'language': language,
+        'language_name': language_name,
         'kalite_languages': kalite,
         'wikifundi_languages': wikifundi,
         'aflatoun_languages': aflatoun,
         'edupi': edupi,
         'packages': [{"name": x, "status": "present"} for x in zim_install],
         'captive_portal': True,
+        'has_custom_branding': has_custom_branding,
+        'custom_branding_path': '/tmp',
     }
+
     if wifi_pwd:
         extra_vars.update({'wpa_pass': wifi_pwd})
 
