@@ -7,3 +7,4 @@ launch.sh
 .cache
 .pytest_cache
 $HOME
+pibox-installer-vexpress-boot
