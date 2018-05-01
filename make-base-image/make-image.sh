@@ -220,9 +220,9 @@ END_OF_CMD
 	$VIRTUAL_ENV/bin/pip install paramiko
 	$VIRTUAL_ENV/bin/python $ROOT/create_pibox_master.py "$build_img" "${QEMU_PATH}" "${QEMU_RAM}"${extra_opts}
 
-	if [ $? -eq 0 -a -f $build_img ] ; then
+	if [ $? -eq 0 -a -f ${final_img} ] ; then
 		zip -9 ${zip_file} ${final_img}
-		ls -lh $zip_file
+		ls -lh ${zip_file}
 	fi
 }
 
