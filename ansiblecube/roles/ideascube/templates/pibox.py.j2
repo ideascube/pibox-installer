@@ -8,7 +8,7 @@ DOMAIN = "{{ fqdn }}"
 STAFF_HOME_CARDS = [c for c in STAFF_HOME_CARDS  # pragma: no flakes
                     if c['url'] in ['user_list', 'server:settings']]
 LANGUAGE_CODE = "{{ language }}"
-LANGUAGES = [("{{ language }", "{{ language_name }")]
+LANGUAGES = [("{{ language }}", "{{ language_name }}")]
 BUILTIN_APP_CARDS = []
 EXTRA_APP_CARDS = [{% if kalite_languages | length %}"khanacademy"{% endif %}]
 CUSTOM_CARDS = [
