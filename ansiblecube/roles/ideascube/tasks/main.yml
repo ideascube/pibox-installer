@@ -51,9 +51,7 @@
   template:
     src: pibox.py.j2
     dest: /opt/venvs/ideascube/lib/python3.4/site-packages/ideascube/conf/{{ ideascube_id }}.py
-    owner: ideascube
-    group: ideascube
-    mode: 644
+    mode: 0644
   tags: ['master', 'configure']
 
 - name: Change IDEASCUBE_ID
