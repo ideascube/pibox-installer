@@ -27,7 +27,7 @@ language: "en"
 language_name: "English"
 
 # versions
-kiwix_version: "0.4.0"
+kiwix_version: "0.5.0"
 kalite_version: "0.16.9"
 ideascube_version: "0.37.1"
 edupi_version: "1.4.1"

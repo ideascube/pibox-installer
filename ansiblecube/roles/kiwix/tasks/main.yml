@@ -2,16 +2,31 @@
 - debug: msg="kiwix_version {{ kiwix_version }}"
   tags: ['master']
 
-- name: Downloading kiwix binaries {{ kiwix_version }} x86_64 architecture
-  get_url: url={{kiwix_tools_uri}}/kiwix-tools_linux64-{{ kiwix_version }}.tar.gz dest=/tmp/kiwix-tools.tar.gz timeout=30 backup=yes force=yes
-    checksum="md5:a884e2d1e9e193d825ffb883e805b514"
-  when: ansible_architecture == 'x86_64'
+- name: Downloading kiwix binaries {{ kiwix_version }}
+  get_url:
+    url: "{{kiwix_tools_uri}}/kiwix-tools_linux-{{ ansible_architecture }}-{{ kiwix_version }}.tar.gz"
+    dest: /tmp/kiwix-tools.tar.gz
+    timeout: 30
+    force: yes
+  when: ansible_architecture in ("x86_64", "i586")
   tags: ['master']
 
-- name: Downloading kiwix binaries {{ kiwix_version }} armhf architecture
-  get_url: url={{kiwix_tools_uri}}/kiwix-tools_armhf-{{ kiwix_version }}.tar.gz dest=/tmp/kiwix-tools.tar.gz timeout=30 backup=yes force=yes
-    checksum="md5:0425c97e2a4eaa01c726c9169eaf5a0b"
-  when: ansible_architecture == "armhf" or ansible_architecture == "armv7l"
+- name: Downloading kiwix binaries {{ kiwix_version }}
+  get_url:
+    url: "{{kiwix_tools_uri}}/kiwix-tools_linux-i586-{{ kiwix_version }}.tar.gz"
+    dest: /tmp/kiwix-tools.tar.gz
+    timeout: 30
+    force: yes
+  when: ansible_architecture not in ("x86_64", "i586", "armhf", "armv7l")
+  tags: ['master']
+
+- name: Downloading kiwix binaries {{ kiwix_version }}
+  get_url:
+    url: "{{kiwix_tools_uri}}/kiwix-tools_linux-armhf-{{ kiwix_version }}.tar.gz"
+    dest: /tmp/kiwix-tools.tar.gz
+    timeout: 30
+    force: yes
+  when: ansible_architecture in ("armhf", "armv7l")
   tags: ['master']
 
 - name: Copying downloaded kiwix-tools
