@@ -47,25 +47,17 @@
   command: mkfs.exfat {{ data_partition }}
   tags: ['resize']
 
-- name: Mounting third partition to {{ data_path }}
-  mount:
-    src: "{{ data_partition }}"
-    name: "{{ data_path }}"
-    fstype: exfat
-    state: mounted
-    opts: noatime
-  tags: ['master', 'resize']
-
 - name: Find partition UUID for {{ data_partition }}
   become: yes
   command: blkid {{ data_partition }}
   register: blkidline
   tags: ['master', 'resize']
 
-- name: Add {{ data_path }} to fstab
-  become: yes
-  lineinfile:
-    dest: /etc/fstab
-    line: PARTUUID={{ blkidline.stdout.rsplit('"')[-2] }} {{ data_path }} exfat defaults,noatime 0 1
-    state: present
+- name: Mounting third partition to {{ data_path }} and creating entry in fstab
+  mount:
+    src: "PARTUUID={{ blkidline.stdout.rsplit('=')[-1][1:-1] }}"
+    name: "{{ data_path }}"
+    fstype: exfat
+    state: mounted
+    opts: default,noatime
   tags: ['master', 'resize']
