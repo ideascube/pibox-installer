@@ -213,7 +213,7 @@ END_OF_CMD
 
 	echo "Setting-up python tools"
 	if [ ! -d $VIRTUAL_ENV ] ; then
-		virtualenv $VIRTUAL_ENV || fail "Unable to create virtualenv"
+		virtualenv -p python3 $VIRTUAL_ENV || fail "Unable to create virtualenv"
 	fi
 	wget -O ${ROOT}/get-pip.py -c https://bootstrap.pypa.io/get-pip.py
 	$VIRTUAL_ENV/bin/python ${ROOT}/get-pip.py
