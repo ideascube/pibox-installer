@@ -4,6 +4,7 @@ import threading
 import signal
 import sys
 import ctypes
+import hashlib
 import platform
 import data
 
@@ -135,3 +136,9 @@ class CLILogger:
     def std(cls, std):
         print(std)
 
+def get_md5(fpath):
+    hash_md5 = hashlib.md5()
+    with open(fpath, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()

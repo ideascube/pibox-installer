@@ -35,10 +35,8 @@ def run(machine, tags, extra_vars={}, secret_kwargs={}):
     machine.exec_cmd(run_ansible_pull_cmd, displayed_ansible_pull_cmd)
 
 
-def run_for_image(machine, resize):
-    tags = ['master', 'configure']
-    if resize:
-        tags.append('resize')
+def run_for_image(machine):
+    tags = ['master', 'configure', 'resize']
 
     machine.exec_cmd("sudo apt-get update")
 

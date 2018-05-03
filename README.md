@@ -63,6 +63,23 @@ requirements: `gcc-arm-linux-gnueabihf`, `bc` and `zip`
 
 run: `python3 make-vexpress-boot`
 
+## Build pibox base image
+
+pibox-installer uses a custom base image based off raspbian-lite with the following modifications (not exhaustive):
+
+* `2017-07-05-raspbian-jessie-lite` 
+* SSH enabled
+* 3GB `/` partition (ext4)
+* 1GB `/data` partition (extfat)
+* ansiblecube deployed: `nginx`, `ideascube`, `kiwix-serve`, etc.
+
+Should you want to build the base image:
+
+``` sh
+pibox-installer image --root 3 --size 4 --ram 2000M --out my-base.img
+```
+
+
 ## Package pibox-installer
 
 see [appveyor.yml](appveyor.yml) for windows and [.travis.yml](.travis.yml) for mac and linux

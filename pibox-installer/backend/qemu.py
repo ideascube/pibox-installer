@@ -58,12 +58,12 @@ class Emulator:
     # password=raspberry
     # prompt end by ":~$ "
     # sudo doesn't require password
-    def __init__(self, kernel, dtb, image, binary, ram, logger):
+    def __init__(self, kernel, dtb, image, ram, logger):
         self._kernel = kernel
         self._dtb = dtb
         self._image = image
         self._logger = logger
-        self._binary = binary
+        self._binary = qemu_system_arm_exe_path
         self._ram = ram
 
     def run(self, cancel_event):
