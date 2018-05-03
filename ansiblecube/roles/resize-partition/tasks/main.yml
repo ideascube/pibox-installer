@@ -3,7 +3,7 @@
   become: yes
   command: umount {{ data_path }}
   ignore_errors: True
-  tags: ['master', 'resize']
+  tags: ['resize']
 
 - name: Copy partition table analysis script
   copy:
@@ -23,10 +23,28 @@
     state: absent
   tags: ['resize']
 
-# should raise an error becoume acting on mounted partitions
+- name: get number of partitions
+  shell: ls -l {{ disk }}p* |wc -l
+  register: nb_partitions
+  tags: ['resize']
+
+- name: recreating root partition
+  become: yes
+  shell: /bin/echo -e "d\n2\nn\np\n2\n{{ disk_partition_infos.stdout.split()[0] }}\n{{ disk_partition_infos.stdout.split()[1] }}\nt\n2\n83\nw" | fdisk {{ disk }}
+  ignore_errors: True
+  tags: ['resize']
+
+- name: delete data partition if it exists
+  become: yes
+  shell: /bin/echo -e "d\n3\nw" | fdisk {{ disk }}
+  ignore_errors: True
+  when: nb_partitions.stdout.strip()|int >= 3
+  tags: ['resize']
+
+# should raise an error because acting on mounted partitions
 - name: Recreating third partition
   become: yes
-  shell: /bin/echo -e "d\n3\nn\np\n3\n{{ disk_partition_infos.stdout.split()[2] }}\n{{ disk_partition_infos.stdout.split()[3] }}\nt\n3\n7\nw" | fdisk {{ disk }}
+  shell: /bin/echo -e "n\np\n3\n{{ disk_partition_infos.stdout.split()[2] }}\n{{ disk_partition_infos.stdout.split()[3] }}\nt\n3\n7\nw" | fdisk {{ disk }}
   ignore_errors: True
   tags: ['resize']
 
