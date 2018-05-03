@@ -1,9 +1,0 @@
----
-- name: restart nginx
-  service: name=nginx state=restarted
-  tags: ['master', 'rename']
-  
-- name: restart kiwix
-  service: name=kiwix-server state=restarted
-  tags: ['master']
-  

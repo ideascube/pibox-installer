@@ -77,11 +77,11 @@
     dest: /var/www
     remote_src: True
     owner: www-data
-  tags: [configure']
+  tags: ['configure']
 
 - name: Setup parsoid service
   copy: src=parsoid.service dest=/etc/systemd/system/parsoid.service
-  tags: [configure']
+  tags: ['configure']
 
 - name: Enable and Start Parsoid
   systemd:

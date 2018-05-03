@@ -50,7 +50,7 @@
 - name: Nginx enable Virtual host
   file: src=/etc/nginx/sites-available/kalite dest=/etc/nginx/sites-enabled/kalite state=link
   notify: restart nginx
-  tags: [configure']
+  tags: ['configure']
 
 - name: Setup startup file
   copy: src=kalite.service dest=/etc/systemd/system/kalite.service
@@ -89,7 +89,7 @@
 - name: Restart Kalite
   service: name=kalite state=restarted
   when: kalite_installation.changed == True
-  tags: [configure', 'download-content', 'move-content']
+  tags: ['configure', 'download-content', 'move-content']
 
 - name: Perfom a video scan on the device
   become: yes
@@ -106,7 +106,7 @@
   tags: ['configure']
 
 - set_fact: kalite_version="{{ kalite_newversion.stdout }}"
-  tags: [configure']
+  tags: ['configure']
 
 - debug: msg="kalite {{ kalite_version }} is now the current version."
   tags: ['configure']

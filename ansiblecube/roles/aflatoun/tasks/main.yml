@@ -78,4 +78,4 @@
 - name: Nginx enable Virtual host
   file: src=/etc/nginx/sites-available/aflatoun dest=/etc/nginx/sites-enabled/aflatoun state=link
   notify: restart nginx
-  tags: [configure', 'rename']
+  tags: ['configure', 'rename']
