@@ -134,10 +134,16 @@
   tags: ['master']
 
 - block:
+  - name: remove wrong server name in ideascube vhost
+    lineinfile:
+      dest: /etc/nginx/sites-available/ideascube
+      regexp: '^    server_name'
+      state: absent
+
   - name: Fix nginx vhost for ideascube
     lineinfile:
       dest: /etc/nginx/sites-available/ideascube
-      regexp: '^    server_name ideasbox.lan'
+      insertafter: '^    # the domain name it will serve for'
       line: "    server_name {{ fqdn }} {{ hostname }};"
       state: present
     notify: restart nginx
@@ -145,11 +151,11 @@
   - name: Fix nginx vhost for ideascube (static files)
     lineinfile:
       dest: /etc/nginx/sites-available/ideascube
-      regexp: '^    server_name sites.ideasbox.lan'
+      insertbefore: '^    root'
       line: "    server_name sites.{{ fqdn }} sites.{{ hostname }};"
       state: present
     notify: restart nginx
-  tags: ['master', 'configure', 'rename']
+  tags: ['master', 'rename']
 
 - name: Copy ideascube_leftover_files.service systemd unit
   copy: src=ideascube_leftover_files.service dest=/etc/systemd/system/ideascube_leftover_files.service
