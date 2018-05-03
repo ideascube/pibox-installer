@@ -2,9 +2,12 @@
 
 - name: update timezone
   command: dpkg-reconfigure --frontend noninteractive tzdata
+  tags: ['master', 'configure']
 
 - name: Update grub
   command: update-grub
+  tags: ['master']
 
-- name: Reboot device
+- name: reboot device
   command: reboot
+  tags: ['master', 'hardware']

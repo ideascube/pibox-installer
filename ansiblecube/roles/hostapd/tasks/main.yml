@@ -22,7 +22,8 @@
 
 - name: Copy hostapd.conf file
   template: src=hostapd.conf.j2 dest=/etc/hostapd/hostapd.conf owner=root group=root mode=755
-  tags: ['master', 'configure']
+  notify: restart hostapd
+  tags: ['master', 'rename']
 
 - name: Copy startup script
   copy: src=hostapd dest=/etc/systemd/system/hostapd.service owner=root group=root mode=664
@@ -42,7 +43,7 @@
               line='ieee80211n=1'
               insertafter='EOF'
   notify: restart hostapd
-  tags: ['master', 'configure']
+  tags: ['master']
 
 - name: Enable 802.11n
   lineinfile: dest=/etc/hostapd/hostapd.conf
@@ -50,4 +51,4 @@
               line='wmm_enabled=1'
               insertafter='EOF'
   notify: restart hostapd
-  tags: ['master', 'configure']
+  tags: ['master']

@@ -1,5 +1,5 @@
 ---
 - name: restart nginx
   service: name=nginx state=restarted
-  tags: ['custom', 'update']
+  tags: ['master']
   

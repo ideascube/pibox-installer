@@ -23,7 +23,7 @@
     group: ideascube
     mode: 0755
   notify: restart uwsgi
-  tags: ['master', 'configure']
+  tags: ['master', 'rename']
 
 - name: Add nginx specific configuration file
   copy:
@@ -89,7 +89,7 @@
   template:
     src: redirect.j2
     dest: /etc/nginx/sites-enabled/redirect
-  tags: ['master', 'configure']
+  tags: ['master', 'rename']
 
 - name: Add UWSGI specific configuration file
   copy:
@@ -129,7 +129,7 @@
     src: dnsmasq.j2
     dest: /etc/NetworkManager/dispatcher.d/03dnsmasq
     mode: 0755
-  tags: ['master', 'configure']
+  tags: ['master', 'rename']
 
 - name: Copy clear_iptables.sh to /usr/bin/local
   copy:

@@ -5,7 +5,7 @@
 
 - name: Copy dnsmasq.conf file
   template: src=dnsmasq.conf.j2 dest=/etc/dnsmasq.conf backup=yes
-  tags: ['master', 'configure']
+  tags: ['master', 'rename']
 
 - name: Copy dnsmasq-spoof.conf file
   template: src=dnsmasq-spoof.conf.j2 dest=/etc/dnsmasq-spoof.conf
@@ -17,4 +17,4 @@
 
 - name: restart dsnmasq
   service: name=dnsmasq state=restarted
-  tags: ['master', 'configure']
+  tags: ['master', 'rename']

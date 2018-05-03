@@ -47,7 +47,8 @@
 
 - name: Copy nginx vhost
   template: src=nginx.vhost.j2 dest=/etc/nginx/sites-available/kiwix
-  tags: ['master', 'configure']
+  notify: restart nginx
+  tags: ['master', 'rename']
 
 - name: Ensure that Ideascube cache folder belong to ideascube user 
   file: path=/var/cache/ideascube/catalog/ 
@@ -57,12 +58,12 @@
 - name: Nginx enable Virtual host
   file: src=/etc/nginx/sites-available/kiwix dest=/etc/nginx/sites-enabled/kiwix state=link
   notify: restart nginx
-  tags: ['master', 'configure']
+  tags: ['master', 'rename']
 
 - name: Enable service kiwix
   service: name=kiwix-server enabled=yes
   notify: restart kiwix
-  tags: ['master', 'configure']
+  tags: ['master']
 
 - include: post_install.yml task=kiwix task_version="{{ kiwix_version }}"
   tags: ['master']

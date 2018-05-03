@@ -2,24 +2,24 @@
 - name: Ensure aflatoun is stopped if service exist
   service: name=aflatoun state=stopped
   ignore_errors: yes
-  tags: ['master', 'configure']
+  tags: ['configure']
 
 - name: Create a working dir aflatoun
   file: path=/home/{{ username }}/.aflatoun state=directory
-  tags: ['master', 'configure']
+  tags: ['configure']
 
 - name: Download Aflatoun
   get_url:
     url: http://download.kiwix.org/other/aflatoun/ka-lite-static-0.16.7b3.tar.gz
     dest: /tmp/ka-lite-static-0.16.7b3.tar.gz
-  tags: ['master', 'configure']
+  tags: ['configure']
 
 - name: Install Aflatoun
   pip: name=/tmp/ka-lite-static-0.16.7b3.tar.gz
     chdir=/home/{{ username }}/.aflatoun
     virtualenv_command=/usr/bin/virtualenv
     virtualenv=/home/{{ username }}/.aflatoun/env
-  tags: ['master', 'configure']
+  tags: ['configure']
 
 - name: Give rights to ideascube
   file:
@@ -28,40 +28,39 @@
     group: "{{ username }}"
     recurse: yes
     state: directory
-  tags: ['master', 'configure']
+  tags: ['configure']
 
 - name: Create a user admin for aflatoun
   become: yes
   become_user: ideascube
   shell: KALITE_PYTHON=/home/ideascube/.aflatoun/env/bin/python KALITE_HOME=/home/ideascube/.aflatoun/ /home/ideascube/.aflatoun/env/bin/kalite manage setup --username=admin --password=admin --noinput --no-assessment-items
-  tags: ['master', 'configure']
+  tags: ['configure']
 
-- block:
+- name: Set aflatoun content
+  unarchive:
+    src: http://download.kiwix.org/other/aflatoun/content.tar.gz
+    dest: /home/ideascube/.aflatoun/
+    remote_src: True
+    owner: ideascube
+  tags: ['download-content']
 
-  - name: Set aflatoun content
-    unarchive:
-      src: http://download.kiwix.org/other/aflatoun/content.tar.gz
-      dest: /home/ideascube/.aflatoun/
-      remote_src: True
-      owner: ideascube
+- name: Download Aflatoun language pack
+  get_url:
+    url: http://download.kiwix.org/other/aflatoun/{{ item }}.zip
+    dest: /tmp/{{ item }}.zip
+  with_items: "{{ aflatoun_languages }}"
+  tags: ['configure']
 
-  - name: Download Aflatoun language pack
-    get_url:
-      url: http://download.kiwix.org/other/aflatoun/{{ item }}.zip
-      dest: /tmp/{{ item }}.zip
-    with_items: "{{ aflatoun_languages }}"
-
-  - name: Retrieve Aflatoun language pack
-    become: yes
-    become_user: ideascube
-    shell: KALITE_PYTHON=/home/ideascube/.aflatoun/env/bin/python KALITE_HOME=/home/ideascube/.aflatoun/ /home/ideascube/.aflatoun/env/bin/kalite manage retrievecontentpack local {{ item }} /tmp/{{ item }}.zip
-    with_items: "{{ aflatoun_languages }}"
-
-  tags: ['content']
+- name: Retrieve Aflatoun language pack
+  become: yes
+  become_user: ideascube
+  shell: KALITE_PYTHON=/home/ideascube/.aflatoun/env/bin/python KALITE_HOME=/home/ideascube/.aflatoun/ /home/ideascube/.aflatoun/env/bin/kalite manage retrievecontentpack local {{ item }} /tmp/{{ item }}.zip
+  with_items: "{{ aflatoun_languages }}"
+  tags: ['configure']
 
 - name: Setup startup file
   copy: src=aflatoun.service dest=/etc/systemd/system/aflatoun.service
-  tags: ['master', 'configure']
+  tags: ['configure']
 
 - name: Enable and Start Aflatoun
   systemd:
@@ -69,13 +68,14 @@
     state=started
     daemon_reload=yes
     enabled=yes
-  tags: ['master', 'configure']
+  tags: ['configure']
 
 - name: Copy nginx vhost
   template: src=aflatoun.vhost.j2 dest=/etc/nginx/sites-available/aflatoun
-  tags: ['master', 'configure']
+  notify: restart nginx
+  tags: ['configure', 'rename']
 
 - name: Nginx enable Virtual host
   file: src=/etc/nginx/sites-available/aflatoun dest=/etc/nginx/sites-enabled/aflatoun state=link
   notify: restart nginx
-  tags: ['master', 'configure']
+  tags: [configure', 'rename']

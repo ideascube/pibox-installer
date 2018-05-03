@@ -143,7 +143,7 @@
 
 - name: Drop hosts file on device
   template: src=hosts.j2 dest=/etc/hosts
-  tags: ['master', 'configure']
+  tags: ['master', 'rename']
 
 - name: Create an ideascube user on the system
   user: name={{ username }}

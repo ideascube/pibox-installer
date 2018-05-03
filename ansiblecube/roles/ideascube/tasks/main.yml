@@ -25,7 +25,6 @@
       owner=root
       group=root
       mode=0755
-    tags: ['configure']
 
   - stat: 
       path: "{{ custom_branding_path }}/{{ item }}"
@@ -52,7 +51,8 @@
     src: pibox.py.j2
     dest: /opt/venvs/ideascube/lib/python3.4/site-packages/ideascube/conf/{{ ideascube_id }}.py
     mode: 0644
-  tags: ['master', 'configure']
+  notify: restart uwsgi
+  tags: ['master', 'configure', 'rename']
 
 - name: Change IDEASCUBE_ID
   lineinfile: dest=/etc/default/ideascube
@@ -75,7 +75,6 @@
 - name: Install Ideascube super user
   become: yes
   become_user: ideascube
-  no_log: True
   command: ideascube shell -c "from ideascube.models import User; User.objects.create_superuser('{{ admin_account }}', '{{ admin_password }}')"
   when: admin_account is defined
   tags: ['configure']
@@ -109,7 +108,7 @@
   become_user: ideascube
   no_log: True
   command: ideascube shell -c "from ideascube.serveradmin.catalog import Kiwix ; Kiwix.commit()"
-  tags: ['master', 'content']
+  tags: ['master', 'configure']
 
 - name: Enable the Ideascube Nginx site
   file: src=/etc/nginx/sites-available/ideascube dest=/etc/nginx/sites-enabled/ideascube state=link force=yes
@@ -141,6 +140,7 @@
       regexp: '^    server_name ideasbox.lan'
       line: "    server_name {{ fqdn }} {{ hostname }};"
       state: present
+    notify: restart nginx
 
   - name: Fix nginx vhost for ideascube (static files)
     lineinfile:
@@ -149,7 +149,7 @@
       line: "    server_name sites.{{ fqdn }} sites.{{ hostname }};"
       state: present
     notify: restart nginx
-  tags: ['master', 'configure']
+  tags: ['master', 'configure', 'rename']
 
 - name: Copy ideascube_leftover_files.service systemd unit
   copy: src=ideascube_leftover_files.service dest=/etc/systemd/system/ideascube_leftover_files.service

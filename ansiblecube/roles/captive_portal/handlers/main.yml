@@ -1,12 +1,12 @@
 ---
 - name: restart nginx
   service: name=nginx state=restarted
-  tags: ['master', 'configure']
+  tags: ['master']
 
 - name: restart uwsgi
   service: name=uwsgi state=restarted
-  tags: ['master', 'configure']
+  tags: ['master', 'rename']
 
 - name: restart dnsmasq
   service: name=dnsmasq state=restarted
-  tags: ['master', 'configure']
+  tags: ['master']

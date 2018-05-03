@@ -3,4 +3,4 @@
   service:
     name: systemd-logind
     state: restarted
-  tags: ['configure']
+  tags: ['master', 'rename']

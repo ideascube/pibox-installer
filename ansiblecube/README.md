@@ -14,9 +14,14 @@ This is achieved using a two steps scenario:
 ## Tags
 
 * `master`: installs all non-content-specific softwares (system, `ideascube`, `kiwix-serve`).
-* `resize`: resize the `/data` partition (image should have been already resized qemu-wise).
+* `resize`: resize the `/` and `/data` partitions (image should have been already resized qemu-wise).
+* `rename`: reconfigure all software according to `project_name`.
 * `configure`: sets all configuration and software according to configuration.
-* `content`: install actual content (ZIM files, KA-Lite, etc) according to configuration.
+* `download-content`: download and install actual content (ZIM files, KA-Lite, etc) according to configuration.
+* `move-content`: move expected content from `/data/warehouse` to proper locations, according to configuration
+* *`hardware`* is not used with pibox-installer but provides some additional hardware support (needs to run on actual hardware with Internet connection).
+
+**Note**: `download-content` and `move-content` are exclusive.
 
 ## Features
 

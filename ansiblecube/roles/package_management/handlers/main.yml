@@ -1,5 +1,5 @@
 --- 
 - name: restart kiwix
   service: name=kiwix-server state=restarted
-  tags: ['master', 'configure', 'content']
+  tags: ['download-content', 'move-content']
   
