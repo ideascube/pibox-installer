@@ -45,6 +45,7 @@
     name: /home/ideascube/.edupi/edupi/edupi/settings.py
     regexp: '^ALLOWED_HOSTS = \[''edupi.fondationorange.org''\]$'
     replace: 'ALLOWED_HOSTS = [''.{{ fqdn }}'', ''{{ fqdn }}'', ''{{ hostname }}'', ''localhost'']'
+  notify: restart edupi
   tags: ['configure', 'rename']
 
 - name: Create python3.4 environment
@@ -72,6 +73,13 @@
   become: yes
   become_user: ideascube
   command: /home/ideascube/.edupi/env/bin/python3 /home/ideascube/.edupi/edupi/manage.py migrate
+  tags: ['configure']
+
+- name: Install EduPi super user
+  become: yes
+  become_user: ideascube
+  command: /bin/echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{ admin_account }}', None, '{{ admin_password }}')" | /home/ideascube/.edupi/env/bin/python3 /home/ideascube/.edupi/edupi/manage.py shell --plain
+  when: admin_account is defined
   tags: ['configure']
 
 - name: Manage collectstatic

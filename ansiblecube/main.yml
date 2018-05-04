@@ -44,6 +44,12 @@
         state: restarted
       tags: ['master', 'configure', 'rename']
 
+    - name: restart edupi
+      service:
+        name: edupi
+        state: restarted
+      tags: ['master', 'configure', 'rename']
+
     - name: restart kiwix
       service: name=kiwix-server state=restarted
       tags: ['master', 'download-content', 'move-content']
