@@ -34,6 +34,7 @@
   become: yes
   become_user: ideascube
   shell: KALITE_PYTHON=/home/ideascube/.aflatoun/env/bin/python KALITE_HOME=/home/ideascube/.aflatoun/ /home/ideascube/.aflatoun/env/bin/kalite manage setup --username={{ admin_account }} --password={{ admin_password }} --noinput --no-assessment-items
+  when: admin_account is defined
   tags: ['configure']
 
 - name: Set aflatoun content

@@ -52,8 +52,6 @@ wikifundi_fqdn: wikifundi.{{ fqdn }}
 sites_fqdn: sites.{{ fqdn }}
 
 # content & features
-admin_account: admin
-admin_password: admin
 captive_portal: true
 has_custom_branding: false
 custom_branding_path: /tmp

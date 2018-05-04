@@ -75,11 +75,19 @@
   command: /home/ideascube/.edupi/env/bin/python3 /home/ideascube/.edupi/edupi/manage.py migrate
   tags: ['configure']
 
+- name: Check if EduPi super user is installed
+  become: yes
+  become_user: ideascube
+  command: /bin/echo "from django.contrib.auth.models import User; print('****{}****'.format(User.objects.filter(username='{{ admin_account }}').count()))" | /home/ideascube/.edupi/env/bin/python3 /home/ideascube/.edupi/edupi/manage.py shell --plain
+  register: shell_output
+  when: admin_account is defined
+  tags: ['configure']
+
 - name: Install EduPi super user
   become: yes
   become_user: ideascube
   command: /bin/echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{ admin_account }}', None, '{{ admin_password }}')" | /home/ideascube/.edupi/env/bin/python3 /home/ideascube/.edupi/edupi/manage.py shell --plain
-  when: admin_account is defined
+  when: admin_account is defined and shell_output.stdout.split('****')[1]|int == 0
   tags: ['configure']
 
 - name: Manage collectstatic
