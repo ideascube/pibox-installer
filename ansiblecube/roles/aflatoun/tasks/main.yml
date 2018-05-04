@@ -33,7 +33,7 @@
 - name: Create a user admin for aflatoun
   become: yes
   become_user: ideascube
-  shell: KALITE_PYTHON=/home/ideascube/.aflatoun/env/bin/python KALITE_HOME=/home/ideascube/.aflatoun/ /home/ideascube/.aflatoun/env/bin/kalite manage setup --username=admin --password=admin --noinput --no-assessment-items
+  shell: KALITE_PYTHON=/home/ideascube/.aflatoun/env/bin/python KALITE_HOME=/home/ideascube/.aflatoun/ /home/ideascube/.aflatoun/env/bin/kalite manage setup --username={{ admin_account }} --password={{ admin_password }} --noinput --no-assessment-items
   tags: ['configure']
 
 - name: Set aflatoun content

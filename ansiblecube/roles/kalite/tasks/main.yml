@@ -39,7 +39,7 @@
 - name: Create a user admin for kalite
   become: yes
   become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/python2 /home/ideascube/.kalite/env/share/kalite/kalitectl.py manage setup --username=admin --password=admin --noinput
+  command: /home/ideascube/.kalite/env/bin/python2 /home/ideascube/.kalite/env/share/kalite/kalitectl.py manage setup --username={{ admin_account }} --password={{ admin_password }} --noinput
   tags: ['configure']
 
 - name: Copy nginx vhost
