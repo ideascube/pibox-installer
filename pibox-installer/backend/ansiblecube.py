@@ -83,13 +83,14 @@ def run_for_user(machine, name, timezone, language, language_name, wifi_pwd,
         'captive_portal': True,
         'has_custom_branding': has_custom_branding,
         'custom_branding_path': '/tmp',
+        'admin_account': "{login}",
+        'admin_password': "{pwd}",
     }
 
     if wifi_pwd:
         extra_vars.update({'wpa_pass': wifi_pwd})
 
-    if admin_account is not None:
-        extra_vars.update({'admin_account': "{login}",
-                           'admin_password': "{pwd}"})
+    if admin_account is None:
+        admin_account = {'login': 'admin', 'pwd': 'admin'}
 
     run(machine, tags, extra_vars, admin_account)
