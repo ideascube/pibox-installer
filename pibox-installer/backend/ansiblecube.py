@@ -36,7 +36,7 @@ def run(machine, tags, extra_vars={}, secret_kwargs={}):
 
 
 def run_for_image(machine):
-    tags = ['master', 'configure', 'resize']
+    tags = ['master', 'resize', 'rename', 'configure']
 
     machine.exec_cmd("sudo apt-get update")
 
@@ -57,10 +57,11 @@ def run_for_image(machine):
     run(machine, tags, extra_vars)
 
 
-def run_for_user(machine, name, timezone, language, language_name,
-                 wifi_pwd,
+def run_for_user(machine, name, timezone, language, language_name, wifi_pwd,
                  edupi, wikifundi, aflatoun, kalite, zim_install,
                  admin_account, logo=None, favicon=None, css=None):
+
+    tags = ['resize', 'rename', 'configure', 'download-content']
 
     branding = {'favicon.png': favicon,
                 'header-logo.png': logo, 'style.css': css}
@@ -91,4 +92,4 @@ def run_for_user(machine, name, timezone, language, language_name,
         extra_vars.update({'admin_account': "{login}",
                            'admin_password': "{pwd}"})
 
-    run(machine, ['configure', 'content'], extra_vars, admin_account)
+    run(machine, tags, extra_vars, admin_account)
