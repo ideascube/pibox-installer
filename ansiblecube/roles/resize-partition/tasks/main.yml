@@ -34,10 +34,33 @@
   ignore_errors: True
   tags: ['resize']
 
+- name: informing kernel about root partition's new boundaries
+  become: yes
+  command: partprobe -s
+  tags: ['resize']
+
+- name: check filesystem on root partition
+  become: yes
+  command: e2fsck -p -f {{ root_partition }}
+  ignore_errors: True
+  when: False
+  tags: ['resize']
+
+- name: resize filesystem on root partition
+  become: yes
+  command: resize2fs {{ root_partition }}
+  tags: ['resize']
+
 - name: delete data partition if it exists
   become: yes
   shell: /bin/echo -e "d\n3\nw" | fdisk {{ disk }}
   ignore_errors: True
+  when: nb_partitions.stdout.strip()|int >= 3
+  tags: ['resize']
+
+- name: informing kernel about partition deletion
+  become: yes
+  command: partprobe -s
   when: nb_partitions.stdout.strip()|int >= 3
   tags: ['resize']
 
@@ -48,17 +71,10 @@
   ignore_errors: True
   tags: ['resize']
 
-- name: check filesystem on root partition
+- name: informing kernel about new data partition
   become: yes
-  command: e2fsck -p -f {{ root_partition }}
-  ignore_errors: True
+  command: partprobe -s
   tags: ['resize']
-
-- name: resize filesystem on root partition
-  become: yes
-  command: resize2fs {{ root_partition }}
-  tags: ['resize']
-
 
 - name: Formatting third partition (exfat)
   become: yes
