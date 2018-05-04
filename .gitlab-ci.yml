@@ -2,8 +2,16 @@ image: "python:3.4"
 
 before_script:
   - apt-get update
-  - DEBIAN_FRONTEND=noninteractive apt-get install -y locales wget unzip tar python3-gi python3-gi-cairo python3-cairo gir1.2-gtk-3.0 libdbus-1-dev libdbus-glib-1-dev libffi-dev build-essential libssl-dev python3-dev libgdk-pixbuf2.0-dev
+  - DEBIAN_FRONTEND=noninteractive apt-get install -y locales openssh-client wget zip unzip tar python3-gi python3-gi-cairo python3-cairo gir1.2-gtk-3.0 libdbus-1-dev libdbus-glib-1-dev libffi-dev build-essential libssl-dev python3-dev libgdk-pixbuf2.0-dev
   - sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && dpkg-reconfigure --frontend=noninteractive locales && update-locale LANG=en_US.UTF-8
+
+  # SSH key and known hosts handling
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - ssh-keyscan kiwix.ml >> ~/.ssh/known_hosts
+  - chmod 644 ~/.ssh/known_hosts
 
 build-pibox-image:
   stage: build
@@ -27,7 +35,10 @@ build-pibox-image:
     - cat build/pibox-installer-linux/warnpibox-installer-linux.txt
 
     # start image builder
-    - dist/pibox-installer image --ram 2000M
+    - eval "export OUT_IMG=pibox-kiwix_$(date +"%Y-%m-%d").img"
+    - dist/pibox-installer image --ram 2000M --out ${OUT_IMG}
+    - zip -9 ${OUT_IMG}.zip ${OUT_IMG}
+    - scp ${OUT_IMG}.zip upload@kiwix.ml:/var/www/pub/images/
   only:
     - schedules
     - web
