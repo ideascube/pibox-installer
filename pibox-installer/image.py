@@ -79,7 +79,7 @@ def run_in_qemu(image_fpath, disk_size, root_size,
     return error
 
 
-def main(disk_size, root_size, build_folder, qemu_ram):
+def main(disk_size, root_size, build_folder, qemu_ram, image_fname=None):
 
     try:
         root_size = int(root_size)
@@ -94,8 +94,9 @@ def main(disk_size, root_size, build_folder, qemu_ram):
         CLILogger.err("Erroneous size option: {}".format(repr(exp)))
         sys.exit(1)
 
-    image_fname = "pibox-kiwix_{date}.img".format(
-        date=datetime.datetime.now().strftime("%Y-%m-%d"))
+    if image_fname is None:
+        image_fname = "pibox-kiwix_{date}.img".format(
+            date=datetime.datetime.now().strftime("%Y-%m-%d"))
     image_fpath = os.path.join(build_folder, image_fname)
 
     print("starting with target:", image_fpath)
@@ -140,7 +141,7 @@ def main(disk_size, root_size, build_folder, qemu_ram):
         print(error)
         sys.exit(1)
 
-    print("SUCCESS!", "Image built successfuly")
+    print("SUCCESS!", image_fpath, "was built successfuly")
 
 
 parser = argparse.ArgumentParser(description="pibox base image creator")
@@ -149,7 +150,8 @@ parser.add_argument("--size", help="SD card size (GB)", default=4)
 parser.add_argument("--build", help="Folder to create files in",
                     default=os.path.abspath('.'))
 parser.add_argument("--ram", help="Max RAM for QEMU", default="2G")
+parser.add_argument("--out", help="Base image filename (inside --build)")
 args = parser.parse_args()
 
 main(disk_size=args.size, root_size=args.root,
-     build_folder=args.build, qemu_ram=args.ram)
+     build_folder=args.build, qemu_ram=args.ram, )
