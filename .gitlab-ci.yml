@@ -23,8 +23,8 @@ build-pibox-image:
     - unzip pibox-installer-vexpress-boot.zip
 
     # download a static qemu
-    - wget https://kiwix.ml/qemu-2.11-linux-x86_64.tar.gz
-    - tar xf qemu-2.11-linux-x86_64.tar.gz
+    - wget https://kiwix.ml/qemu-2.12.0-linux-x86_64.tar.gz
+    - tar xf qemu-2.12.0-linux-x86_64.tar.gz
 
     # Install python dependancies
     - pip3 install -r requirements-linux.txt
