@@ -114,7 +114,7 @@ https://kiwix.ml/demo/nginx-vhost
 ``` conf
 server {
 	listen 80;
-	server_name demo.kiwix.ml kiwix.kiwix.ml sites.kiwix.ml khanacademy.kiwix.ml aflatoun.kiwix.ml edupi.kiwix.ml wikifundi.kiwix.ml;
+	server_name demo.kiwix.ml kiwix.demo.kiwix.ml sites.demo.kiwix.ml khanacademy.demo.kiwix.ml aflatoun.demo.kiwix.ml edupi.demo.kiwix.ml wikifundi.demo.kiwix.ml;
 	root /var/www;
 	autoindex on;
 
