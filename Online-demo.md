@@ -173,7 +173,7 @@ https://kiwix.ml/demo/guest-setup.sh
 #!/bin/sh
 
 echo "add IP and iptables conf to rc.local"
-sudo bash -c 'orig=$(cat /etc/rc.local | sed -e "$ d") && echo -e "${orig}\n\nifconfig eth0 192.168.1.3 up\nroute add default gw 192.168.1.1\niptables -t nat -I CAPTIVE_PASSLIST 1 -s 192.168.1.1 -j ACCEPT\nexit 0" > /etc/rc.local && chmod +x /etc/rc.local'
+sudo bash -c 'orig=$(cat /etc/rc.local | sed -e "$ d") && echo -e "${orig}\n\nifconfig eth0 192.168.1.3 up\nroute add default gw 192.168.1.1\nsleep 20\niptables -t nat -I CAPTIVE_PASSLIST 1 -s 192.168.1.1 -j ACCEPT\nexit 0" > /etc/rc.local && chmod +x /etc/rc.local'
 
 echo "remove cron task clearing-up accepted IP list"
 sudo sh -c 'crontab -u root -l |grep -v clean_iptables.sh |crontab -u root -'
@@ -196,7 +196,7 @@ ssh pi@locahost -p 5022 "sudo ifconfig eth0 192.168.1.3 up && sudo route add def
 https://kiwix.ml/demo/img_run
 
 ``` sh
-#!/bin/sh
+#!/bin/bash
 # img_run: launchs a pibox image in qemu using vexpress kernel and tap iface
 
 img=$1
@@ -240,6 +240,14 @@ if [ -z "${QEMU_RAM}" ] ; then
 	QEMU_RAM="2040M"
 fi
 
+# adjust accelearation based on number of cores
+nb_cores=$(nproc)
+if [ ${nb_cores} -ge 3 ] ; then
+    SMP_OPT="-smp $(expr ${nb_cores} - 1) --accel tcg,thread=multi"
+else
+    SMP_OPT=""
+fi
+
 echo "hooray. starting ${img}"
 
 qemu-system-arm \
@@ -251,8 +259,10 @@ qemu-system-arm \
     -serial stdio \
     -drive "format=raw,if=sd,file=${img}" \
     -display none \
+    ${SMP_OPT} \
     -netdev user,id=eth1,hostfwd=tcp::5022-:22 \
     -device virtio-net-device,netdev=eth1 \
     -netdev tap,id=eth0,ifname=tap0,script=no,downscript=no \
     -device virtio-net-device,netdev=eth0
+
 ```
