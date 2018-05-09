@@ -35,8 +35,11 @@ def run(machine, tags, extra_vars={}, secret_kwargs={}):
     machine.exec_cmd(run_ansible_pull_cmd, displayed_ansible_pull_cmd)
 
 
-def run_for_image(machine):
+def run_for_image(machine, seal=False):
+
     tags = ['master', 'resize', 'rename', 'configure']
+    if seal:
+        tags.append('seal')
 
     machine.exec_cmd("sudo apt-get update")
 
@@ -59,9 +62,11 @@ def run_for_image(machine):
 
 def run_for_user(machine, name, timezone, language, language_name, wifi_pwd,
                  edupi, wikifundi, aflatoun, kalite, zim_install,
-                 admin_account, logo=None, favicon=None, css=None):
+                 admin_account, logo=None, favicon=None, css=None, seal=False):
 
     tags = ['resize', 'rename', 'configure', 'download-content']
+    if seal:
+        tags.append('seal')
 
     branding = {'favicon.png': favicon,
                 'header-logo.png': logo, 'style.css': css}
