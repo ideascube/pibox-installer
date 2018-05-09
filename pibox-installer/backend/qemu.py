@@ -7,11 +7,13 @@ import sys
 import socket
 import multiprocessing
 import paramiko
+import psutil
 import re
 import random
 import time
 import threading
 import posixpath
+from util import ONE_GB
 from .util import startup_info_args
 from .util import subprocess_pretty_check_call
 
@@ -33,6 +35,7 @@ qemu_system_arm_exe_path = os.path.join(bin_path, qemu_system_arm_exe)
 qemu_img_exe_path = os.path.join(bin_path, qemu_img_exe)
 nb_cpus = multiprocessing.cpu_count()
 qemu_cpu = nb_cpus - 1 if nb_cpus >= 2 else nb_cpus
+host_ram = int(psutil.virtual_memory().total)
 
 class QemuException(Exception):
     def __init__(self, msg):
@@ -67,7 +70,30 @@ class Emulator:
         self._image = image
         self._logger = logger
         self._binary = qemu_system_arm_exe_path
-        self._ram = ram
+        self._set_ram(ram.lower())
+        logger.raw("RAM: {}".format(self._ram))
+
+    def _set_ram(self, requested_ram):
+        ''' applies requested RAM to qemu if it's available otherwise less '''
+
+        # less than a GB is very short
+        if host_ram / ONE_GB <= 1.0:
+            self._ram = '256m'
+            return
+
+        # at most, use RAM - 512m
+        max_ram = host_ram - ONE_GB / 2
+
+        if re.match(r'\d+[mg]$', requested_ram):
+            ram_amount, ram_unit = int(requested_ram[:-1]), requested_ram[-1]
+        else:
+            # no unit, assuming M
+            ram_amount, ram_unit = int(requested_ram), 'm'
+        if ram_unit == 'g':
+            ram_amount = ram_amount * (ONE_GB)
+
+        # use requested if it doesn't exceed max_ram
+        self._ram = max_ram if ram_amount > max_ram else "%sm" % ram_amount
 
     def run(self, cancel_event):
         return _RunningInstance(self, self._logger, cancel_event)

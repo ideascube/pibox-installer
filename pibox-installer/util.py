@@ -8,6 +8,8 @@ import hashlib
 import platform
 import data
 
+ONE_GB = 2 ** 30
+
 def compute_space_required(catalog, zim_list, kalite, wikifundi, aflatoun, edupi):
     # TODO: compute actual space used with empty install
     used_space = 2 * 2**30 # space of raspbian with ideascube without content
