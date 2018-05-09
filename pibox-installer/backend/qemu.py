@@ -5,6 +5,7 @@ import subprocess
 import collections
 import sys
 import socket
+import multiprocessing
 import paramiko
 import re
 import random
@@ -30,6 +31,8 @@ else:
 
 qemu_system_arm_exe_path = os.path.join(bin_path, qemu_system_arm_exe)
 qemu_img_exe_path = os.path.join(bin_path, qemu_img_exe)
+nb_cpus = multiprocessing.cpu_count()
+qemu_cpu = nb_cpus - 1 if nb_cpus >= 2 else nb_cpus
 
 class QemuException(Exception):
     def __init__(self, msg):
@@ -195,7 +198,7 @@ class _RunningInstance:
         self._logger.std("ssh on port {}".format(ssh_port))
 
         with self._cancel_event.lock() as cancel_register:
-            self._qemu = subprocess.Popen([
+            command = [
                 self._emulation._binary,
                 "-m", self._emulation._ram,
                 "-M", "vexpress-a15",
@@ -205,14 +208,17 @@ class _RunningInstance:
                 "-serial", "stdio",
                 "-drive", "format=raw,if=sd,file={}"
                 .format(self._emulation._image),
-                "-net", "nic",
-                "-net", "user,id=eth0,hostfwd=tcp::{}-:22".format(ssh_port),
+                "-netdev", "user,id=eth0,hostfwd=tcp::{}-:22".format(ssh_port),
+                "-device", "virtio-net-device,netdev=eth0"
                 "-display", "none",
-                "-no-reboot",
-                "-smp", "2",
-                "--accel", "tcg,thread=multi",
-                "-no-acpi",
-                ], stdin=stdin_reader, stdout=stdout_writer, stderr=subprocess.STDOUT, **startup_info_args())
+                "-no-reboot", "-no-acpi",
+            ]
+            if qemu_cpu > 1:
+                command += ["-smp", qemu_cpu, "--accel", "tcg,thread=multi"]
+            self._qemu = subprocess.Popen(
+                command,
+                stdin=stdin_reader, stdout=stdout_writer,
+                stderr=subprocess.STDOUT, **startup_info_args())
             cancel_register.register(self._qemu.pid)
 
         self._wait_signal(stdout_reader, stdout_writer, b"login: ", timeout)
