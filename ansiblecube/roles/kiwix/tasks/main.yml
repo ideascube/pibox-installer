@@ -4,7 +4,7 @@
 
 - name: Downloading kiwix binaries {{ kiwix_version }}
   get_url:
-    url: "{{kiwix_tools_uri}}/kiwix-tools_linux-{{ ansible_architecture }}-{{ kiwix_version }}.tar.gz"
+    url: "{{ mirror }}/release/kiwix-tools/kiwix-tools_linux-{{ ansible_architecture }}-{{ kiwix_version }}.tar.gz"
     dest: /tmp/kiwix-tools.tar.gz
     timeout: 30
     force: yes
@@ -13,7 +13,7 @@
 
 - name: Downloading kiwix binaries {{ kiwix_version }}
   get_url:
-    url: "{{kiwix_tools_uri}}/kiwix-tools_linux-i586-{{ kiwix_version }}.tar.gz"
+    url: "{{ mirror }}/release/kiwix-tools/kiwix-tools_linux-i586-{{ kiwix_version }}.tar.gz"
     dest: /tmp/kiwix-tools.tar.gz
     timeout: 30
     force: yes
@@ -22,7 +22,7 @@
 
 - name: Downloading kiwix binaries {{ kiwix_version }}
   get_url:
-    url: "{{kiwix_tools_uri}}/kiwix-tools_linux-armhf-{{ kiwix_version }}.tar.gz"
+    url: "{{ mirror }}/release/kiwix-tools/kiwix-tools_linux-armhf-{{ kiwix_version }}.tar.gz"
     dest: /tmp/kiwix-tools.tar.gz
     timeout: 30
     force: yes

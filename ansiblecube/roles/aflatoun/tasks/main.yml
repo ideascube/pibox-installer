@@ -10,7 +10,7 @@
 
 - name: Download Aflatoun
   get_url:
-    url: http://download.kiwix.org/other/aflatoun/ka-lite-static-0.16.7b3.tar.gz
+    url: "{{ mirror }}/aflatoun/ka-lite-static-0.16.7b3.tar.gz"
     dest: /tmp/ka-lite-static-0.16.7b3.tar.gz
   tags: ['configure']
 
@@ -39,7 +39,7 @@
 
 - name: Set aflatoun content
   unarchive:
-    src: http://download.kiwix.org/other/aflatoun/content.tar.gz
+    src: "{{ mirror }}/aflatoun/content.tar.gz"
     dest: /home/ideascube/.aflatoun/
     remote_src: True
     owner: ideascube
@@ -47,7 +47,7 @@
 
 - name: Download Aflatoun language pack
   get_url:
-    url: http://download.kiwix.org/other/aflatoun/{{ item }}.zip
+    url: "{{ mirror }}/aflatoun/{{ item }}.zip"
     dest: /tmp/{{ item }}.zip
   with_items: "{{ aflatoun_languages }}"
   tags: ['configure']

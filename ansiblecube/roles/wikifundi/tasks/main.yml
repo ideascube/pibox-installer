@@ -33,7 +33,7 @@
 
 - name: Download africapack
   unarchive:
-    src: http://download.kiwix.org/other/wikifundi/{{ item }}.africapack.kiwix.org_2017-01.tar.bz2
+    src: "{{ mirror }}/other/wikifundi/{{ item }}.africapack.kiwix.org_2017-01.tar.bz2"
     dest: /var/www
     remote_src: True
     owner: www-data
@@ -73,7 +73,7 @@
 
 - name: Download Parsoid
   unarchive:
-    src: http://download.kiwix.org/other/wikifundi/parsoid_2016-08.tar.bz2
+    src: "{{ mirror }}/other/wikifundi/parsoid_2016-08.tar.bz2"
     dest: /var/www
     remote_src: True
     owner: www-data
