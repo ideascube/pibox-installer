@@ -8,6 +8,9 @@ import hashlib
 import platform
 import data
 
+import humanfriendly
+
+ONE_MB = 2 ** 20
 ONE_GB = 2 ** 30
 
 def compute_space_required(catalog, zim_list, kalite, wikifundi, aflatoun, edupi):
@@ -144,3 +147,10 @@ def get_md5(fpath):
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
+
+def get_friendly_size(size):
+    if isinstance(size, (int, float)):
+        num_bytes = size
+    else:
+        num_bytes = humanfriendly.parse_size(size)
+    return humanfriendly.format_size(num_bytes, binary=True)

@@ -13,7 +13,7 @@ import random
 import time
 import threading
 import posixpath
-from util import ONE_GB
+from util import ONE_GB, ONE_MB, get_friendly_size
 from .util import startup_info_args
 from .util import subprocess_pretty_check_call
 
@@ -71,7 +71,6 @@ class Emulator:
         self._logger = logger
         self._binary = qemu_system_arm_exe_path
         self._set_ram(ram.lower())
-        logger.raw("RAM: {}".format(self._ram))
 
     def _set_ram(self, requested_ram):
         ''' applies requested RAM to qemu if it's available otherwise less '''
@@ -82,7 +81,7 @@ class Emulator:
             return
 
         # at most, use RAM - 512m
-        max_ram = host_ram - ONE_GB / 2
+        max_ram = int(host_ram - ONE_GB / 2)
 
         if re.match(r'\d+[mg]$', requested_ram):
             ram_amount, ram_unit = int(requested_ram[:-1]), requested_ram[-1]
@@ -93,7 +92,14 @@ class Emulator:
             ram_amount = ram_amount * (ONE_GB)
 
         # use requested if it doesn't exceed max_ram
-        self._ram = max_ram if ram_amount > max_ram else "%sm" % ram_amount
+        ram = max_ram if ram_amount > max_ram else ram_amount
+
+        # vexpress-a15 is capped at 30G
+        if int(ram / ONE_GB) > 30:
+            ram = 30 * ONE_GB
+
+        self._ram = "{ram}M".format(ram=int(ram / ONE_MB))
+        self._logger.std(". using {ram} RAM".format(ram=get_friendly_size(ram)))
 
     def run(self, cancel_event):
         return _RunningInstance(self, self._logger, cancel_event)
@@ -235,12 +241,15 @@ class _RunningInstance:
                 "-drive", "format=raw,if=sd,file={}"
                 .format(self._emulation._image),
                 "-netdev", "user,id=eth0,hostfwd=tcp::{}-:22".format(ssh_port),
-                "-device", "virtio-net-device,netdev=eth0"
+                "-device", "virtio-net-device,netdev=eth0",
                 "-display", "none",
                 "-no-reboot", "-no-acpi",
             ]
             if qemu_cpu > 1:
-                command += ["-smp", qemu_cpu, "--accel", "tcg,thread=multi"]
+                command += ["-smp", str(qemu_cpu),
+                            "--accel", "tcg,thread=multi"]
+            self._logger.std("--\n{}\n--".format(" ".join(command)))
+
             self._qemu = subprocess.Popen(
                 command,
                 stdin=stdin_reader, stdout=stdout_writer,
@@ -369,4 +378,3 @@ class _RunningInstance:
         self._logger.std("reboot qemu")
         self._shutdown()
         self._boot()
-
