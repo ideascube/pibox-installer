@@ -16,13 +16,13 @@ import shutil
 import zipfile
 import argparse
 import datetime
-import urllib.request
 
 import data
 from backend.qemu import Emulator
+from backend.download import download_if_missing
 from backend.ansiblecube import (
     run_for_image, ansiblecube_path as ansiblecube_emulation_path)
-from util import CLILogger, CancelEvent, get_md5, ReportHook
+from util import CLILogger, CancelEvent
 
 RASPBIAN_VERSION = "2017-07-05/2017-07-05-raspbian-jessie-lite"
 RASPBIAN_URL = ("http://downloads.raspberrypi.org/raspbian_lite/images/"
@@ -106,17 +106,15 @@ def main(disk_size, root_size, build_folder, qemu_ram, image_fname=None):
     img_fname = zip_fname.replace('.zip', '.img')
 
     # download raspbian
-    if not os.path.exists(zip_fpath) or get_md5(zip_fpath) != RASPBIAN_ZIP_MD5:
-        CLILogger.step("Downloading raspbian image file")
-        hook = ReportHook(CLILogger.raw_std).reporthook
-        try:
-            urllib.request.urlretrieve(
-                url=RASPBIAN_URL, filename=zip_fpath, reporthook=hook)
-        except Exception as exp:
-            print("Failed to download raspbian. exiting. {}".format(exp))
-            sys.exit(1)
-    else:
-        CLILogger.step("Reusing already downloaded raspbian ZIP file")
+    CLILogger.step("Retrieving raspbian image file")
+    rf = download_if_missing(RASPBIAN_URL, zip_fpath,
+                             CLILogger, RASPBIAN_ZIP_MD5)
+    if not rf.successful:
+        CLILogger.err("Failed to download raspbian.\n{e}"
+                      .format(e=rf.exception))
+        sys.exit(1)
+    elif rf.found:
+        CLILogger.std("Reusing already downloaded raspbian ZIP file")
 
     # extract raspbian and rename
     CLILogger.step("Extracting raspbian image from ZIP file")
@@ -154,4 +152,4 @@ parser.add_argument("--out", help="Base image filename (inside --build)")
 args = parser.parse_args()
 
 main(disk_size=args.size, root_size=args.root,
-     build_folder=args.build, qemu_ram=args.ram, )
+     build_folder=args.build, qemu_ram=args.ram, image_fname=args.out)
