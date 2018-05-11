@@ -18,8 +18,8 @@ def mount_data_partition(image_fpath):
         target_dev = losetup_out.strip()
         target_part = "{dev}p3".format(dev=target_dev)
         mount_point = tempfile.mkdtemp()
-        subprocess.run(['pkexec', 'mount', '-t', 'exfat',
-                        target_part, mount_point], check=True)
+        subprocess.check_call(['pkexec', 'mount', '-t', 'exfat',
+                              target_part, mount_point])
         return mount_point, target_dev
 
     elif sys.platform == "darwin":
@@ -30,8 +30,8 @@ def mount_data_partition(image_fpath):
         target_dev = str(hdiutil_out.splitlines()[0].split()[0])
         target_part = "{dev}s3".format(dev=target_dev)
         mount_point = tempfile.mkdtemp()
-        subprocess.run(['mount', '-t', 'exfat',
-                        target_part, mount_point], check=True)
+        subprocess.check_call(['mount', '-t', 'exfat',
+                              target_part, mount_point])
         return mount_point, target_dev
 
     elif sys.platform == "win32":
@@ -42,13 +42,13 @@ def unmount_data_partition(mount_point, device):
     ''' unmount data partition and free virtual resources '''
 
     if sys.platform == "linux":
-        subprocess.run(['pkexec', 'umount', mount_point], check=False)
+        subprocess.call(['pkexec', 'umount', mount_point])
         os.rmdir(mount_point)
-        subprocess.run(['pkexec', 'losetup', '-d', device], check=False)
+        subprocess.call(['pkexec', 'losetup', '-d', device])
 
     elif sys.platform == "darwin":
-        subprocess.run(['umount', mount_point], check=False)
+        subprocess.call(['umount', mount_point])
         os.rmdir(mount_point)
-        subprocess.run(['hdiutil', 'detach', device], check=False)
+        subprocess.call(['hdiutil', 'detach', device])
     elif sys.platform == "win32":
         pass

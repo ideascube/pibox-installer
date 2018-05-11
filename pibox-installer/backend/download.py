@@ -164,4 +164,4 @@ def unarchive(archive_fpath, dest_folder):
     else:
         command = ['tar', '-C', dest_folder, '-x', '-f', archive_fpath]
 
-    subprocess.run(command)
+    subprocess.call(command)
