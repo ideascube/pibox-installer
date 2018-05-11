@@ -93,7 +93,13 @@ def human_readable_size(size):
             num_bytes = humanfriendly.parse_size(size)
         except Exception:
             return "NaN"
-    return humanfriendly.format_size(num_bytes, binary=True)
+    is_neg = num_bytes < 0
+    if is_neg:
+        num_bytes = abs(num_bytes)
+    output = humanfriendly.format_size(num_bytes, binary=True)
+    if is_neg:
+        return "- {}".format(output)
+    return output
 
 class ReportHook():
     def __init__(self, writter):
