@@ -21,6 +21,7 @@ from util import b64encode, b64decode
 import data
 import langcodes
 import string
+import humanfriendly
 
 VALID_RGBA = Gdk.RGBA(0., 0., 0., 0.)
 INVALID_RGBA = Gdk.RGBA(1, 0.5, 0.5, 1.)
@@ -515,7 +516,9 @@ class Application:
         # size
         if config.get("size") is not None:
             try:
-                size = int(config["size"] / pow(1024, 3))
+                size = humanfriendly.parse_size(config["size"]) \
+                    if isinstance(config['size'], str) else config['size']
+                size = int(size / pow(1024, 3))
             except Exception:
                 size = None
             if size is not None:
@@ -620,7 +623,7 @@ class Application:
             }),
             ("build_dir",
                 relpathto(self.component.build_path_chooser.get_filename())),
-            ("size", size),
+            ("size", human_readable_size(size)),
             ("content", {
                 "zims": zim_install,  # content-ids list
                 "kalite": kalite_active_langs,  # languages list

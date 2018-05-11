@@ -10,8 +10,11 @@ from backend.catalog import YAML_CATALOGS
 from run_installation import run_installation
 from util import CancelEvent
 from util import get_free_space_in_dir
-from util import compute_space_required
+from util import compute_space_required, human_readable_size
 from util import CLILogger, b64decode
+
+
+import humanfriendly
 
 CANCEL_TIMEOUT = 5
 
@@ -26,7 +29,7 @@ def set_config(config, args):
                          'language': 'language',
                          'size': 'size'}.items():
         if key in config and config.get(key) is not None:
-            setattr(args, arg_key, config.get(key))
+            setattr(args, arg_key, str(config.get(key)))
 
     # branding files
     if "branding" in config and isinstance(config["branding"], dict):
@@ -104,7 +107,7 @@ parser.add_argument("--aflatoun", help="install aflatoun", action="store_true")
 parser.add_argument("--wikifundi", help="install wikifundi", choices=["fr", "en"], nargs="+")
 parser.add_argument("--edupi", help="install edupi", action="store_true")
 parser.add_argument("--zim-install", help="install zim", choices=zim_choices, nargs="+")
-parser.add_argument("--size", help="resize image in B (5*2**30)", type=float, default=5*2**30)
+parser.add_argument("--size", help="resize image (5GiB)", default='5GiB')
 parser.add_argument("--favicon", help="set favicon")
 parser.add_argument("--logo", help="set logo")
 parser.add_argument("--css", help="set css style")
@@ -136,6 +139,15 @@ if args.admin_account:
 else:
     admin_account = None
 
+# parse requested size
+try:
+    args.size = humanfriendly.parse_size(args.size)
+except Exception:
+    print("Unable to understand requiered size ({})".format(args.size))
+    sys.exit(1)
+else:
+    args.human_size = human_readable_size(args.size)
+
 build_free_space = get_free_space_in_dir(args.build_dir)
 if build_free_space < args.size:
     print("Not enough space available at {} to build image".format(args.build_dir), file=sys.stderr)
@@ -149,7 +161,9 @@ space_required = compute_space_required(
                 aflatoun=args.aflatoun,
                 edupi=args.edupi)
 if args.size < space_required:
-    print("image size ({}) is not large enough for the content ({})".format(args.size, space_required), file=sys.stderr)
+    print("image size ({}) is not large enough for the content ({})"
+          .format(human_readable_size(args.size),
+                  human_readable_size(space_required)), file=sys.stderr)
     exit(3)
 
 # display configuration and offer time to cancel
