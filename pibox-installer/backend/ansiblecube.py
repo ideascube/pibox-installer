@@ -1,6 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# vim: ai ts=4 sts=4 et sw=4 nu
+
 import os
 import json
 import tempfile
+
+from backend.catalog import CATALOGS
 
 ansiblecube_path = "/var/lib/ansible/local"
 
@@ -11,14 +17,7 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
     # predefined defaults we want to superseed whichever in ansiblecube
     ansible_vars = {
         'mirror': "http://download.kiwix.org",
-        'catalogs': [
-            {'name': "Kiwix",
-             'description': "Kiwix ZIM Content",
-             'url': "http://download.kiwix.org/library/ideascube.yml"},
-            {'name': "StaticSites",
-             'description': "Static sites",
-             'url': "http://catalog.ideascube.org/static-sites.yml"}
-        ],
+        'catalogs': CATALOGS,
     }
 
     ansible_vars.update(extra_vars)

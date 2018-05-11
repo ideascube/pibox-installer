@@ -9,7 +9,7 @@ import pathlib
 
 from data import content_file
 from util import get_temp_folder
-from backend.catalog import get_catalogs
+from backend.catalog import YAML_CATALOGS
 from backend.download import get_content_cache, unarchive
 
 MIRROR = "http://download.kiwix.org"
@@ -21,7 +21,6 @@ with open(content_file, 'r') as fp:
     for key, dl_data in CONTENTS.items():
         if 'url' in dl_data.keys():
             CONTENTS[key]['url'] = CONTENTS[key]['url'].format(mirror=MIRROR)
-CATALOGS = get_catalogs()
 
 
 def get_content(key):
@@ -93,7 +92,7 @@ def get_aflatoun_contents(languages=[]):
 
 
 def get_package_content(package_id):
-    for catalog in CATALOGS:
+    for catalog in YAML_CATALOGS:
         try:
             package = catalog['all'][package_id]
             return {

@@ -2,7 +2,7 @@ from collections import OrderedDict
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
-from backend import catalog
+from backend.catalog import YAML_CATALOGS
 from run_installation import run_installation
 import pytz
 import tzlocal
@@ -901,7 +901,7 @@ class Application:
         return model[iter][8]
 
 try:
-    catalog = catalog.get_catalogs()
+    assert len(YAML_CATALOGS)
 except Exception as exception:
     dialog = ShortDialog(None, (Gtk.STOCK_OK, Gtk.ResponseType.OK), "Catalog downloads failed, you may check your internet connection")
     dialog.run()
@@ -909,5 +909,5 @@ except Exception as exception:
     dialog.destroy()
     exit(1)
 
-Application(catalog)
+Application(YAML_CATALOGS)
 Gtk.main()

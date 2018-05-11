@@ -6,12 +6,12 @@ import yaml
 import time
 import tempfile
 import data
-from backend import catalog
+from backend.catalog import YAML_CATALOGS
 from run_installation import run_installation
 from util import CancelEvent
 from util import get_free_space_in_dir
 from util import compute_space_required
-from util import CLILogger
+from util import CLILogger, b64decode
 
 CANCEL_TIMEOUT = 5
 
@@ -81,14 +81,14 @@ def set_config(config, args):
 
 
 try:
-    catalogs = catalog.get_catalogs()
+    assert len(YAML_CATALOGS)
 except Exception as exception:
     print(exception, file=sys.stderr)
     print("Catalog downloads failed, you may check your internet connection")
     exit(2)
 
 zim_choices = []
-for catalog in catalogs:
+for catalog in YAML_CATALOGS:
     for (key, value) in catalog["all"].items():
         zim_choices.append(key)
 
@@ -127,7 +127,7 @@ if args.config:
         set_config(config, args)
 
 if args.catalog:
-    for catalog in catalogs:
+    for catalog in YAML_CATALOGS:
         print(yaml.dump(catalog, default_flow_style=False, default_style=''))
     exit(0)
 
@@ -142,7 +142,7 @@ if build_free_space < args.size:
     exit(1)
 
 space_required = compute_space_required(
-                catalog=catalogs,
+                catalog=YAML_CATALOGS,
                 zim_list=args.zim_install,
                 kalite=args.kalite,
                 wikifundi=args.wikifundi,

@@ -2,18 +2,19 @@
 import urllib.request
 import yaml
 
-
-catalog_urls = [
-    "http://download.kiwix.org/library/ideascube.yml",
-    "http://catalog.ideascube.org/static-sites.yml",
-    "http://catalog.ideascube.org/bibliotecamovil.yml",
+CATALOGS = [
+    {'name': "Kiwix",
+     'description': "Kiwix ZIM Content",
+     'url': "http://download.kiwix.org/library/ideascube.yml"},
+    {'name': "StaticSites",
+     'description': "Static sites",
+     'url': "http://catalog.ideascube.org/static-sites.yml"}
 ]
 
-
-def get_catalogs():
-    catalog = []
-    for catalog_url in catalog_urls:
-        with urllib.request.urlopen(catalog_url) as f:
-            catalog.append(yaml.load(f.read().decode("utf-8")))
-
-    return catalog
+YAML_CATALOGS = []
+try:
+    for catalog in CATALOGS:
+        with urllib.request.urlopen(catalog.get('url')) as f:
+            YAML_CATALOGS.append(yaml.load(f.read().decode("utf-8")))
+except Exception:
+    pass
