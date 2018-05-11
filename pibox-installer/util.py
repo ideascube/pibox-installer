@@ -3,10 +3,13 @@ import math
 import threading
 import signal
 import sys
+import tempfile
 import ctypes
+import pathlib
 import hashlib
 import platform
 import data
+
 
 import humanfriendly
 
@@ -83,20 +86,14 @@ class _CancelEventRegister:
         self._pids.remove(pid)
 
 def human_readable_size(size):
-    try:
-        size = int(size)
-    except:
-        return 'NaN'
-
-    if size == 0:
-        return '0B'
-    if size < 0:
-        return "- " + human_readable_size(-size)
-    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-    i = int(math.floor(math.log(size,1024)))
-    p = math.pow(1024,i)
-    s = round(size/p,2)
-    return '%s %s' % (s,size_name[i])
+    if isinstance(size, (int, float)):
+        num_bytes = size
+    else:
+        try:
+            num_bytes = humanfriendly.parse_size(size)
+        except Exception:
+            return "NaN"
+    return humanfriendly.format_size(num_bytes, binary=True)
 
 class ReportHook():
     def __init__(self, writter):
@@ -104,6 +101,7 @@ class ReportHook():
         self.width = 60
         self._last_line = None
         self._writter = writter
+        self.reporthook(0, 0, 100)  # display empty bar as we start
 
     def reporthook(self, chunk, chunk_size, total_size):
         if chunk != 0:
@@ -138,19 +136,20 @@ class CLILogger:
         sys.stdout.write(std)
 
     @classmethod
-    def std(cls, std):
-        print(std)
+    def std(cls, std, end=None):
+        print(std, end=end, flush=True)
 
-def get_md5(fpath):
-    hash_md5 = hashlib.md5()
+def get_checksum(fpath, func=hashlib.sha256):
+    h = func()
     with open(fpath, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
+            h.update(chunk)
+    return h.hexdigest()
 
-def get_friendly_size(size):
-    if isinstance(size, (int, float)):
-        num_bytes = size
-    else:
-        num_bytes = humanfriendly.parse_size(size)
-    return humanfriendly.format_size(num_bytes, binary=True)
+def get_cache(build_folder):
+    fpath = pathlib.Path(os.path.join(build_folder, "cache"))
+    fpath.mkdir(exist_ok=True)
+    return fpath
+
+def get_temp_folder(in_path):
+    return tempfile.mkdtemp(in_path)

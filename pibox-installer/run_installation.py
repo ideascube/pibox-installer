@@ -1,13 +1,15 @@
 from backend import ansiblecube
 from backend import qemu
+from backend.content import get_collection, get_content
+from backend.download import download_content, unzip_file
+from backend.mount import mount_data_partition, unmount_data_partition
 from backend.util import subprocess_pretty_check_call
 import data
-from util import ReportHook
+from util import ReportHook, human_readable_size, get_cache
 from datetime import datetime
 import os
-import urllib.request
+import itertools
 import shutil
-from zipfile import ZipFile
 import data
 import sys
 import re
@@ -43,60 +45,148 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         image_building_path = os.path.join(build_dir, "pibox-{}.BUILDING.img".format(today))
         image_error_path = os.path.join(build_dir, "pibox-{}.ERROR.img".format(today))
 
-        # Download Raspbian
-        logger.step("Download Raspbian-lite image")
-        hook = ReportHook(logger.raw_std).reporthook
-        (zip_filename, _) = urllib.request.urlretrieve(data.raspbian_url, reporthook=hook)
-        with ZipFile(zip_filename) as zipFile:
-            logger.std("extract " + data.raspbian_zip_path)
-            extraction = zipFile.extract(data.raspbian_zip_path, build_dir)
-            shutil.move(extraction, image_building_path)
-        os.remove(zip_filename)
+        # Download Base image
+        logger.step("Retrieving pibox base image file")
+        base_image = get_content('pibox_base_image')
+        rf = download_content(base_image, logger, build_dir)
+        if not rf.successful:
+            logger.err("Failed to download raspbian.\n{e}"
+                       .format(e=rf.exception))
+            sys.exit(1)
+        elif rf.found:
+            logger.std("Reusing already downloaded base image ZIP file")
 
-        # Instance emulator
-        emulator = qemu.Emulator(data.vexpress_boot_kernel, data.vexpress_boot_dtb, image_building_path, logger)
+        # extract base image and rename
+        logger.step("Extracting base image from ZIP file")
+        unzip_file(archive_fpath=rf.fpath,
+                   src_fname=base_image['name'].replace('.zip', ''),
+                   build_folder=build_dir,
+                   dest_fpath=image_building_path)
+        logger.std("Extraction complete: {p}".format(p=image_building_path))
+
+        if not os.path.exists(image_building_path):
+            raise IOError("image path does not exists: {}"
+                          .format(image_building_path))
+
+        # harmonize options
+        packages = [] if zim_install is None else zim_install
+        kalite_languages = [] if kalite is None else kalite
+        wikifundi_languages = [] if wikifundi is None else wikifundi
+        aflatoun_languages = ['fr', 'en'] if aflatoun else []
+
+        # collection contains both downloads and processing callbacks
+        # for all requested contents
+        collection = get_collection(
+            edupi=edupi,
+            packages=packages,
+            kalite_languages=kalite_languages,
+            wikifundi_languages=wikifundi_languages,
+            aflatoun_languages=aflatoun_languages)
+
+        # download contents into cache
+        logger.step("Starting all content downloads")
+        downloads = itertools.chain.from_iterable([
+            content_dl_cb(**cb_kwargs)
+            for _, content_dl_cb, _, cb_kwargs
+            in collection
+        ])
+
+        for dl_content in downloads:
+            logger.step("Retrieving {url} ({size})".format(
+                url=dl_content['url'],
+                size=human_readable_size(dl_content['archive_size'])))
+
+            rf = download_content(dl_content, logger, build_dir)
+            if not rf.successful:
+                logger.err("Error downloading {u} to {p}\n{e}"
+                           .format(u=dl_content['url'],
+                                   p=rf.fpath, e=rf.exception))
+                if rf.exception:
+                    raise rf.exception
+            elif rf.found:
+                logger.std("Reusing already downloaded {p}".format(p=rf.fpath))
+            else:
+                logger.std("Saved `{p}` successfuly: {s}"
+                           .format(p=dl_content['name'],
+                                   s=human_readable_size(rf.downloaded_size)))
+
+        # Instanciate emulator
+        logger.step("Preparing qemu VM")
+        emulator = qemu.Emulator(data.vexpress_boot_kernel,
+                                 data.vexpress_boot_dtb,
+                                 image_building_path, "2G", logger)
 
         # Resize image
+        logger.step("Resizing image file to {s}"
+                    .format(s=human_readable_size(emulator.get_image_size())))
         if size < emulator.get_image_size():
             logger.err("cannot decrease image size")
             raise ValueError("cannot decrease image size")
 
         emulator.resize_image(size)
 
+        # prepare ansible options
+        ansible_options = {
+            'name': name,
+            'timezone': timezone,
+            'language': language,
+            'language_name': dict(data.ideascube_languages)[language],
+
+            'edupi': edupi,
+            'wikifundi_languages': wikifundi_languages,
+            'aflatoun_languages': aflatoun_languages,
+            'kalite_languages': kalite_languages,
+            'packages': packages,
+
+            'wifi_pwd': wifi_pwd,
+            'admin_account': admin_account,
+
+            'logo': logo,
+            'favicon': favicon,
+            'css': css,
+            'seal': False
+        }
+
         # Run emulation
+        logger.step("Starting-up VM")
         with emulator.run(cancel_event) as emulation:
-
             logger.step("Run ansiblecube")
-            ansiblecube.run_for_user(
-                machine=emulation,
-                name=name,
-                timezone=timezone,
-                language=language,
-                language_name=dict(data.ideascube_languages)[language],
-
-                kalite=kalite,
-                wikifundi=wikifundi,
-                edupi=edupi,
-                aflatoun=aflatoun,
-                zim_install=zim_install,
-
-                wifi_pwd=wifi_pwd,
-                admin_account=admin_account,
-
-                logo=logo,
-                favicon=favicon,
-                css=css)
+            ansible_options.update({'machine': emulation})
+            ansiblecube.run_for_user(**ansible_options)
 
         # mount image's 3rd partition on host
+        logger.step("Mounting data partition on host")
+        mount_point, device = mount_data_partition(image_building_path)
 
-        # download contents onto mount point
+        # copy contents from cache to mount point
+        try:
+            logger.step("Processing downloaded content onto data partition")
+            cache_folder = get_cache(build_dir)
+            for category, _, content_run_cb, cb_kwargs in collection:
+                logger.step("Processing {cat}".format(cat=category))
+                content_run_cb(cache_folder=cache_folder,
+                               mount_point=mount_point,
+                               logger=logger, **cb_kwargs)
+        except Exception as e:
+            unmount_data_partition(mount_point, device)
+            raise e
 
         # unmount partition
+        logger.step("Unmounting data partition")
+        unmount_data_partition(mount_point, device)
 
         # rerun emulation for discovery
+        logger.step("Starting-up VM again for content-discovery")
+        with emulator.run(cancel_event) as emulation:
+            logger.step("Re-run ansiblecube for move-content")
+            ansible_options.update({'machine': emulation,
+                                    'move_content': True,
+                                    'seal': False})  # TODO: enable seal
+            ansiblecube.run_for_user(**ansible_options)
 
         # Write image to SD Card
         if sd_card:
+            logger.step("Writting image to SD-card ({card})".format(sd_card))
             emulator.copy_image(sd_card)
 
     except Exception as e:
@@ -107,6 +197,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         logger.step("Failed")
         logger.err(str(e))
         error = e
+        raise e
     else:
         # Set final image filename
         os.rename(image_building_path, image_final_path)

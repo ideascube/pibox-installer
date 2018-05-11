@@ -1,8 +1,14 @@
 import os
 import io
+import sys
+import shutil
+import zipfile
+import subprocess
+
 import requests
 
-from util import ReportHook, get_md5
+from util import (ReportHook, get_checksum, get_cache)
+from backend.util import subprocess_pretty_check_call
 
 
 class RequestedFile(object):
@@ -16,7 +22,7 @@ class RequestedFile(object):
         self.fpath = fpath
         self.status = self.PENDING
 
-        self.md5_sum = None
+        self.checksum = None
         self.exception = None
         self.downloaded_size = None
 
@@ -24,24 +30,25 @@ class RequestedFile(object):
         self.status = status
 
     @classmethod
-    def from_download(cls, url, fpath):
+    def from_download(cls, url, fpath, downloaded_size):
         rf = cls(url, fpath)
         rf.set(cls.DOWNLOADED)
+        rf.downloaded_size = downloaded_size
         return rf
 
     @classmethod
-    def from_disk(cls, url, fpath, md5_sum):
+    def from_disk(cls, url, fpath, checksum):
         rf = cls(url, fpath)
-        rf.md5_sum = md5_sum
+        rf.checksum = checksum
         rf.set(cls.FOUND)
         return rf
 
     @classmethod
-    def from_failure(cls, url, fpath, exception, md5_sum=None):
+    def from_failure(cls, url, fpath, exception, checksum=None):
         rf = cls(url, fpath)
         rf.set(cls.FAILED)
         rf.exception = exception
-        rf.md5_sum = md5_sum
+        rf.checksum = checksum
         return rf
 
     @property
@@ -62,7 +69,7 @@ class RequestedFile(object):
 
     @property
     def verified(self):
-        return self.present and get_md5(self.fpath) == self.md5_sum
+        return self.present and get_checksum(self.fpath) == self.checksum
 
 
 def stream(url, write_to=None, callback=None, block_size=1024):
@@ -91,19 +98,70 @@ def stream(url, write_to=None, callback=None, block_size=1024):
     return total_downloaded, write_to if write_to else fd
 
 
-def download_file(url, fpath, logger, md5_sum=None):
+def download_file(url, fpath, logger, checksum=None):
     hook = ReportHook(logger.raw_std).reporthook
     try:
         size, path = stream(url, fpath, callback=hook)
     except Exception as exp:
-        return RequestedFile.from_failure(url, fpath, exp, md5_sum)
+        return RequestedFile.from_failure(url, fpath, exp, checksum)
 
-    return RequestedFile.from_download(url, fpath)
+    return RequestedFile.from_download(url, fpath, size)
 
 
-def download_if_missing(url, fpath, logger, md5_sum):
+def download_if_missing(url, fpath, logger, checksum=None):
     # file already downloaded
-    if os.path.exists(fpath) and get_md5(fpath) == md5_sum:
-        return RequestedFile.from_disk(url, fpath, md5_sum)
+    if checksum and os.path.exists(fpath):
+        logger.std("calculating sum for {}...".format(fpath), '')
+        if get_checksum(fpath) == checksum:
+            logger.std("MATCH.")
+            return RequestedFile.from_disk(url, fpath, checksum)
+        logger.std("MISMATCH.")
 
-    return download_file(url, fpath, logger, md5_sum)
+    return download_file(url, fpath, logger, checksum)
+
+
+def get_content_cache(content, folder, is_cache_folder=False):
+    ''' shortcut to content's fpath from build_folder or cache_folder '''
+    cache_folder = folder if is_cache_folder else get_cache(folder)
+    return os.path.join(cache_folder, content.get('name'))
+
+
+def download_content(content, logger, build_folder):
+    return download_if_missing(url=content.get('url'),
+                               fpath=get_content_cache(content, build_folder),
+                               logger=logger,
+                               checksum=content.get('checksum'))
+
+
+def unzip_file(archive_fpath, src_fname, build_folder, dest_fpath=None):
+    with zipfile.ZipFile(archive_fpath, 'r') as zip_archive:
+        extraction = zip_archive.extract(src_fname, build_folder)
+        if dest_fpath:
+            shutil.move(extraction, dest_fpath)
+
+
+def unzip_archive(archive_fpath, dest_folder):
+    with zipfile.ZipFile(archive_fpath) as zip_archive:
+        zip_archive.extractall(dest_folder)
+
+
+def unarchive(archive_fpath, dest_folder):
+    ''' single poe for extracting our content archives '''
+    supported_extensions = ('.tar', '.tar.bz2', '.tar.gz', '.zip')
+    if sum([1 for ext in supported_extensions
+            if archive_fpath.endswith(ext)]) == 0:
+        raise NotImplementedError("Archive format extraction not supported: {}"
+                                  .format(archive_fpath))
+
+    if archive_fpath.endwith('.zip'):
+        unzip_archive(archive_fpath, dest_folder)
+        return
+
+    if sys.platform == 'win32':
+        bin_path = sys._MEIPASS if getattr(sys, "frozen", False) else "."
+        szip_exe = os.path.join(bin_path, '7za.exe')
+        command = [szip_exe, 'x', '-o', dest_folder, archive_fpath]
+    else:
+        command = ['tar', '-C', dest_folder, '-x', '-f', archive_fpath]
+
+    subprocess.run(command)

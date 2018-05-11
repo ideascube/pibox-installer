@@ -12,22 +12,16 @@
 from __future__ import (unicode_literals, division, print_function)
 import os
 import sys
-import shutil
-import zipfile
 import argparse
 import datetime
 
 import data
 from backend.qemu import Emulator
-from backend.download import download_if_missing
+from backend.content import get_content
+from backend.download import download_content, unzip_file
 from backend.ansiblecube import (
     run_for_image, ansiblecube_path as ansiblecube_emulation_path)
 from util import CLILogger, CancelEvent
-
-RASPBIAN_VERSION = "2017-07-05/2017-07-05-raspbian-jessie-lite"
-RASPBIAN_URL = ("http://downloads.raspberrypi.org/raspbian_lite/images/"
-                "raspbian_lite-{version}.zip".format(version=RASPBIAN_VERSION))
-RASPBIAN_ZIP_MD5 = "04452e4298177b08e2050250ee54a40d"
 
 
 def run_in_qemu(image_fpath, disk_size, root_size,
@@ -79,7 +73,8 @@ def run_in_qemu(image_fpath, disk_size, root_size,
     return error
 
 
-def main(disk_size, root_size, build_folder, qemu_ram, image_fname=None):
+def main(logger,
+         disk_size, root_size, build_folder, qemu_ram, image_fname=None):
 
     try:
         root_size = int(root_size)
@@ -91,7 +86,7 @@ def main(disk_size, root_size, build_folder, qemu_ram, image_fname=None):
         if root_size > disk_size:
             raise ValueError("root partition can't exceed disk size")
     except Exception as exp:
-        CLILogger.err("Erroneous size option: {}".format(repr(exp)))
+        logger.err("Erroneous size option: {}".format(repr(exp)))
         sys.exit(1)
 
     if image_fname is None:
@@ -101,26 +96,24 @@ def main(disk_size, root_size, build_folder, qemu_ram, image_fname=None):
 
     print("starting with target:", image_fpath)
 
-    zip_fname = os.path.basename(RASPBIAN_URL)
-    zip_fpath = os.path.join(build_folder, zip_fname)
-    img_fname = zip_fname.replace('.zip', '.img')
-
     # download raspbian
-    CLILogger.step("Retrieving raspbian image file")
-    rf = download_if_missing(RASPBIAN_URL, zip_fpath,
-                             CLILogger, RASPBIAN_ZIP_MD5)
+    logger.step("Retrieving raspbian image file")
+    raspbian_image = get_content('raspbian_image')
+    rf = download_content(raspbian_image, logger, build_folder)
     if not rf.successful:
-        CLILogger.err("Failed to download raspbian.\n{e}"
-                      .format(e=rf.exception))
+        logger.err("Failed to download raspbian.\n{e}"
+                   .format(e=rf.exception))
         sys.exit(1)
     elif rf.found:
-        CLILogger.std("Reusing already downloaded raspbian ZIP file")
+        logger.std("Reusing already downloaded raspbian ZIP file")
 
     # extract raspbian and rename
-    CLILogger.step("Extracting raspbian image from ZIP file")
-    with zipfile.ZipFile(zip_fname) as zipFile:
-        extraction = zipFile.extract(img_fname, build_folder)
-        shutil.move(extraction, image_fpath)
+    logger.step("Extracting raspbian image from ZIP file")
+    unzip_file(archive_fpath=rf.fpath,
+               src_fname=raspbian_image['name'].replace('.zip', '.img'),
+               build_folder=build_folder,
+               dest_fpath=image_fpath)
+    logger.std("Extraction complete: {p}".format(p=image_fpath))
 
     if not os.path.exists(image_fpath):
         raise IOError("image path does not exists: {}"
@@ -132,7 +125,7 @@ def main(disk_size, root_size, build_folder, qemu_ram, image_fname=None):
         disk_size,
         root_size,
         qemu_ram,
-        CLILogger, cancel_event)
+        logger, cancel_event)
 
     if error:
         print("ERROR: unable to properly create image")
@@ -151,5 +144,6 @@ parser.add_argument("--ram", help="Max RAM for QEMU", default="2G")
 parser.add_argument("--out", help="Base image filename (inside --build)")
 args = parser.parse_args()
 
-main(disk_size=args.size, root_size=args.root,
+main(logger=CLILogger,
+     disk_size=args.size, root_size=args.root,
      build_folder=args.build, qemu_ram=args.ram, image_fname=args.out)
