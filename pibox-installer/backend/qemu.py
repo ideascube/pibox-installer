@@ -13,7 +13,7 @@ import random
 import time
 import threading
 import posixpath
-from util import ONE_GB, ONE_MB, get_friendly_size
+from util import ONE_GB, ONE_MB, human_readable_size
 from .util import startup_info_args
 from .util import subprocess_pretty_check_call
 
@@ -99,7 +99,8 @@ class Emulator:
             ram = 30 * ONE_GB
 
         self._ram = "{ram}M".format(ram=int(ram / ONE_MB))
-        self._logger.std(". using {ram} RAM".format(ram=get_friendly_size(ram)))
+        self._logger.std(" using {ram} RAM"
+                         .format(ram=human_readable_size(ram)))
 
     def run(self, cancel_event):
         return _RunningInstance(self, self._logger, cancel_event)
@@ -299,6 +300,7 @@ class _RunningInstance:
         with self._cancel_event.lock() as cancel_register:
             cancel_register.unregister(self._qemu.pid)
         self._qemu = None
+        self._logger.std("VM is off.")
 
     # The remote path must not exist
     def put_dir(self, localpath, remotepath):
