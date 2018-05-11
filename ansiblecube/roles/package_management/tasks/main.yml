@@ -3,13 +3,7 @@
   become: yes
   become_user: ideascube
   command: ideascube catalog remotes add "{{ item.name }}" "{{ item.description }}" "{{ item.url }}"
-  with_items:
-  - name: "Kiwix"
-    description: "Kiwix ZIM content"
-    url: http://download.kiwix.org/library/ideascube.yml
-  - name: "StaticSites"
-    description: "Static sites"
-    url: http://catalog.ideascube.org/static-sites.yml
+  with_items: "{{ catalogs }}"
   tags: ['download-content', 'move-content']
 
 - name: Update ideascube catalog cache before downloading

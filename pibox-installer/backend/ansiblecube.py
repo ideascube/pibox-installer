@@ -1,38 +1,51 @@
 import os
 import json
+import tempfile
 
 ansiblecube_path = "/var/lib/ansible/local"
 
 
-def run(machine, tags, extra_vars={}, secret_kwargs={}):
+def run(machine, tags, extra_vars={}, secret_keys=[]):
     ''' machine must provide write_file and exec_cmd functions '''
 
-    # TODO: move this to a more appropriate location
-    #   simple shortcut to set tld for online demo
-    if 'PIBOX_DEMO' in os.environ:
-        extra_vars.update({'tld': 'kiwix.ml',
-                           'project_name': 'demo'})
+    # predefined defaults we want to superseed whichever in ansiblecube
+    ansible_vars = {
+        'mirror': "http://download.kiwix.org",
+        'catalogs': [
+            {'name': "Kiwix",
+             'description': "Kiwix ZIM Content",
+             'url': "http://download.kiwix.org/library/ideascube.yml"},
+            {'name': "StaticSites",
+             'description': "Static sites",
+             'url': "http://catalog.ideascube.org/static-sites.yml"}
+        ],
+    }
 
-    machine.exec_cmd("sudo apt-get update")
+    ansible_vars.update(extra_vars)
 
-    ansible_args = "--inventory hosts"
-    ansible_args += " --tags {}".format(",".join(tags))
-    ansible_args += " --extra-vars \"{}\"".format(
-        json.dumps(extra_vars).replace('"', '\\"'))
-    ansible_args += " main.yml"
+    # save extra_vars to a file on guest
+    extra_vars_path = os.path.join(ansiblecube_path, "extra_vars.json")
+    with tempfile.NamedTemporaryFile() as fp:
+        json.dump(fp, ansible_vars, indent=4)
+        machine.put_file(fp.name, extra_vars_path)
 
-    ansible_pull_cmd = (
-        "sudo sh -c 'cd {} && /usr/local/bin/ansible-playbook {}'"
-        .format(ansiblecube_path, ansible_args))
+    ansible_cmd = ("/usr/local/bin/ansible-playbook "
+                   " --inventory hosts"
+                   " --tags {tags}"
+                   " --extra-vars '@{ev_path}'"
+                   " main.yml"
+                   .format(tags=",".join(tags), ev_path=extra_vars_path))
 
-    if secret_kwargs:
-        run_ansible_pull_cmd = ansible_pull_cmd.format(**secret_kwargs)
-        displayed_ansible_pull_cmd = ansible_pull_cmd.format(
-            **{k: '****' for k, v in secret_kwargs.items()})
-    else:
-        run_ansible_pull_cmd = displayed_ansible_pull_cmd = ansible_pull_cmd
+    ansible_pull_cmd = ("sudo sh -c 'cd {path} && {cmd}'"
+                        .format(path=ansiblecube_path, cmd=ansible_cmd))
 
-    machine.exec_cmd(run_ansible_pull_cmd, displayed_ansible_pull_cmd)
+    # display sent configuration to logger
+    machine._logger.std("ansiblecube extra_vars")
+    machine._logger.raw_std(
+        json.dumps({k: '****' if k in secret_keys else v
+                    for k, v in ansible_vars.items()}, indent=4))
+
+    machine.exec_cmd(ansible_pull_cmd)
 
 
 def run_for_image(machine, seal=False):
@@ -61,13 +74,14 @@ def run_for_image(machine, seal=False):
 
 
 def run_for_user(machine, name, timezone, language, language_name, wifi_pwd,
-                 edupi, wikifundi, aflatoun, kalite, zim_install,
-                 admin_account, logo=None, favicon=None, css=None, seal=False):
+                 edupi, wikifundi_languages,
+                 aflatoun_languages, kalite_languages, packages,
+                 admin_account, logo=None, favicon=None, css=None,
+                 move_content=False, download_content=False, seal=False):
 
-    tags = ['resize', 'rename', 'configure', 'download-content']
-    if seal:
-        tags.append('seal')
+    tags = ['resize', 'rename', 'configure']
 
+    # copy branding files if set
     branding = {'favicon.png': favicon,
                 'header-logo.png': logo, 'style.css': css}
 
@@ -80,22 +94,36 @@ def run_for_user(machine, name, timezone, language, language_name, wifi_pwd,
         'timezone': timezone,
         'language': language,
         'language_name': language_name,
-        'kalite_languages': kalite,
-        'wikifundi_languages': wikifundi,
-        'aflatoun_languages': aflatoun,
+        'kalite_languages': kalite_languages,
+        'wikifundi_languages': wikifundi_languages,
+        'aflatoun_languages': aflatoun_languages,
         'edupi': edupi,
-        'packages': [{"name": x, "status": "present"} for x in zim_install],
+        'packages': [{"name": x, "status": "present"} for x in packages],
         'captive_portal': True,
         'has_custom_branding': has_custom_branding,
         'custom_branding_path': '/tmp',
-        'admin_account': "{login}",
-        'admin_password': "{pwd}",
+        'admin_account': "admin",
+        'admin_password': "admin",
     }
 
     if wifi_pwd:
         extra_vars.update({'wpa_pass': wifi_pwd})
 
-    if admin_account is None:
-        admin_account = {'login': 'admin', 'pwd': 'admin'}
+    if admin_account is not None:
+        extra_vars.update({'admin_account': admin_account['login'],
+                           'admin_password': admin_account['pwd']})
+        secret_keys = ['admin_account', 'admin_password']
+    else:
+        secret_keys = []
 
-    run(machine, tags, extra_vars, admin_account)
+    # set optionnal tags
+    if move_content:
+        tags.append('move-content')
+
+    if download_content:
+        tags.append('download-content')
+
+    if seal:
+        tags.append('seal')
+
+    run(machine, tags, extra_vars, secret_keys)
