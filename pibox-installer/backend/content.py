@@ -7,20 +7,17 @@ import json
 import shutil
 import pathlib
 
-from data import content_file
+from data import content_file, mirror
 from util import get_temp_folder
 from backend.catalog import YAML_CATALOGS
 from backend.download import get_content_cache, unarchive
-
-MIRROR = "http://download.kiwix.org"
-MIRROR = "http://192.168.1.102:8000"
 
 # prepare CONTENTS from JSON file
 with open(content_file, 'r') as fp:
     CONTENTS = json.load(fp)
     for key, dl_data in CONTENTS.items():
         if 'url' in dl_data.keys():
-            CONTENTS[key]['url'] = CONTENTS[key]['url'].format(mirror=MIRROR)
+            CONTENTS[key]['url'] = CONTENTS[key]['url'].format(mirror=mirror)
 
 
 def get_content(key):

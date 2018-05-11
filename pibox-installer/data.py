@@ -20,6 +20,8 @@ content_file = os.path.join(data_dir, 'contents.json')
 
 ansiblecube_path = os.path.join(data_dir, "ansiblecube")
 
+mirror = "http://download.kiwix.org"
+
 ideascube_languages = [
         ('am', u'አማርኛ'),
         ('ar', u'\u0627\u0644\u0639\u0631\u0628\u064a\u0651\u0629'),

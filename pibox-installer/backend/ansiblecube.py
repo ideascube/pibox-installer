@@ -6,6 +6,7 @@ import os
 import json
 import tempfile
 
+from data import mirror
 from backend.catalog import CATALOGS
 
 ansiblecube_path = "/var/lib/ansible/local"
@@ -16,7 +17,7 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
 
     # predefined defaults we want to superseed whichever in ansiblecube
     ansible_vars = {
-        'mirror': "http://download.kiwix.org",
+        'mirror': mirror,
         'catalogs': CATALOGS,
     }
 
