@@ -158,7 +158,7 @@ def get_cache(build_folder):
     return fpath
 
 def get_temp_folder(in_path):
-    return tempfile.mkdtemp(in_path)
+    return tempfile.mkdtemp(dir=in_path)
 
 def relpathto(dest):
     ''' relative path to an absolute one '''
