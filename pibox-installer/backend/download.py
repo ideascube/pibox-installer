@@ -159,7 +159,7 @@ def unarchive(archive_fpath, dest_folder):
         raise NotImplementedError("Archive format extraction not supported: {}"
                                   .format(archive_fpath))
 
-    if archive_fpath.endwith('.zip'):
+    if archive_fpath.endswith('.zip'):
         unzip_archive(archive_fpath, dest_folder)
         return
 
