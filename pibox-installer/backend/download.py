@@ -8,7 +8,8 @@ import subprocess
 import requests
 
 from util import (ReportHook, get_checksum, get_cache)
-from backend.util import subprocess_pretty_check_call
+
+FAILURE_RETRIES = 3
 
 
 class RequestedFile(object):
@@ -73,7 +74,12 @@ class RequestedFile(object):
 
 
 def stream(url, write_to=None, callback=None, block_size=1024):
-    req = requests.get(url, stream=True)
+    # prepare adapter so it retries on failure
+    session = requests.Session()
+    retry_adapter = requests.adapters.HTTPAdapter(max_retries=FAILURE_RETRIES)
+    session.mount('http', retry_adapter)
+    req = session.get(url, stream=True)
+
     total_size = int(req.headers.get('content-length', 0))
     total_downloaded = 0
     if write_to is not None:
