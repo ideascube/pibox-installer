@@ -32,6 +32,7 @@
     "wikifundi_langpack_en": {
         "url": "{mirror}/other/wikifundi/en.africapack.kiwix.org_2017-01.tar.bz2",
         "name": "wikifundi_en_2017-01.tar.bz2",
+        "folder_name": "en.africapack.kiwix.org",
         "checksum": "3e0f1a6303720ced7911c1365f4a916d1df695900363f13348325b83643566c0",
         "archive_size": 4950498092,
         "expanded_size": 6449610752

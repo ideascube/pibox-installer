@@ -1,4 +1,16 @@
 ---
+# TEMPORARY FIX UNTIL MOVE SUPPORT IS MERGED UPSTREAM
+- name: Download custom ideascube package (deb)
+  get_url:
+    url: "{{ mirror }}/dev/ideascube_0.37.1+move_armhf.deb"
+    dest: /tmp/ideascube_0.37.1+move_armhf.deb
+  tags: move-content
+
+- name: Install custom ideascube version
+  become: yes
+  command: dpkg -i /tmp/ideascube_0.37.1+move_armhf.deb
+  tags: move-content
+
 - name: Install catalogs
   become: yes
   become_user: ideascube
@@ -24,6 +36,17 @@
   register: ideascube_catalog_cmd
   notify: restart kiwix
   tags: ['download-content']
+
+
+- name: Install, upgrade or remove packages
+  become: yes
+  become_user: ideascube
+  shell: "{% if 'present' in item.status %}grep -m 1 -w \"{{ item.name }}\" /var/ideascube/main/catalog/installed.yml || ideascube catalog install --package-cache {{ packages_cache }} {{ item.name }}{% else %}echo '[+] nothing to do'{% endif %}"
+  with_items: '{{ packages | default(omit) }}'
+  when: packages | length
+  register: ideascube_catalog_cmd
+  notify: restart kiwix
+  tags: ['move-content']
 
 - set_fact:
     pkg_list: "{{ ideascube_catalog_cmd.results | map(attribute='stdout') | list }}"

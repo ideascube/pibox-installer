@@ -4,8 +4,19 @@
   ignore_errors: yes
   tags: ['configure']
 
-- name: Create a working dir Kalite
-  file: path=/home/{{ username }}/.kalite state=directory
+# whole kalite folder is placed on data part
+- name: Ensure kalite folder exists on data part
+  file:
+    path: "{{ data_path }}/kalite"
+    state: directory
+  tags: ['configure']
+
+# configuration expects kalite to be on ~/.kalite
+- name: Symlink kalite
+  file:
+    src: "{{ data_path }}/kalite"
+    dest: /home/{{ username }}/.kalite
+    state: link
   tags: ['configure']
 
   # Otherwise Ka-lite install Django2 to fullfill Django>=1.5 requirements
@@ -27,14 +38,21 @@
   register: kalite_installation 
   tags: ['configure']
 
-- name: Give rights to ideascube 
-  file:
-    path: /home/{{ username }}/.kalite
-    owner: "{{ username }}"
-    group: "{{ username }}"
-    recurse: yes
-    state: directory
-  tags: ['configure']
+# downloaded videos were placed in a different location on data part
+- name: move downloaded videos to kalite folder
+  shell: mv {{ kalite_videos_prefix }}{{ item }}/* {{ data_path }}/kalite/content/
+  with_items: "{{ kalite_languages | default(omit) }}"
+  tags: move-content
+
+# no chown support on exfat (fuse)
+# - name: Give rights to ideascube 
+#   file:
+#     path: /home/{{ username }}/.kalite
+#     owner: "{{ username }}"
+#     group: "{{ username }}"
+#     recurse: yes
+#     state: directory
+#   tags: ['configure']
 
 - name: Create a user admin for kalite
   become: yes
@@ -83,6 +101,15 @@
   when: kalite_installation.changed == True
   tags: ['download-content']
 
+# import zipped downloaded language pack (subtitles and all)
+- name: import Kalite language pack
+  become: yes
+  become_user: ideascube
+  command: /home/ideascube/.kalite/env/bin/python2 /home/ideascube/.kalite/env/share/kalite/kalitectl.py manage retrievecontentpack local {{ item }} {{ kalite_langpack_prefix }}{{ item }}.zip
+  with_items: "{{ kalite_languages | default(omit) }}"
+  when: kalite_installation.changed == True
+  tags: ['move-content']
+
 - name: Start Kalite
   service: name=kalite state=started
   tags: ['configure']
@@ -92,12 +119,14 @@
   when: kalite_installation.changed == True
   tags: ['configure', 'download-content', 'move-content']
 
+# loop over content folder to find and reckon downloaded video files
 - name: Perfom a video scan on the device
   become: yes
   become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/python2 /home/ideascube/.kalite/env/share/kalite/kalitectl.py manage videoscan
+  command: /home/ideascube/.kalite/env/bin/python2 /home/ideascube/.kalite/env/share/kalite/kalitectl.py manage videoscan -l {{ item }}
   async: 1800
   poll: 0
+  with_items: "{{ kalite_languages | default(omit) }}"
   when: kalite_installation.changed == True
   tags: ['download-content', 'move-content']
 

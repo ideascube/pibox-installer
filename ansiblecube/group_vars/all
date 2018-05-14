@@ -61,3 +61,11 @@ aflatoun_languages: []
 packages: []
 edupi: false
 catalogs: []
+
+# data partition contents
+ideascube_handlers: ['kiwix', 'nginx', 'mediacenter']
+aflatoun_content_path: "{{ data_path }}/aflatoun_content"
+kalite_langpack_prefix: "{{ data_path }}/kalite_pack_"
+kalite_videos_prefix: "{{ data_path }}/kalite_videos_"
+packages_cache: "{{ data_path }}/packages_cache"
+wikifundi_langpack_prefix: "{{ data_path }}/wikifundi_langpack_"

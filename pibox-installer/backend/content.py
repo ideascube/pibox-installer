@@ -3,6 +3,7 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 import os
+import re
 import json
 import shutil
 import pathlib
@@ -94,7 +95,7 @@ def get_package_content(package_id):
             package = catalog['all'][package_id]
             return {
                 "url": package['url'],
-                "name": "package_{}".format(package_id),
+                "name": "package_{id}-{version}".format(**package),
                 "checksum": package['sha256sum'],
                 "archive_size": package['size'],
                 "expanded_size": package['size'] * 1.10
@@ -126,6 +127,14 @@ def extract_and_move(content, cache_folder, root_path, final_path):
     shutil.rmtree(extract_folder, ignore_errors=True)
 
 
+def move(content, cache_folder, final_path):
+    # retrieve archive path
+    archive_fpath = get_content_cache(content, cache_folder, True)
+
+    # move useful content to final path
+    shutil.move(archive_fpath, final_path)
+
+
 def run_edupi_actions(cache_folder, mount_point, logger, enable=False):
     ''' no action for EduPi ; everything within ansiblecube '''
     return
@@ -140,11 +149,9 @@ def run_kalite_actions(cache_folder, mount_point, logger, languages=[]):
         # language pack
         lang_key = 'kalite_langpack_{lang}'.format(lang=lang)
         lang_pack = get_content(lang_key)
-        extract_and_move(
-            content=lang_pack,
-            cache_folder=cache_folder,
-            root_path=mount_point,
-            final_path=os.path.join(mount_point, lang_key))
+        move(content=lang_pack,
+             cache_folder=cache_folder,
+             final_path=os.path.join(mount_point, lang_pack['name']))
 
         # videos
         videos = get_content('kalitekalite_videos_{lang}'.format(lang=lang))
@@ -162,12 +169,13 @@ def run_wikifundi_actions(cache_folder, mount_point, logger, languages=[]):
         return
 
     for lang in languages:
-        content = get_content('wikifundi_langpack_{lang}'.format(lang=lang))
+        lang_key = 'wikifundi_langpack_{lang}'.format(lang=lang)
+        content = get_content(lang_key)
         extract_and_move(
             content=content,
             cache_folder=cache_folder,
             root_path=mount_point,
-            final_path=os.path.join(mount_point, content['folder_name']))
+            final_path=os.path.join(mount_point, lang_key))
 
 
 def run_aflatoun_actions(cache_folder, mount_point, logger, languages=[]):
@@ -186,7 +194,7 @@ def run_packages_actions(cache_folder, mount_point, logger, packages=[]):
     ''' moves downloaded ZIM files to an expected location on partition '''
 
     # ensure packages folder exists
-    packages_folder = pathlib.Path(os.path.join(mount_point, "packages"))
+    packages_folder = pathlib.Path(os.path.join(mount_point, "packages_cache"))
     packages_folder.mkdir(exist_ok=True)
 
     for package in packages:
@@ -197,5 +205,6 @@ def run_packages_actions(cache_folder, mount_point, logger, packages=[]):
         # retrieve downloaded path
         package_fpath = get_content_cache(content, cache_folder, True)
         # copy to the packages folder
-        final_path = os.path.join(packages_folder, content['name'])
+        final_path = os.path.join(packages_folder,
+                                  re.sub(r'^package_', '', content['name']))
         shutil.copy(package_fpath, final_path)

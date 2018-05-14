@@ -40,12 +40,20 @@
   with_items: "{{ wikifundi_languages | default(omit) }}"
   tags: ['download-content']
 
+- name: Symlink wikifundi language
+  file:
+    src: "{{ wikifundi_langpack_prefix }}{{ item }}"
+    dest: "/var/www/{{ item }}.africapack.kiwix.org"
+    state: link
+  with_items: "{{ wikifundi_languages | default(omit) }}"
+  tags: move-content
+
 - name: Change lua path and TMP in LocalSettings.custom.php
   replace:
     name: /var/www/{{ item }}.africapack.kiwix.org/w/LocalSettings.custom.php
     regexp: '^\<\?php$'
     replace: '<?php\nputenv("TMP={$wgUploadDirectory}/temp");\n$wgScribuntoEngineConf[''luastandalone''][''luaPath''] = "/usr/bin/lua5.1";'
-    owner: www-data
+    # owner: www-data
   with_items: "{{ wikifundi_languages | default(omit) }}"
   tags: ['download-content', 'move-content']
 
@@ -76,7 +84,7 @@
     src: "{{ mirror }}/other/wikifundi/parsoid_2016-08.tar.bz2"
     dest: /var/www
     remote_src: True
-    owner: www-data
+    # owner: www-data
   tags: ['configure']
 
 - name: Setup parsoid service

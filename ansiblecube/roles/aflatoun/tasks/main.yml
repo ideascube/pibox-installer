@@ -21,14 +21,36 @@
     virtualenv=/home/{{ username }}/.aflatoun/env
   tags: ['configure']
 
-- name: Give rights to ideascube
+# whold aflatoun folder is placed on data part
+- name: Ensure aflatoun folder exists on data part
   file:
-    path: /home/{{ username }}/.aflatoun
+    path: "{{ data_path }}/aflatoun"
+    state: directory
+    # owner: "{{ username }}"
+    # group: "{{ username }}"
+    # recurse: yes
+  tags: ['configure']
+
+# configuration expects aflatoun to be on ~/.aflatoun
+- name: Symlink aflatoun
+  file:
+    src: "{{ data_path }}/aflatoun"
+    dest: /home/{{ username }}/.aflatoun
+    state: link
     owner: "{{ username }}"
     group: "{{ username }}"
     recurse: yes
-    state: directory
   tags: ['configure']
+
+# no chown support on exfat (fuse)
+# - name: Give rights to ideascube
+#   file:
+#     path: /home/{{ username }}/.aflatoun
+#     owner: "{{ username }}"
+#     group: "{{ username }}"
+#     recurse: yes
+#     state: directory
+#   tags: ['configure']
 
 - name: Create a user admin for aflatoun
   become: yes
@@ -45,12 +67,18 @@
     owner: ideascube
   tags: ['download-content']
 
+# downloaded content was placed in a different location on data part
+- name: move downloaded content to aflatoun folder
+  command: mv {{ aflatoun_content_path }}/ {{ data_path }}/aflatoun/content
+  tags: move-content
+
+# lang pack is downloaded after content as part of it sits in content/
 - name: Download Aflatoun language pack
   get_url:
     url: "{{ mirror }}/other/aflatoun/{{ item }}.zip"
     dest: /tmp/{{ item }}.zip
   with_items: "{{ aflatoun_languages }}"
-  tags: ['configure']
+  tags: ['download-content', 'move-content']
 
 - name: Retrieve Aflatoun language pack
   become: yes

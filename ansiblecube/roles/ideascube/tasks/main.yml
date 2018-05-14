@@ -15,6 +15,26 @@
   register: ideascube_newversion
   tags: ['master']
 
+- name: Delete ideascube handlers directories
+  command: rm -rf "/var/ideascube/{{ item }}"
+  with_items: ideascube_handlers
+  tags: ['master', 'configure']
+
+- name: Create ideascube handlers directories
+  file:
+    path: "{{ data_path }}/ideascube/{{ item }}"
+    state: directory
+  with_items: ideascube_handlers
+  tags: ['master', 'configure']
+
+- name: Symlink ideascube handlers in idascube folder
+  file:
+    src: "{{ data_path }}/ideascube/{{ item }}"
+    dest: "/var/ideascube/{{ item }}"
+    state: link
+  with_items: ideascube_handlers
+  tags: ['master', 'configure']
+
 - block:
 
   - debug: msg="Customize branding"
@@ -72,7 +92,7 @@
   when: has_been_installed.changed == True
   tags: ['master']
 
-- name: Check if EduPi super user is installed
+- name: Check if ideascube super user is installed
   become: yes
   become_user: ideascube
   command: ideascube shell -c "from ideascube.models import User; print('****{}****'.format(User.objects.filter(serial='{{ admin_account }}').count()))"

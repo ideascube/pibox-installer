@@ -8,8 +8,8 @@ It aims at setting-up a complete RaspberryPi box tu use as a Content-HotSpot.
 
 This is achieved using a two steps scenario:
 
-1. A base image is created, running this playbook with default (no-content) values using `--tags master,configure`
-2. Content is configured by rerenning the playbook with a configuration file and `--tags configure,resize,content`.
+1. A base image is created, running this playbook with default (no-content) values using `--tags master,resize,rename,configure`
+2. Content is configured by rerenning the playbook with a configuration file and `--tags configure,resize,rename,[move|download]-content`.
 
 ## Tags
 
@@ -21,7 +21,10 @@ This is achieved using a two steps scenario:
 * `move-content`: move expected content from `/data/warehouse` to proper locations, according to configuration
 * *`hardware`* is not used with pibox-installer but provides some additional hardware support (needs to run on actual hardware with Internet connection).
 
-**Note**: `download-content` and `move-content` are exclusive.
+**Notes**:
+
+* `download-content` and `move-content` are exclusive.
+* `resize` requires a re-run of `configure` as most content and softwares lives in `/data`.
 
 ## Features
 
