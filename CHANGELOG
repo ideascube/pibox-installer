@@ -1,3 +1,34 @@
+2.0a
+* Kiwix-serve doesn't use library.xml anymore (metadata retrieved from zim: better http://kiwix.FQDN)
+* Large contents are extracted directly into mounted partition
+* Downloads are slighty more reliable (retried 3 times)
+* Large files are downloaded into a cache and retrieved from it
+* Large content files listed in a JSON file with details
+* Large content file downloaded in pibox-installer
+* Captive portal now available in English and French
+* Catalogs now defined only in pibox and passwd to ansiblecube
+* Documentation to setup an online demo of pibox images
+* CLI params and JSON export/import now uses human-readble sizes (still supports bytes)
+* Major ansiblecube clean-up
+ * Large files all using Kiwix mirror (download.kiwix.org)
+ * Fixed hostname issues
+ * fixed Edupi
+ * Fixed KA-Lite videos
+ * resize of partitions now in ansiblecube
+ * removed all outdated steps
+* Anisblecube now integrated in pibox
+* Better QEMU usage:
+ * updated to latest qemu (2.12.0)
+ * using no deprecated parameter
+ * assigning an N-1 cores to Qemu based on number of cores available
+* Base Image contains a system partition and a dedicated ExFAT data partition
+* Can now create base image using `pibox-installer image`
+* Now using own custom base image
+* Updated to raspbian 2017-07-05
+
+CURRENT
+* Presets in the repo for common images
+
 1.0
 * FIXED: using a free-only catalog
 * FIXED: preconfigured admin credentials
