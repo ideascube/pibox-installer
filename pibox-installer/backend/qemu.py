@@ -35,6 +35,9 @@ qemu_system_arm_exe_path = os.path.join(bin_path, qemu_system_arm_exe)
 qemu_img_exe_path = os.path.join(bin_path, qemu_img_exe)
 nb_cpus = multiprocessing.cpu_count()
 qemu_cpu = nb_cpus - 1 if nb_cpus >= 2 else nb_cpus
+# vexpress-a15 is limited to 4 cores
+if qemu_cpu > 4:
+    qemu_cpu = 4
 host_ram = int(psutil.virtual_memory().total)
 
 class QemuException(Exception):
