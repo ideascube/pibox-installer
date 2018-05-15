@@ -4,7 +4,6 @@ import signal
 import sys
 import base64
 import hashlib
-import pathlib
 import tempfile
 import ctypes
 import platform
@@ -153,11 +152,8 @@ def get_checksum(fpath, func=hashlib.sha256):
     return h.hexdigest()
 
 def get_cache(build_folder):
-    fpath = pathlib.Path(os.path.join(build_folder, "cache"))
-    try:
-        fpath.mkdir()
-    except FileExistsError:
-        pass
+    fpath = os.path.join(build_folder, "cache")
+    os.makedirs(fpath, exist_ok=True)
     return fpath
 
 def get_temp_folder(in_path):

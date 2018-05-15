@@ -6,7 +6,6 @@ import os
 import re
 import json
 import shutil
-import pathlib
 
 from data import content_file, mirror
 from util import get_temp_folder
@@ -194,11 +193,8 @@ def run_packages_actions(cache_folder, mount_point, logger, packages=[]):
     ''' moves downloaded ZIM files to an expected location on partition '''
 
     # ensure packages folder exists
-    packages_folder = pathlib.Path(os.path.join(mount_point, "packages_cache"))
-    try:
-        packages_folder.mkdir()
-    except FileExistsError:
-        pass
+    packages_folder = os.path.join(mount_point, "packages_cache")
+    os.makedirs(packages_folder, exist_ok=True)
 
     for package in packages:
         content = get_package_content(package)
