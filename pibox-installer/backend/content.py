@@ -195,7 +195,10 @@ def run_packages_actions(cache_folder, mount_point, logger, packages=[]):
 
     # ensure packages folder exists
     packages_folder = pathlib.Path(os.path.join(mount_point, "packages_cache"))
-    packages_folder.mkdir(exist_ok=True)
+    try:
+        packages_folder.mkdir()
+    except FileExistsError:
+        pass
 
     for package in packages:
         content = get_package_content(package)

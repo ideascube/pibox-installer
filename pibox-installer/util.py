@@ -154,7 +154,10 @@ def get_checksum(fpath, func=hashlib.sha256):
 
 def get_cache(build_folder):
     fpath = pathlib.Path(os.path.join(build_folder, "cache"))
-    fpath.mkdir(exist_ok=True)
+    try:
+        fpath.mkdir()
+    except FileExistsError:
+        pass
     return fpath
 
 def get_temp_folder(in_path):
