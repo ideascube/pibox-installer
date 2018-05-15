@@ -29,11 +29,11 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
         json.dump(ansible_vars, fp, indent=4)
         machine.put_file(fp.name, extra_vars_path)
 
-    ansible_cmd = ("/usr/local/bin/ansible-playbook "
-                   " --inventory hosts"
-                   " --tags {tags}"
-                   " --extra-vars '@{ev_path}'"
-                   " main.yml"
+    ansible_cmd = ('/usr/local/bin/ansible-playbook '
+                   ' --inventory hosts'
+                   ' --tags {tags}'
+                   ' --extra-vars "@{ev_path}"'
+                   ' main.yml'
                    .format(tags=",".join(tags), ev_path=extra_vars_path))
 
     ansible_pull_cmd = ("sudo sh -c 'cd {path} && {cmd}'"
