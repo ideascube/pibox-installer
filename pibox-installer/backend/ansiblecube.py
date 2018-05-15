@@ -26,7 +26,7 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
     # save extra_vars to a file on guest
     extra_vars_path = os.path.join(ansiblecube_path, "extra_vars.json")
     with tempfile.NamedTemporaryFile() as fp:
-        json.dump(fp, ansible_vars, indent=4)
+        json.dump(ansible_vars, fp, indent=4)
         machine.put_file(fp.name, extra_vars_path)
 
     ansible_cmd = ("/usr/local/bin/ansible-playbook "
