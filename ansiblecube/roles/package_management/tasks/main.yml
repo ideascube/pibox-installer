@@ -1,15 +1,15 @@
 ---
-# TEMPORARY FIX UNTIL MOVE SUPPORT IS MERGED UPSTREAM
-- name: Download custom ideascube package (deb)
-  get_url:
-    url: "{{ mirror }}/dev/ideascube_0.37.1+move_armhf.deb"
-    dest: /tmp/ideascube_0.37.1+move_armhf.deb
-  tags: move-content
+# # TEMPORARY FIX UNTIL MOVE SUPPORT IS MERGED UPSTREAM
+# - name: Download custom ideascube package (deb)
+#   get_url:
+#     url: "{{ mirror }}/dev/ideascube_0.37.1+move_armhf.deb"
+#     dest: /tmp/ideascube_0.37.1+move_armhf.deb
+#   tags: move-content
 
-- name: Install custom ideascube version
-  become: yes
-  command: dpkg -i /tmp/ideascube_0.37.1+move_armhf.deb
-  tags: move-content
+# - name: Install custom ideascube version
+#   become: yes
+#   command: dpkg -i /tmp/ideascube_0.37.1+move_armhf.deb
+#   tags: move-content
 
 - name: Install catalogs
   become: yes
