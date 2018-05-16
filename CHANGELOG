@@ -1,4 +1,5 @@
 2.0a
+* Updated to KA-Lite 0.17.4
 * Kiwix-serve doesn't use library.xml anymore (metadata retrieved from zim: better http://kiwix.FQDN)
 * Large contents are extracted directly into mounted partition
 * Downloads are slighty more reliable (retried 3 times)

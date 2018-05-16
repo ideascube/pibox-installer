@@ -38,39 +38,39 @@
         "expanded_size": 6449610752
     },
     "kalite_langpack_fr": {
-        "url": "{mirror}/other/kalite/langpack_fr_0.16.zip",
+        "url": "{mirror}/other/kalite/langpack_fr_0.17.zip",
         "name": "kalite_pack_fr.zip",
         "folder_name": null,
-        "checksum": "51f69d0b3ccec2b103aa1d52514b44f97183bcd7bb53ffe7e5345f3b38624b76",
-        "archive_size": 73095681,
-        "expanded_size": 74059776
+        "checksum": "90807ceff17694d74a7748dab76c5765cd87347ea09b260ba83604c2f4b4019b",
+        "archive_size": 101891723,
+        "expanded_size": 102690816
     },
     "kalite_langpack_en": {
-        "url": "{mirror}/other/kalite/langpack_en_0.16.zip",
+        "url": "{mirror}/other/kalite/langpack_en_0.17.zip",
         "name": "kalite_pack_en.zip",
         "folder_name": null,
-        "checksum": "4e194675c34c0b418d1de5ea1f3d1d24f79f6a7759857e74515b27fefba49d88",
-        "archive_size": 733792710,
-        "expanded_size": 883191808
+        "checksum": "011d45a47df66de445526122495b7146f755bceb0186219b834b244223aae059",
+        "archive_size": 929916955,
+        "expanded_size": 1117425664
     },
     "kalite_langpack_es": {
-        "url": "{mirror}/other/kalite/langpack_es_0.16.zip",
+        "url": "{mirror}/other/kalite/langpack_es_0.17.zip",
         "name": "kalite_pack_es.zip",
         "folder_name": null,
-        "checksum": "b9372c0962a8ebd8d592d688a9bb8b80607e7c608471a64bd49af9deab15b82f",
-        "archive_size": 77653602,
-        "expanded_size": 79609856
+        "checksum": "69567e9fe94ed6185af1ee3f1bde31bebf474d9e7019f516402d35a214aeea72",
+        "archive_size": 93567392,
+        "expanded_size": 95309824
     },
     "kalite_videos_fr": {
-        "url": "{mirror}/other/kalite/videos_fr_0.16.tar",
+        "url": "{mirror}/other/kalite/videos_fr_0.17.tar",
         "name": "kalite_videos_fr.tar",
         "folder_name": "kalite_videos_fr",
-        "checksum": "0626a4dc0a1647519b130af1eb34c9a82021dffb2e90f2a0f23985a94b94a768",
-        "archive_size": 11389568512,
-        "expanded_size": 11804082176
+        "checksum": "c077240feaaa3caae16df7078a05f27692977006691c038c9b889b39cad06166",
+        "archive_size": 11389573120,
+        "expanded_size": 11396665344
     },
     "kalite_videos_en": {
-        "url": "{mirror}/other/kalite/videos_en_0.16.tar",
+        "url": "{mirror}/other/kalite/videos_en_0.17.tar",
         "name": "kalite_videos_en.tar",
         "folder_name": "kalite_videos_en",
         "checksum": "",
@@ -78,7 +78,7 @@
         "expanded_size": 0
     },
     "kalite_videos_es": {
-        "url": "{mirror}/other/kalite/videos_es_0.16.tar",
+        "url": "{mirror}/other/kalite/videos_es_0.17.tar",
         "name": "kalite_videos_es.tar",
         "folder_name": "kalite_videos_es",
         "checksum": "",

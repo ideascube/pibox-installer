@@ -1,9 +1,4 @@
 ---
-- name: Ensure kalite is stopped if service exist
-  service: name=kalite state=stopped
-  ignore_errors: yes
-  tags: ['configure']
-
 # whole kalite folder is placed on data part
 - name: Ensure kalite folder exists on data part
   file:
@@ -19,17 +14,9 @@
     state: link
   tags: ['configure']
 
-  # Otherwise Ka-lite install Django2 to fullfill Django>=1.5 requirements
-  # which is not available on python2.
-- name: Install Django 1.11.8 for Ka-lite
-  pip: name=Django
-    version=1.11.8
-    chdir=/home/{{ username }}/.kalite
-    virtualenv_command=/usr/bin/virtualenv
-    virtualenv=/home/{{ username }}/.kalite/env
-  tags: ['configure']
-
 - name: Install Ka-lite
+  become: yes
+  become_user: ideascube
   pip: name=ka-lite
     version={{ kalite_version }}
     chdir=/home/{{ username }}/.kalite
@@ -57,8 +44,15 @@
 - name: Create a user admin for kalite
   become: yes
   become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/python2 /home/ideascube/.kalite/env/share/kalite/kalitectl.py manage setup --username={{ admin_account }} --password={{ admin_password }} --noinput
+  command: /home/ideascube/.kalite/env/bin/kalite manage setup --username={{ admin_account }} --password={{ admin_password }} --noinput
   when: admin_account is defined
+  tags: ['configure']
+
+- name: Run kalite manage setup without admin user
+  become: yes
+  become_user: ideascube
+  command: /home/ideascube/.kalite/env/bin/kalite manage setup --noinput
+  when: admin_account is not defined
   tags: ['configure']
 
 - name: Copy nginx vhost
@@ -66,7 +60,7 @@
   notify: restart nginx
   tags: ['configure', 'rename']
 
-- name: Nginx enable Virtual host
+- name: Enable nginx vhost
   file: src=/etc/nginx/sites-available/kalite dest=/etc/nginx/sites-enabled/kalite state=link
   notify: restart nginx
   tags: ['configure']
@@ -82,56 +76,41 @@
 - name: Generate a zone for kalite
   become: yes
   become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/python2 /home/ideascube/.kalite/env/share/kalite/kalitectl.py manage generate_zone
+  command: /home/ideascube/.kalite/env/bin/kalite manage generate_zone
   ignore_errors: yes
-  tags: ['configure']
-
-- name: Run kalite manage setup after upgrade
-  become: yes
-  become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/python2 /home/ideascube/.kalite/env/share/kalite/kalitectl.py manage setup --noinput
-  when: kalite_installation.changed == True
   tags: ['configure']
 
 - name: Download Kalite language pack
   become: yes
   become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/python2 /home/ideascube/.kalite/env/share/kalite/kalitectl.py manage retrievecontentpack download {{ item }}
+  command: /home/ideascube/.kalite/env/bin/kalite manage retrievecontentpack download {{ item }}
   with_items: "{{ kalite_languages | default(omit) }}"
-  when: kalite_installation.changed == True
   tags: ['download-content']
 
 # import zipped downloaded language pack (subtitles and all)
-- name: import Kalite language pack
+- name: Import Kalite language pack
   become: yes
   become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/python2 /home/ideascube/.kalite/env/share/kalite/kalitectl.py manage retrievecontentpack local {{ item }} {{ kalite_langpack_prefix }}{{ item }}.zip
+  command: /home/ideascube/.kalite/env/bin/kalite manage retrievecontentpack local {{ item }} {{ kalite_langpack_prefix }}{{ item }}.zip
   with_items: "{{ kalite_languages | default(omit) }}"
-  when: kalite_installation.changed == True
   tags: ['move-content']
 
 - name: Start Kalite
   service: name=kalite state=started
   tags: ['configure']
 
-- name: Restart Kalite
-  service: name=kalite state=restarted
-  when: kalite_installation.changed == True
-  tags: ['configure', 'download-content', 'move-content']
-
 # loop over content folder to find and reckon downloaded video files
 - name: Perfom a video scan on the device
   become: yes
   become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/python2 /home/ideascube/.kalite/env/share/kalite/kalitectl.py manage videoscan -l {{ item }}
+  command: /home/ideascube/.kalite/env/bin/kalite manage videoscan -l {{ item }}
   async: 1800
   poll: 0
   with_items: "{{ kalite_languages | default(omit) }}"
-  when: kalite_installation.changed == True
   tags: ['download-content', 'move-content']
 
 - name: Get ka-lite version
-  shell: /home/ideascube/.kalite/env/bin/python2 /home/ideascube/.kalite/env/share/kalite/kalitectl.py --version ; echo
+  shell: /home/ideascube/.kalite/env/bin/kalite --version ; echo
   register: kalite_newversion
   tags: ['configure']
 
