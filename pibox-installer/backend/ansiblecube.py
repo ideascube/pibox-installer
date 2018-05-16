@@ -29,7 +29,7 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
         json.dump(ansible_vars, fp, indent=4)
         fp.close()
         machine.put_file(fp.name, extra_vars_path)
-        os.unlink(fp)
+        os.unlink(fp.name)
 
     ansible_cmd = ('/usr/local/bin/ansible-playbook '
                    ' --inventory hosts'
