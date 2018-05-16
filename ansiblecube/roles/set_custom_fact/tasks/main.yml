@@ -19,7 +19,7 @@
 
   - set_fact:
       project_name: "{{ project_name }}"
-      project_name_safe: "{{ project_name |replace(\"_\", \"-\")|lower }}"
+      project_name_safe: "{{ project_name|replace(\" \", \"_\")|replace(\"_\", \"-\")|lower }}"
     name: Set project_name and project_name_safe facts
 
   - set_fact:
