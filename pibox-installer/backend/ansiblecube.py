@@ -25,14 +25,16 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
 
     # save extra_vars to a file on guest
     extra_vars_path = os.path.join(ansiblecube_path, "extra_vars.json")
-    with tempfile.NamedTemporaryFile('w') as fp:
+    with tempfile.NamedTemporaryFile('w', delete=False) as fp:
         json.dump(ansible_vars, fp, indent=4)
+        fp.close()
         machine.put_file(fp.name, extra_vars_path)
+        os.unlink(fp)
 
     ansible_cmd = ('/usr/local/bin/ansible-playbook '
                    ' --inventory hosts'
                    ' --tags {tags}'
-                   ' --extra-vars "@{ev_path}"'
+                   ' --extra-vars="@{ev_path}"'
                    ' main.yml'
                    .format(tags=",".join(tags), ev_path=extra_vars_path))
 
