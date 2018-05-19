@@ -52,10 +52,6 @@
     name: Set hostname using to {{ fqdn }}
     notify: restart systemd-logind
 
-  - name: reload ansible_hostname
-    setup: filter=ansible_hostname gather_timeout=240
-  tags: ['master', 'rename']
-
 - debug: msg="My name is {{ ansible_hostname }}"
   tags: ['master', 'rename']
 
@@ -66,7 +62,3 @@
     value={{ fqdn }}
   when: ansible_local.installed_software.management.hostname is undefined
   tags: ['master', 'rename']
-
-- name: reload ansible_local
-  setup: filter=ansible_local gather_timeout=240
-  tags: ['master', 'configure', 'rename']
