@@ -7,10 +7,12 @@ import time
 import tempfile
 import data
 from backend.catalog import YAML_CATALOGS
+from backend.content import (get_collection, get_required_building_space,
+                             get_required_image_size)
 from run_installation import run_installation
 from util import CancelEvent
 from util import get_free_space_in_dir
-from util import compute_space_required, human_readable_size
+from util import human_readable_size, get_cache
 from util import CLILogger, b64decode
 
 
@@ -102,7 +104,7 @@ parser.add_argument("--name", help="name of the box (mybox)", default="mybox")
 parser.add_argument("--timezone", help="timezone (Europe/Paris)", default="Europe/Paris")
 parser.add_argument("--language", help="language (en)", choices=languages, default="en")
 parser.add_argument("--wifi-pwd", help="wifi password (Open)")
-parser.add_argument("--kalite", help="install kalite", choices=["fr", "en", "er"], nargs="+")
+parser.add_argument("--kalite", help="install kalite", choices=["fr", "en", "es"], nargs="+")
 parser.add_argument("--aflatoun", help="install aflatoun", action="store_true")
 parser.add_argument("--wikifundi", help="install wikifundi", choices=["fr", "en"], nargs="+")
 parser.add_argument("--edupi", help="install edupi", action="store_true")
@@ -148,24 +150,6 @@ except Exception:
 else:
     args.human_size = human_readable_size(args.size)
 
-build_free_space = get_free_space_in_dir(args.build_dir)
-if build_free_space < args.size:
-    print("Not enough space available at {} to build image".format(args.build_dir), file=sys.stderr)
-    exit(1)
-
-space_required = compute_space_required(
-                catalog=YAML_CATALOGS,
-                zim_list=args.zim_install,
-                kalite=args.kalite,
-                wikifundi=args.wikifundi,
-                aflatoun=args.aflatoun,
-                edupi=args.edupi)
-if args.size < space_required:
-    print("image size ({}) is not large enough for the content ({})"
-          .format(human_readable_size(args.size),
-                  human_readable_size(space_required)), file=sys.stderr)
-    exit(3)
-
 # display configuration and offer time to cancel
 print("Pibox-installer configuration:")
 keys = args.__dict__.keys()
@@ -175,6 +159,35 @@ for name in keys:
         name=name,
         value=getattr(args, name),
         space=" " * (longest - len(name))))
+
+# check disk space
+collection = get_collection(edupi=args.edupi,
+                            packages=args.zim_install,
+                            kalite_languages=args.kalite,
+                            wikifundi_languages=args.wikifundi,
+                            aflatoun_languages=['fr', 'en']
+                            if args.aflatoun else [])
+cache_folder = get_cache(args.build_dir)
+# how much space is available on the build directory?
+avail_space_in_build_dir = get_free_space_in_dir(args.build_dir)
+# how much space do we need to build the image?
+space_required_to_build = get_required_building_space(collection, cache_folder)
+# how large should the image be?
+required_image_size = get_required_image_size(collection)
+
+if avail_space_in_build_dir < space_required_to_build:
+    print("Not enough space available at {dir} ({free}) to build image ({img})"
+          .format(dir=args.build_dir, free=avail_space_in_build_dir,
+                  img=required_image_size), file=sys.stderr)
+    exit(1)
+
+if args.size < required_image_size:
+    print("image size ({img}) is not large enough for the content ({req})"
+          .format(img=human_readable_size(args.size),
+                  req=human_readable_size(required_image_size)),
+          file=sys.stderr)
+    exit(3)
+
 print("\nInstaller will start in ({}) seconds."
       .format(CANCEL_TIMEOUT), end='', flush=True)
 for timeout in range(CANCEL_TIMEOUT, 0, -1):
