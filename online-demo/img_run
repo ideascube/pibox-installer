@@ -29,7 +29,7 @@ if [ ! -f "${img}" ] ; then
 	exit 1
 fi
 
-if [ ! -f zImage ] ; then
+if [ ! -f ~/zImage ] ; then
 	echo "kernel files not present, downloading"
 	wget -O ~/boot.zip http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
 	unzip boot.zip
