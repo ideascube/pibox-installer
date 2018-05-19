@@ -76,7 +76,16 @@ class RequestedFile(object):
 def stream(url, write_to=None, callback=None, block_size=1024):
     # prepare adapter so it retries on failure
     session = requests.Session()
-    retry_adapter = requests.adapters.HTTPAdapter(max_retries=FAILURE_RETRIES)
+    # retries up-to FAILURE_RETRIES whichever kind of listed error
+    retries = requests.packages.urllib3.util.retry.Retry(
+        total=FAILURE_RETRIES,  # total number of retries
+        connect=FAILURE_RETRIES,  # connection errors
+        read=FAILURE_RETRIES,  # read errors
+        status=2,  # failure HTTP status (only those bellow)
+        redirect=False,  # don't fail on redirections
+        backoff_factor=1,  # sleep factor between retries
+        status_forcelist=[413, 429, 500, 502, 503, 504])
+    retry_adapter = requests.adapters.HTTPAdapter(max_retries=retries)
     session.mount('http', retry_adapter)
     req = session.get(url, stream=True)
 
