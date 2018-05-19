@@ -13,14 +13,12 @@ ansiblecube_path = "/var/lib/ansible/local"
 
 
 def run(machine, tags, extra_vars={}, secret_keys=[]):
-    ''' machine must provide write_file and exec_cmd functions '''
 
     # predefined defaults we want to superseed whichever in ansiblecube
     ansible_vars = {
         'mirror': mirror,
         'catalogs': CATALOGS,
     }
-
     ansible_vars.update(extra_vars)
 
     # save extra_vars to a file on guest
@@ -31,7 +29,8 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
         machine.put_file(fp.name, extra_vars_path)
         os.unlink(fp.name)
 
-    ansible_cmd = ('/usr/local/bin/ansible-playbook '
+    # prepare ansible command
+    ansible_cmd = ('/usr/local/bin/ansible-playbook -vvv '
                    ' --inventory hosts'
                    ' --tags {tags}'
                    ' --extra-vars="@{ev_path}"'
@@ -52,7 +51,7 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
 
 def run_for_image(machine, seal=False):
 
-    tags = ['master', 'resize', 'rename', 'configure']
+    tags = ['master', 'rename', 'configure']
     if seal:
         tags.append('seal')
 
@@ -61,7 +60,7 @@ def run_for_image(machine, seal=False):
     machine.exec_cmd("sudo apt-get install -y python-pip python-yaml "
                      "python-jinja2 python-httplib2 python-paramiko "
                      "python-pkg-resources libffi-dev libssl-dev git "
-                     "lsb-release exfat-fuse")
+                     "lsb-release")
     machine.exec_cmd("sudo pip install ansible==2.2.0")
 
     # prepare ansible files
@@ -75,23 +74,15 @@ def run_for_image(machine, seal=False):
     run(machine, tags, extra_vars)
 
 
-def run_for_user(machine, name, timezone, language, language_name, wifi_pwd,
-                 edupi, wikifundi_languages,
-                 aflatoun_languages, kalite_languages, packages,
-                 admin_account, logo=None, favicon=None, css=None,
-                 move_content=False, download_content=False, seal=False):
-
-    tags = ['resize', 'rename', 'configure']
-
-    # copy branding files if set
-    branding = {'favicon.png': favicon,
-                'header-logo.png': logo, 'style.css': css}
-
-    for fname, item in [(k, v) for k, v in branding.items() if v is not None]:
-        has_custom_branding = True
-        machine.put_file(item, "/tmp/{}".format(fname))
+def build_extra_vars(name, timezone, language, language_name, wifi_pwd,
+                     edupi, wikifundi_languages,
+                     aflatoun_languages, kalite_languages, packages,
+                     admin_account,
+                     root_partition_size, disk_size):
 
     extra_vars = {
+        'root_partition_size': root_partition_size // 2 ** 30,
+        'disk_size': disk_size // 2 ** 30,
         'project_name': name,
         'timezone': timezone,
         'language': language,
@@ -102,7 +93,6 @@ def run_for_user(machine, name, timezone, language, language_name, wifi_pwd,
         'edupi': edupi,
         'packages': [{"name": x, "status": "present"} for x in packages],
         'captive_portal': True,
-        'has_custom_branding': has_custom_branding,
         'custom_branding_path': '/tmp',
         'admin_account': "admin",
         'admin_password': "admin",
@@ -118,13 +108,29 @@ def run_for_user(machine, name, timezone, language, language_name, wifi_pwd,
     else:
         secret_keys = []
 
-    # set optionnal tags
-    if move_content:
-        tags.append('move-content')
+    return extra_vars, secret_keys
 
-    if download_content:
-        tags.append('download-content')
 
+def run_phase_one(machine, extra_vars, secret_keys,
+                  logo=None, favicon=None, css=None,):
+
+    tags = ['resize', 'rename', 'configure']
+
+    # copy branding files if set
+    branding = {'favicon.png': favicon,
+                'header-logo.png': logo, 'style.css': css}
+
+    for fname, item in [(k, v) for k, v in branding.items() if v is not None]:
+        has_custom_branding = True
+        machine.put_file(item, "/tmp/{}".format(fname))
+
+    extra_vars.update({'has_custom_branding': has_custom_branding})
+
+    run(machine, tags, extra_vars, secret_keys)
+
+
+def run_phase_two(machine, extra_vars, secret_keys, seal=False):
+    tags = ['move-content']
     if seal:
         tags.append('seal')
 

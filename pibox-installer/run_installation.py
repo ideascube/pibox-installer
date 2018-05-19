@@ -1,6 +1,6 @@
 from backend import ansiblecube
 from backend import qemu
-from backend.content import get_collection, get_content
+from backend.content import get_collection, get_content, get_all_contents_for
 from backend.download import download_content, unzip_file
 from backend.mount import mount_data_partition, unmount_data_partition
 from backend.util import subprocess_pretty_check_call
@@ -13,8 +13,19 @@ import shutil
 import data
 import sys
 import re
+import humanfriendly
+
+def log_duration(logger, started_on, ended_on=None):
+    ended_on = datetime.now() if ended_on is None else ended_on
+    duration = ended_on - started_on
+    logger.std("Duration: {duration}. ({start} to {end}).".format(
+        start=started_on, end=ended_on,
+        duration=humanfriendly.format_timespan(duration.total_seconds())))
 
 def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, aflatoun, wikifundi, edupi, zim_install, size, logger, cancel_event, sd_card, favicon, logo, css, done_callback=None, build_dir="."):
+
+    started_on = datetime.now()
+    logger.std("started on {}".format(started_on))
 
     try:
         # Prepare SD Card
@@ -85,11 +96,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
 
         # download contents into cache
         logger.step("Starting all content downloads")
-        downloads = itertools.chain.from_iterable([
-            content_dl_cb(**cb_kwargs)
-            for _, content_dl_cb, _, cb_kwargs
-            in collection
-        ])
+        downloads = get_all_contents_for(collection)
 
         for dl_content in downloads:
             logger.step("Retrieving {url} ({size})".format(
@@ -141,18 +148,26 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
             'wifi_pwd': wifi_pwd,
             'admin_account': admin_account,
 
-            'logo': logo,
-            'favicon': favicon,
-            'css': css,
-            'seal': False
+            'disk_size': emulator.get_image_size(),
+            'root_partition_size': base_image.get('root_partition_size'),
         }
+        extra_vars, secret_keys = ansiblecube.build_extra_vars(
+            **ansible_options)
 
         # Run emulation
         logger.step("Starting-up VM")
         with emulator.run(cancel_event) as emulation:
+            # copying ansiblecube again into the VM
+            # should the master-version been updated
+            logger.step("Copy ansiblecube")
+            emulation.exec_cmd("sudo /bin/rm -rf {}".format(
+                ansiblecube.ansiblecube_path))
+            emulation.put_dir(data.ansiblecube_path,
+                              ansiblecube.ansiblecube_path)
+
             logger.step("Run ansiblecube")
-            ansible_options.update({'machine': emulation})
-            ansiblecube.run_for_user(**ansible_options)
+            ansiblecube.run_phase_one(emulation, extra_vars, secret_keys,
+                                      logo=logo, favicon=favicon, css=css)
 
         # mount image's 3rd partition on host
         logger.step("Mounting data partition on host")
@@ -179,10 +194,8 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         logger.step("Starting-up VM again for content-discovery")
         with emulator.run(cancel_event) as emulation:
             logger.step("Re-run ansiblecube for move-content")
-            ansible_options.update({'machine': emulation,
-                                    'move_content': True,
-                                    'seal': False})  # TODO: enable seal
-            ansiblecube.run_for_user(**ansible_options)
+            ansiblecube.run_phase_two(emulation, extra_vars, secret_keys,
+                                      seal=False)
 
         # Write image to SD Card
         if sd_card:
@@ -190,12 +203,14 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
             emulator.copy_image(sd_card)
 
     except Exception as e:
+        logger.step("Failed")
+        logger.err(str(e))
+        log_duration(logger, started_on)
+
         # Set final image filename
         if os.path.isfile(image_building_path):
             os.rename(image_building_path, image_error_path)
 
-        logger.step("Failed")
-        logger.err(str(e))
         error = e
         raise e
     else:
@@ -203,6 +218,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         os.rename(image_building_path, image_final_path)
 
         logger.step("Done")
+        log_duration(logger, started_on)
         error = None
 
     if done_callback:
