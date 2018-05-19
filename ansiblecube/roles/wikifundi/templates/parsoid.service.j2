@@ -4,7 +4,7 @@ Description=Parsoid server
 [Service]
 User=ideascube
 Group=ideascube
-ExecStart=/var/www/parsoid/bin/server.js
+ExecStart={{ wikifundi_root }}/parsoid/bin/server.js
 Restart=always
 TimeoutStopSec=60
 PIDFile=/var/run/parsoid.pid

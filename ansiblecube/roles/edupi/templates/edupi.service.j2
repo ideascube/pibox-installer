@@ -4,8 +4,8 @@ Description=Edupi server
 [Service]
 User=ideascube
 Group=ideascube
-WorkingDirectory=/home/ideascube/.edupi/edupi/
-ExecStart=/home/ideascube/.edupi/env/bin/gunicorn \
+WorkingDirectory={{ edupi_root }}/edupi/
+ExecStart={{ edupi_env }}/bin/gunicorn \
   --bind localhost:8010 edupi.wsgi:application \
   --log-level info
 Restart=always

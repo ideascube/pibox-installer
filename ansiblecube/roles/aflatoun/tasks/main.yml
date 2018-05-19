@@ -1,110 +1,84 @@
 ---
-- name: Ensure aflatoun is stopped if service exist
-  service: name=aflatoun state=stopped
-  ignore_errors: yes
-  tags: ['configure']
-
-- name: Create a working dir aflatoun
-  file: path=/home/{{ username }}/.aflatoun state=directory
-  tags: ['configure']
+- name: Create working directory
+  file:
+    path: "{{ aflatoun_root }}"
+    state: directory
+  tags: configure
 
 - name: Download Aflatoun
   get_url:
     url: "{{ mirror }}/other/aflatoun/ka-lite-static-0.16.7b3.tar.gz"
     dest: /tmp/ka-lite-static-0.16.7b3.tar.gz
-  tags: ['configure']
+  tags: configure
 
 - name: Install Aflatoun
-  pip: name=/tmp/ka-lite-static-0.16.7b3.tar.gz
-    chdir=/home/{{ username }}/.aflatoun
-    virtualenv_command=/usr/bin/virtualenv
-    virtualenv=/home/{{ username }}/.aflatoun/env
-  tags: ['configure']
-
-# whold aflatoun folder is placed on data part
-- name: Ensure aflatoun folder exists on data part
-  file:
-    path: "{{ data_path }}/aflatoun"
-    state: directory
-    # owner: "{{ username }}"
-    # group: "{{ username }}"
-    # recurse: yes
-  tags: ['configure']
-
-# configuration expects aflatoun to be on ~/.aflatoun
-- name: Symlink aflatoun
-  file:
-    src: "{{ data_path }}/aflatoun"
-    dest: /home/{{ username }}/.aflatoun
-    state: link
-    owner: "{{ username }}"
-    group: "{{ username }}"
-    recurse: yes
-  tags: ['configure']
-
-# no chown support on exfat (fuse)
-# - name: Give rights to ideascube
-#   file:
-#     path: /home/{{ username }}/.aflatoun
-#     owner: "{{ username }}"
-#     group: "{{ username }}"
-#     recurse: yes
-#     state: directory
-#   tags: ['configure']
+  pip:
+    name: /tmp/ka-lite-static-0.16.7b3.tar.gz
+    chdir: "{{ aflatoun_root }}"
+    virtualenv_command: /usr/bin/virtualenv
+    virtualenv: "{{ aflatoun_env }}"
+  tags: configure
 
 - name: Create a user admin for aflatoun
   become: yes
   become_user: ideascube
-  shell: KALITE_PYTHON=/home/ideascube/.aflatoun/env/bin/python KALITE_HOME=/home/ideascube/.aflatoun/ /home/ideascube/.aflatoun/env/bin/kalite manage setup --username={{ admin_account }} --password={{ admin_password }} --noinput --no-assessment-items
+  shell: KALITE_PYTHON={{ aflatoun_env }}/bin/python KALITE_HOME={{ aflatoun_root }} {{ aflatoun_env }}/bin/kalite manage setup --username={{ admin_account }} --password={{ admin_password }} --noinput --no-assessment-items
   when: admin_account is defined
-  tags: ['configure']
+  tags: configure
 
-- name: Set aflatoun content
-  unarchive:
-    src: "{{ mirror }}/other/aflatoun/content.tar.gz"
-    dest: /home/ideascube/.aflatoun/
-    remote_src: True
-    owner: ideascube
-  tags: ['download-content']
+- name: Create a user admin for aflatoun
+  become: yes
+  become_user: ideascube
+  shell: KALITE_PYTHON={{ aflatoun_env }}/bin/python KALITE_HOME={{ aflatoun_root }} {{ aflatoun_env }}/bin/kalite manage setup --noinput --no-assessment-items
+  when: admin_account is not defined
+  tags: configure
+
+- name: Copy nginx vhost
+  template:
+    src: aflatoun.vhost.j2
+    dest: /etc/nginx/sites-available/aflatoun
+  notify: restart nginx
+  tags: ['configure', 'rename']
+
+- name: Nginx enable Virtual host
+  file:
+    src: /etc/nginx/sites-available/aflatoun
+    dest: /etc/nginx/sites-enabled/aflatoun
+    state: link
+  notify: restart nginx
+  tags: ['configure', 'rename']
+
+- name: Setup startup file
+  template:
+    src: aflatoun.service.j2
+    dest: /etc/systemd/system/aflatoun.service
+  tags: configure
+
+- name: Enable and Start Aflatoun
+  systemd:
+    name: aflatoun
+    state: started
+    daemon_reload: yes
+    enabled: yes
+  tags: configure
 
 # downloaded content was placed in a different location on data part
-- name: move downloaded content to aflatoun folder
-  command: mv {{ aflatoun_content_path }}/ {{ data_path }}/aflatoun/content
+- name: Move downloaded content to proper location
+  command: mv {{ aflatoun_content_path }}/ {{ aflatoun_root }}/content
   tags: move-content
 
 # lang pack is downloaded after content as part of it sits in content/
 - name: Download Aflatoun language pack
   get_url:
     url: "{{ mirror }}/other/aflatoun/{{ item }}.zip"
-    dest: /tmp/{{ item }}.zip
+    dest: /tmp/aflatoun_langpack_{{ item }}.zip
   with_items: "{{ aflatoun_languages }}"
-  tags: ['download-content', 'move-content']
+  tags: move-content
 
-- name: Retrieve Aflatoun language pack
+- name: Install Aflatoun language pack
   become: yes
   become_user: ideascube
-  shell: KALITE_PYTHON=/home/ideascube/.aflatoun/env/bin/python KALITE_HOME=/home/ideascube/.aflatoun/ /home/ideascube/.aflatoun/env/bin/kalite manage retrievecontentpack local {{ item }} /tmp/{{ item }}.zip
+  shell: KALITE_PYTHON={{ aflatoun_env }}/bin/python KALITE_HOME={{ aflatoun_root }} {{ aflatoun_env }}/bin/kalite manage retrievecontentpack local {{ item }} /tmp/aflatoun_langpack_{{ item }}.zip
   with_items: "{{ aflatoun_languages }}"
-  tags: ['configure']
-
-- name: Setup startup file
-  copy: src=aflatoun.service dest=/etc/systemd/system/aflatoun.service
-  tags: ['configure']
-
-- name: Enable and Start Aflatoun
-  systemd:
-    name=aflatoun
-    state=started
-    daemon_reload=yes
-    enabled=yes
-  tags: ['configure']
-
-- name: Copy nginx vhost
-  template: src=aflatoun.vhost.j2 dest=/etc/nginx/sites-available/aflatoun
-  notify: restart nginx
-  tags: ['configure', 'rename']
-
-- name: Nginx enable Virtual host
-  file: src=/etc/nginx/sites-available/aflatoun dest=/etc/nginx/sites-enabled/aflatoun state=link
-  notify: restart nginx
-  tags: ['configure', 'rename']
+  notify: restart aflatoun
+  tags: move-content

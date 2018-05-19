@@ -25,84 +25,81 @@
     - texlive-fonts-recommended
     - texlive-lang-greek
     - texlive-latex-recommended
-  tags: ['configure']
+  tags: configure
 
 - name: Link node to nodejs binary
-  file: src=/usr/bin/nodejs dest=/usr/bin/node state=link
-  tags: ['configure']
-
-- name: Download africapack
-  unarchive:
-    src: "{{ mirror }}/other/wikifundi/{{ item }}.africapack.kiwix.org_2017-01.tar.bz2"
-    dest: /var/www
-    remote_src: True
-    owner: www-data
-  with_items: "{{ wikifundi_languages | default(omit) }}"
-  tags: ['download-content']
-
-- name: Symlink wikifundi language
   file:
-    src: "{{ wikifundi_langpack_prefix }}{{ item }}"
-    dest: "/var/www/{{ item }}.africapack.kiwix.org"
+    src: /usr/bin/nodejs
+    dest: /usr/bin/node
     state: link
-  with_items: "{{ wikifundi_languages | default(omit) }}"
-  tags: move-content
+  tags: configure
 
-- name: Change lua path and TMP in LocalSettings.custom.php
-  replace:
-    name: /var/www/{{ item }}.africapack.kiwix.org/w/LocalSettings.custom.php
-    regexp: '^\<\?php$'
-    replace: '<?php\nputenv("TMP={$wgUploadDirectory}/temp");\n$wgScribuntoEngineConf[''luastandalone''][''luaPath''] = "/usr/bin/lua5.1";'
-    # owner: www-data
-  with_items: "{{ wikifundi_languages | default(omit) }}"
-  tags: ['download-content', 'move-content']
+- name: Download Parsoid
+  unarchive:
+    src: "{{ mirror }}/other/wikifundi/parsoid_2016-08.tar.bz2"
+    dest: "{{ wikifundi_root }}"
+    remote_src: True
+  tags: configure
+
+- name: Setup parsoid service
+  template:
+    src: parsoid.service.j2
+    dest: /etc/systemd/system/parsoid.service
+  tags: configure
+
+- name: Enable and Start Parsoid
+  systemd:
+    name: parsoid
+    state: started
+    daemon_reload: yes
+    enabled: yes
+  tags: configure
+
+- name: Enable and Start php-fpm
+  systemd:
+    name: php5-fpm
+    state: started
+    daemon_reload: yes
+    enabled: yes
+  tags: configure
 
 - name: Copy nginx vhosts
-  template: src=wikifundi.vhost.j2 dest=/etc/nginx/sites-available/{{ item }}.wikifundi
+  template:
+    src: wikifundi.vhost.j2
+    dest: /etc/nginx/sites-available/{{ item }}.wikifundi
   with_items: "{{ wikifundi_languages | default(omit) }}"
   notify: restart nginx
   tags: ['configure', 'rename']
 
 - name: Enable nginx vhosts
-  file: src=/etc/nginx/sites-available/{{ item }}.wikifundi dest=/etc/nginx/sites-enabled/{{ item }}.wikifundi state=link
+  file:
+    src: /etc/nginx/sites-available/{{ item }}.wikifundi
+    dest: /etc/nginx/sites-enabled/{{ item }}.wikifundi
+    state: link
   with_items: "{{ wikifundi_languages | default(omit) }}"
   notify: restart nginx
   tags: ['configure', 'rename']
 
+- name: Move downloaded content to proper location
+  command: mv {{ wikifundi_langpack_prefix }}{{ item }}/ {{ wikifundi_root }}/{{ item }}.africapack.kiwix.org
+  tags: move-content
+
+# fix path in content source code
+- name: Change lua path and TMP in LocalSettings.custom.php
+  replace:
+    name: "{{ wikifundi_root }}/{{ item }}.africapack.kiwix.org/w/LocalSettings.custom.php"
+    regexp: '^\<\?php$'
+    replace: '<?php\nputenv("TMP={$wgUploadDirectory}/temp");\n$wgScribuntoEngineConf[''luastandalone''][''luaPath''] = "/usr/bin/lua5.1";'
+  with_items: "{{ wikifundi_languages | default(omit) }}"
+  tags: move-content
+
+# fix extensions in the content
 - name: Get the Math renderer correctly
   become: yes
   shell:
-    cd /var/www/{{ item }}.africapack.kiwix.org/w/extensions/Math/math;
+    cd {{ wikifundi_root }}/{{ item }}.africapack.kiwix.org/w/extensions/Math/math;
     make clean all;
-    cd /var/www/{{ item }}.africapack.kiwix.org/w/extensions/Math/texvccheck;
+    cd {{ wikifundi_root }}/{{ item }}.africapack.kiwix.org/w/extensions/Math/texvccheck;
     make clean all;
   with_items: "{{ wikifundi_languages | default(omit) }}"
-  tags: ['download-content', 'move-content']
-
-- name: Download Parsoid
-  unarchive:
-    src: "{{ mirror }}/other/wikifundi/parsoid_2016-08.tar.bz2"
-    dest: /var/www
-    remote_src: True
-    # owner: www-data
-  tags: ['configure']
-
-- name: Setup parsoid service
-  copy: src=parsoid.service dest=/etc/systemd/system/parsoid.service
-  tags: ['configure']
-
-- name: Enable and Start Parsoid
-  systemd:
-    name=parsoid
-    state=started
-    daemon_reload=yes
-    enabled=yes
-  tags: ['configure']
-
-- name: Enable and Start php-fpm
-  systemd:
-    name=php5-fpm
-    state=started
-    daemon_reload=yes
-    enabled=yes
-  tags: ['configure']
+  tags: move-content

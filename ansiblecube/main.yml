@@ -50,8 +50,22 @@
         state: restarted
       tags: ['master', 'configure', 'rename']
 
+    - name: restart aflatoun
+      service:
+        name: aflatoun
+        state: restarted
+      tags: ['configure', 'move-content']
+
+    - name: restart kalite
+      service:
+        name: kalite
+        state: restarted
+      tags: ['configure', 'move-content']
+
     - name: restart kiwix
-      service: name=kiwix-server state=restarted
+      service:
+        name: kiwix-server
+        state: restarted
       tags: ['master', 'download-content', 'move-content']
 
 

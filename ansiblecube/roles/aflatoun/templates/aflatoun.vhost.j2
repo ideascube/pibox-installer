@@ -13,7 +13,7 @@ server {
     server_name {{ aflatoun_fqdn }} {{ aflatoun_server_name }};
 
     # Default value, overwritten in nginx.d
-    set $aflatoun_home /home/ideascube/.aflatoun/;
+    set $aflatoun_home {{ aflatoun_root }}/;
     # include /etc/ka-lite/nginx.d/*.conf;
 
     location /static {

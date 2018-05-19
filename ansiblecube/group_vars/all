@@ -35,6 +35,15 @@ edupi_version: "1.4.1"
 
 # Apps path
 zim_path: /var/ideascube/kiwix
+venvs_root: /home/{{ username }}/venvs
+ideascube_handlers: ['kiwix', 'nginx', 'mediacenter']
+aflatoun_root: "{{ data_path }}/aflatoun"
+aflatoun_env: "{{ venvs_root }}/aflatoun"
+edupi_root: "{{ data_path }}/edupi"
+edupi_env: "{{ venvs_root }}/edupi"
+kalite_root: "{{ data_path }}/kalite"
+kalite_env: "{{ venvs_root }}/kalite"
+wikifundi_root: "{{ data_path }}/wikifundi"
 
 # Domain names
 kiwix_server_name: kiwix.{{ hostname }}
@@ -62,8 +71,7 @@ packages: []
 edupi: false
 catalogs: []
 
-# data partition contents
-ideascube_handlers: ['kiwix', 'nginx', 'mediacenter']
+# temporary path for contents in data partition
 aflatoun_content_path: "{{ data_path }}/aflatoun_content"
 kalite_langpack_prefix: "{{ data_path }}/kalite_pack_"
 kalite_videos_prefix: "{{ data_path }}/kalite_videos_"

@@ -2,7 +2,7 @@ server {
     listen 80;
     server_name {{ edupi_fqdn }} {{ edupi_server_name }};
 
-    set $edupi_home /home/ideascube/.edupi/;
+    set $edupi_home {{ edupi_root }}/;
 
     # client_max_body_size 500M;
 

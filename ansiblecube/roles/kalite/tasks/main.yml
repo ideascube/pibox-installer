@@ -1,124 +1,122 @@
 ---
-# whole kalite folder is placed on data part
+# kalite content folder is placed on data part
 - name: Ensure kalite folder exists on data part
   file:
     path: "{{ data_path }}/kalite"
     state: directory
-  tags: ['configure']
-
-# configuration expects kalite to be on ~/.kalite
-- name: Symlink kalite
-  file:
-    src: "{{ data_path }}/kalite"
-    dest: /home/{{ username }}/.kalite
-    state: link
-  tags: ['configure']
+  tags: configure
 
 - name: Install Ka-lite
   become: yes
   become_user: ideascube
-  pip: name=ka-lite
-    version={{ kalite_version }}
-    chdir=/home/{{ username }}/.kalite
-    virtualenv_command=/usr/bin/virtualenv
-    virtualenv=/home/{{ username }}/.kalite/env
+  pip:
+    name: ka-lite
+    version: "{{ kalite_version }}"
+    chdir: "{{ kalite_root }}"
+    virtualenv_command: /usr/bin/virtualenv
+    virtualenv: "{{ kalite_env }}"
   register: kalite_installation 
-  tags: ['configure']
-
-# downloaded videos were placed in a different location on data part
-- name: move downloaded videos to kalite folder
-  shell: mv {{ kalite_videos_prefix }}{{ item }}/* {{ data_path }}/kalite/content/
-  with_items: "{{ kalite_languages | default(omit) }}"
-  tags: move-content
-
-# no chown support on exfat (fuse)
-# - name: Give rights to ideascube 
-#   file:
-#     path: /home/{{ username }}/.kalite
-#     owner: "{{ username }}"
-#     group: "{{ username }}"
-#     recurse: yes
-#     state: directory
-#   tags: ['configure']
+  tags: configure
 
 - name: Create a user admin for kalite
   become: yes
   become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/kalite manage setup --username={{ admin_account }} --password={{ admin_password }} --noinput
+  environment:
+    KALITE_PYTHON: "{{ kalite_env }}/bin/python"
+    KALITE_HOME: "{{ kalite_root }}"
+  command: "{{ kalite_env }}/bin/kalite manage setup --username={{ admin_account }} --password={{ admin_password }} --noinput"
   when: admin_account is defined
-  tags: ['configure']
+  tags: configure
 
 - name: Run kalite manage setup without admin user
   become: yes
   become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/kalite manage setup --noinput
+  environment:
+    KALITE_PYTHON: "{{ kalite_env }}/bin/python"
+    KALITE_HOME: "{{ kalite_root }}"
+  command: "{{ kalite_env }}/bin/kalite manage setup --noinput"
   when: admin_account is not defined
-  tags: ['configure']
+  tags: configure
 
 - name: Copy nginx vhost
-  template: src=kalite.vhost.j2 dest=/etc/nginx/sites-available/kalite
+  template:
+    src: kalite.vhost.j2
+    dest: /etc/nginx/sites-available/kalite
   notify: restart nginx
   tags: ['configure', 'rename']
 
 - name: Enable nginx vhost
-  file: src=/etc/nginx/sites-available/kalite dest=/etc/nginx/sites-enabled/kalite state=link
+  file:
+    src: /etc/nginx/sites-available/kalite
+    dest: /etc/nginx/sites-enabled/kalite
+    state: link
   notify: restart nginx
-  tags: ['configure']
+  tags: configure
 
 - name: Setup startup file
-  copy: src=kalite.service dest=/etc/systemd/system/kalite.service
-  tags: ['configure']
+  template:
+    src: kalite.service.j2
+    dest: /etc/systemd/system/kalite.service
+  tags: configure
 
 - name: Enable service kalite
-  service: name=kalite enabled=yes
-  tags: ['configure']
+  service:
+    name: kalite
+    enabled: yes
+  tags: configure
 
-- name: Generate a zone for kalite
-  become: yes
-  become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/kalite manage generate_zone
-  ignore_errors: yes
-  tags: ['configure']
+- name: Start Kalite
+  service:
+    name: kalite
+    state: started
+  tags: configure
 
-- name: Download Kalite language pack
-  become: yes
-  become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/kalite manage retrievecontentpack download {{ item }}
-  with_items: "{{ kalite_languages | default(omit) }}"
-  tags: ['download-content']
+- name: Get ka-lite version
+  environment:
+    KALITE_PYTHON: "{{ kalite_env }}/bin/python"
+    KALITE_HOME: "{{ kalite_root }}"
+  shell: "{{ kalite_env }}/bin/kalite --version ; echo"
+  register: kalite_newversion
+  tags: configure
+
+- set_fact: kalite_version="{{ kalite_newversion.stdout }}"
+  tags: configure
+
+- debug: msg="kalite {{ kalite_version }} is now the current version."
+  tags: configure
+
+- include: post_install.yml task=kalite task_version="{{ kalite_version }}"
+  tags: configure  
 
 # import zipped downloaded language pack (subtitles and all)
 - name: Import Kalite language pack
   become: yes
   become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/kalite manage retrievecontentpack local {{ item }} {{ kalite_langpack_prefix }}{{ item }}.zip
+  environment:
+    KALITE_PYTHON: "{{ kalite_env }}/bin/python"
+    KALITE_HOME: "{{ kalite_root }}"
+  command: "{{ kalite_env }}/bin/kalite manage retrievecontentpack local {{ item }} {{ kalite_langpack_prefix }}{{ item }}.zip"
   with_items: "{{ kalite_languages | default(omit) }}"
-  tags: ['move-content']
+  notify: restart kalite
+  tags: move-content
 
-- name: Start Kalite
-  service: name=kalite state=started
-  tags: ['configure']
+# downloaded videos were placed in a different location on data part
+- name: move downloaded videos to kalite folder
+  shell: mv {{ kalite_videos_prefix }}{{ item }}/* {{ data_path }}/kalite/content/
+  with_items: "{{ kalite_languages | default(omit) }}"
+  notify: restart kalite
+  tags: move-content
 
 # loop over content folder to find and reckon downloaded video files
 - name: Perfom a video scan on the device
   become: yes
   become_user: ideascube
-  command: /home/ideascube/.kalite/env/bin/kalite manage videoscan -l {{ item }}
+  environment:
+    KALITE_PYTHON: "{{ kalite_env }}/bin/python"
+    KALITE_HOME: "{{ kalite_root }}"
+  command: "{{ kalite_env }}/bin/kalite manage videoscan -l {{ item }}"
   async: 1800
   poll: 0
   with_items: "{{ kalite_languages | default(omit) }}"
-  tags: ['download-content', 'move-content']
-
-- name: Get ka-lite version
-  shell: /home/ideascube/.kalite/env/bin/kalite --version ; echo
-  register: kalite_newversion
-  tags: ['configure']
-
-- set_fact: kalite_version="{{ kalite_newversion.stdout }}"
-  tags: ['configure']
-
-- debug: msg="kalite {{ kalite_version }} is now the current version."
-  tags: ['configure']
-
-- include: post_install.yml task=kalite task_version="{{ kalite_version }}"
-  tags: ['configure']  
+  notify: restart kalite
+  tags: move-content
