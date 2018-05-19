@@ -3,95 +3,110 @@
   become: yes
   command: umount {{ data_path }}
   ignore_errors: True
-  tags: ['resize']
+  tags: ['master', 'resize']
 
 - name: Copy partition table analysis script
   copy:
     src: partition_boundaries.py
     dest: /tmp/partition_boundaries.py
-  tags: ['resize']
+  tags: ['master', 'resize']
 
 - name: Analyze disk partition table
   become: yes
   shell: fdisk -l {{ disk }} | python /tmp/partition_boundaries.py {{ root_partition_size }} {{ disk_size }}
   register: disk_partition_infos  
-  tags: ['resize']
+  tags: ['master', 'resize']
 
 - name: Delete partition table analysis script
   file:
     path: /tmp/partition_boundaries.py
     state: absent
-  tags: ['resize']
+  tags: ['master', 'resize']
 
 - name: get number of partitions
   shell: ls -l {{ disk }}p* |wc -l
   register: nb_partitions
-  tags: ['resize']
+  tags: ['master', 'resize']
 
 - name: recreating root partition
   become: yes
   shell: /bin/echo -e "d\n2\nn\np\n2\n{{ disk_partition_infos.stdout.split()[0] }}\n{{ disk_partition_infos.stdout.split()[1] }}\nt\n2\n83\nw" | fdisk {{ disk }}
   ignore_errors: True
-  tags: ['resize']
+  tags: ['master', 'resize']
 
 - name: informing kernel about root partition's new boundaries
   become: yes
   command: partprobe -s
-  tags: ['resize']
+  tags: ['master', 'resize']
 
 - name: check filesystem on root partition
   become: yes
   command: e2fsck -p -f {{ root_partition }}
   ignore_errors: True
   when: False
-  tags: ['resize']
+  tags: ['master', 'resize']
 
 - name: resize filesystem on root partition
   become: yes
   command: resize2fs {{ root_partition }}
-  tags: ['resize']
+  tags: ['master', 'resize']
 
 - name: delete data partition if it exists
   become: yes
   shell: /bin/echo -e "d\n3\nw" | fdisk {{ disk }}
   ignore_errors: True
   when: nb_partitions.stdout.strip()|int >= 3
-  tags: ['resize']
+  tags: ['master', 'resize']
 
 - name: informing kernel about partition deletion
   become: yes
   command: partprobe -s
   when: nb_partitions.stdout.strip()|int >= 3
-  tags: ['resize']
+  tags: ['master', 'resize']
 
 # should raise an error because acting on mounted partitions
 - name: Recreating third partition
   become: yes
   shell: /bin/echo -e "n\np\n3\n{{ disk_partition_infos.stdout.split()[2] }}\n{{ disk_partition_infos.stdout.split()[3] }}\nt\n3\n7\nw" | fdisk {{ disk }}
   ignore_errors: True
-  tags: ['resize']
+  tags: ['master', 'resize']
 
 - name: informing kernel about new data partition
   become: yes
   command: partprobe -s
-  tags: ['resize']
+  tags: ['master', 'resize']
 
 - name: Formatting third partition (exfat)
   become: yes
   command: mkfs.exfat {{ data_partition }}
-  tags: ['resize']
+  tags: ['master', 'resize']
+
+- name: Remove exfat-fuse
+  become: yes
+  apt:
+    name: exfat-fuse
+    state: absent
+    autoremove: no
+  tags: resize
+
+- lineinfile:
+    dest: /etc/fstab
+    state: absent
+    regexp: 'exfat'
+  tags: resize
 
 - name: Find partition UUID for {{ data_partition }}
   become: yes
   command: blkid {{ data_partition }}
   register: blkidline
-  tags: ['master', 'resize']
+  tags: resize
 
 - name: Mounting third partition to {{ data_path }} and creating entry in fstab
+  become: yes
   mount:
     src: "PARTUUID={{ blkidline.stdout.rsplit('=')[-1][1:-1] }}"
     name: "{{ data_path }}"
     fstype: exfat
     state: mounted
-    opts: default,noatime
-  tags: ['master', 'resize']
+    opts: umask=0022,uid=1001,gid=1001
+  tags: resize
