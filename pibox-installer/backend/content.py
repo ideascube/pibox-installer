@@ -5,10 +5,12 @@
 import os
 import re
 import json
+import math
 import shutil
+import itertools
 
 from data import content_file, mirror
-from util import get_temp_folder
+from util import get_temp_folder, get_checksum
 from backend.catalog import YAML_CATALOGS
 from backend.download import get_content_cache, unarchive
 
@@ -61,6 +63,15 @@ def get_collection(edupi=False,
     return collection
 
 
+def get_all_contents_for(collection):
+    ''' flat list of contents for the collection '''
+    return itertools.chain.from_iterable([
+        content_dl_cb(**cb_kwargs)
+        for _, content_dl_cb, _, cb_kwargs
+        in collection
+    ])
+
+
 def get_edupi_contents(enable=False):
     ''' edupi: has no large downloads '''
     return []
@@ -97,7 +108,7 @@ def get_package_content(package_id):
                 "name": "package_{id}-{version}".format(**package),
                 "checksum": package['sha256sum'],
                 "archive_size": package['size'],
-                "expanded_size": package['size'] * 1.10
+                "expanded_size": package['size'] * 1
                 if package['type'] != 'zim' else package['size'],
             }
         except IndexError:
@@ -207,3 +218,66 @@ def run_packages_actions(cache_folder, mount_point, logger, packages=[]):
         final_path = os.path.join(packages_folder,
                                   re.sub(r'^package_', '', content['name']))
         shutil.copy(package_fpath, final_path)
+
+
+def content_is_cached(content, cache_folder, check_sum=False):
+    ''' whether a content is already present in cache '''
+    content_fpath = os.path.join(cache_folder, content.get('name'))
+    if os.path.exists(content_fpath) \
+            or os.path.getsize(content_fpath) != content.get('archive_size'):
+        return False
+
+    if check_sum:
+        return get_checksum(content_fpath) == content.get('checksum')
+
+    return True
+
+
+def get_collection_download_size(collection):
+    ''' data usage to download all of the collection '''
+    return sum([item.get('archive_size')
+                for item in get_all_contents_for(collection)])
+
+
+def get_collection_download_size_using_cache(collection, cache_folder):
+    ''' data usage to download missing elements of the collection '''
+    return sum([item.get('archive_size')
+                for item in get_all_contents_for(collection)
+                if not content_is_cached(item, cache_folder)])
+
+
+def get_expanded_size(collection):
+    ''' sum of extracted sizes of all collection with 10%|2GB margin '''
+    total_size = sum([item.get('expanded_size')
+                      for item in get_all_contents_for(collection)])
+    margin = min([2 * 2 ** 30, total_size * 0.1])
+    return total_size + margin
+
+
+def get_required_image_size(collection):
+    required_size = sum([
+        get_content('pibox_base_image').get('root_partition_size'),
+        get_expanded_size(collection)])
+
+    # round it up to next GiB
+    return math.ceil(required_size / 2 ** 30) * 2 ** 30
+
+
+def get_required_building_space(collection, cache_folder):
+    ''' total required space to host downlaods ans image '''
+    # the pibox master image
+    # we neglect the master's expanded size as it is going to be moved
+    # to the image path and resized in-place (never reduced)
+    base_image_size = get_content('pibox_base_image').get('archive_size')
+
+    # the created image
+    image_size = get_required_image_size(collection)
+
+    # download cache
+    downloads_size = get_collection_download_size_using_cache(
+        collection, cache_folder)
+
+    total_size = sum([base_image_size, image_size, downloads_size])
+
+    margin = min([2 * 2 ** 30, total_size * 0.1])
+    return total_size + margin
