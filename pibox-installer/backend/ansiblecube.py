@@ -60,7 +60,7 @@ def run_for_image(machine, seal=False):
     machine.exec_cmd("sudo apt-get install -y python-pip python-yaml "
                      "python-jinja2 python-httplib2 python-paramiko "
                      "python-pkg-resources libffi-dev libssl-dev git "
-                     "lsb-release")
+                     "lsb-release exfat-utils")
     machine.exec_cmd("sudo pip install ansible==2.2.0")
 
     # prepare ansible files
