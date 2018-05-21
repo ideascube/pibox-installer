@@ -2,9 +2,18 @@
     "raspbian_image": {
         "url": "http://downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2018-04-19/2018-04-18-raspbian-stretch-lite.zip",
         "name": "2018-04-18-raspbian-stretch-lite.zip",
+        "kernel_version": "4.14.34",
         "checksum": "5a0747b2bfb8c8664192831b7dc5b22847718a1cb77639a1f3db3683b242dc96",
         "archive_size": 366646269,
         "expanded_size": 1862270976
+    },
+    "raspbian_image_jessie": {
+        "url": "http://downloads.raspberrypi.org/raspbian_lite/images/raspbian_lite-2017-07-05/2017-07-05-raspbian-jessie-lite.zip",
+        "name": "2017-07-05-raspbian-jessie-lite.zip",
+        "kernel_version": "4.9.35",
+        "checksum": "f143cb29140209a7a9fccc5395c9e2d924a0ca82976a4ec9b31b7d1478856531",
+        "archive_size": 311434142,
+        "expanded_size": 1725629563
     },
     "pibox_base_image": {
         "url": "{mirror}/other/pibox-kiwix_2018-05-04.img.zip",

@@ -8,6 +8,7 @@ import tempfile
 
 from data import mirror
 from backend.catalog import CATALOGS
+from backend.content import get_content
 
 ansiblecube_path = "/var/lib/ansible/local"
 
@@ -18,6 +19,7 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
     ansible_vars = {
         'mirror': mirror,
         'catalogs': CATALOGS,
+        'kernel_version': get_content('raspbian_image').get('kernel_version'),
     }
     ansible_vars.update(extra_vars)
 
@@ -49,7 +51,7 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
     machine.exec_cmd(ansible_pull_cmd)
 
 
-def run_for_image(machine):
+def run_for_image(machine, root_partition_size, disk_size):
     tags = ['master', 'rename']
 
     machine.exec_cmd("sudo apt-get update")
@@ -57,7 +59,7 @@ def run_for_image(machine):
     machine.exec_cmd("sudo apt-get install -y python-pip python-yaml "
                      "python-jinja2 python-httplib2 python-paramiko "
                      "python-pkg-resources libffi-dev libssl-dev git "
-                     "lsb-release exfat-utils")
+                     "lsb-release")
     machine.exec_cmd("sudo pip install ansible==2.2.0")
 
     # prepare ansible files
@@ -66,7 +68,12 @@ def run_for_image(machine):
                      .format(path=ansiblecube_path))
     machine.exec_cmd("sudo mkdir --mode 0755 -p /etc/ansible/facts.d")
 
-    extra_vars = {'project_name': "default", 'timezone': "UTC"}
+    extra_vars = {
+        'project_name': "default",
+        'timezone': "UTC",
+        'root_partition_size': root_partition_size // 2 ** 30,
+        'disk_size': disk_size // 2 ** 30,
+    }
 
     run(machine, tags, extra_vars)
 

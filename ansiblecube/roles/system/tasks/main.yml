@@ -3,6 +3,35 @@
   file: path=/etc/udev/rules.d/70-persistent-net.rules state=absent
   tags: ['master']
 
+- name: download exfat kernel module
+  unarchive:
+    src: "{{ mirror }}/dev/exfat_{{ kernel_version }}.tar"
+    dest: /tmp/
+    remote_src: True
+  tags: master
+
+- name: install module files
+  command: install -m644 -b -D /tmp/exfat_{{ item }}.ko /lib/modules/{{ item }}+/kernel/fs/exfat/exfat.ko
+  with_items:
+    - "{{ kernel_version }}"
+    - "{{ kernel_version }}-v7"
+  tags: master
+
+- name: regenerate modules list
+  command: depmod -a
+  tags: master
+
+- name: add exfat module to startup list
+  lineinfile:
+    dest: /etc/modules
+    line: exfat
+    state: present
+  tags: master
+
+- name: load exfat module for current run
+  command: modprobe exfat
+  tags: master
+
 - name: install stretch debian keyring
   apt:
     deb: http://ftp.fr.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2017.5_all.deb
@@ -15,12 +44,12 @@
   when: ansible_distribution_release == "jessie"
   tags: master
 
-- name: Drop a complete source.list
+- name: Drop a complete sources.list
   copy: src=sources_{{ ansible_distribution_release }}.list dest=/etc/apt/sources.list
-  when: ansible_lsb.id == "Debian"
+  when: ansible_distribution == "Debian"
   tags: master
 
-- name: Run apt update  
+- name: Run apt update
   apt:
     update_cache: yes
   tags: ['master']
@@ -89,6 +118,7 @@
    - curl
    - apt-transport-https
    - tar
+   - exfat-utils
   tags: ['master']
 
 - name: Install avahi packages
