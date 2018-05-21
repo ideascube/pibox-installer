@@ -1,4 +1,10 @@
 ---
+- name: install exfat-utils
+  apt:
+    name: exfat-utils
+    state: present
+  tags: master
+
 - name: Unmount {{ data_path }} partition
   become: yes
   command: umount {{ data_path }}
