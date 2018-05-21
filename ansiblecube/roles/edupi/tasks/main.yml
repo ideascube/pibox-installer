@@ -107,20 +107,6 @@
   command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/edupi/manage.py collectstatic --noinput"
   tags: configure
 
-- name: Setup edupi service
-  template:
-    src: edupi.service.j2
-    dest: /etc/systemd/system/edupi.service
-  tags: configure
-
-- name: Enable and Start Edupi
-  systemd:
-    name: edupi
-    state: started
-    daemon_reload: yes
-    enabled: yes
-  tags: configure
-
 - name: Copy nginx vhost
   template:
     src: edupi.vhost.j2
@@ -135,3 +121,20 @@
     state: link
   notify: restart nginx
   tags: ['configure', 'rename']
+
+- name: Setup edupi service
+  template:
+    src: edupi.service.j2
+    dest: /etc/systemd/system/edupi.service
+  tags: configure
+
+- name: Enable and Start Edupi
+  systemd:
+    name: edupi
+    state: started
+    daemon_reload: yes
+    enabled: yes
+  tags: configure
+
+- include: mark_role.yml role=edupi
+  tags: configure
