@@ -49,11 +49,8 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
     machine.exec_cmd(ansible_pull_cmd)
 
 
-def run_for_image(machine, seal=False):
-
-    tags = ['master', 'rename', 'configure']
-    if seal:
-        tags.append('seal')
+def run_for_image(machine):
+    tags = ['master', 'rename']
 
     machine.exec_cmd("sudo apt-get update")
 
