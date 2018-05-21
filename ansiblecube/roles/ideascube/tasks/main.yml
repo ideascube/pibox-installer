@@ -1,8 +1,8 @@
 ---
-- name: Configure the ideascube package repository
-  template: src=ideascube.list.j2 dest=/etc/apt/sources.list.d/ideascube.list owner=root group=root mode=644
-  when: ansible_distribution_release == "jessie"
-  tags: ['master']
+# - name: Configure the ideascube package repository
+#   template: src=ideascube.list.j2 dest=/etc/apt/sources.list.d/ideascube.list owner=root group=root mode=644
+#   when: ansible_distribution_release == "jessie"
+#   tags: ['master']
 
 #### Install last ideascube package
 
@@ -16,6 +16,8 @@
 - name: Install custom (move support) ideascube version
   apt:
     deb: "{{ mirror }}/dev/ideascube_0.37.1_move_armhf.deb"
+    update_cache: yes
+    force: yes
   register: has_been_installed
   tags: master
 
