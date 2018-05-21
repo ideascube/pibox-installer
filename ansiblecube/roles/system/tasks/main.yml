@@ -28,8 +28,14 @@
     state: present
   tags: master
 
+- name: check if exfat is already loaded
+  shell: cat /proc/filesystems |grep exfat | wc -l
+  register: has_exfat
+  tags: master
+
 - name: load exfat module for current run
   command: modprobe exfat
+  when: has_exfat.stdout.strip()|int == 0
   tags: master
 
 - name: install stretch debian keyring
