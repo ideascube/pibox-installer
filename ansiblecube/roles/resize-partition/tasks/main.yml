@@ -5,6 +5,13 @@
   ignore_errors: True
   tags: ['master', 'resize']
 
+- name: make sure data partition is removed from fstab
+  lineinfile:
+    dest: /etc/fstab
+    state: absent
+    regexp: 'exfat'
+  tags: ['master', 'resize']
+
 - name: Copy partition table analysis script
   copy:
     src: partition_boundaries.py
@@ -37,13 +44,6 @@
 - name: informing kernel about root partition's new boundaries
   become: yes
   command: partprobe -s
-  tags: ['master', 'resize']
-
-- name: check filesystem on root partition
-  become: yes
-  command: e2fsck -p -f {{ root_partition }}
-  ignore_errors: True
-  when: False
   tags: ['master', 'resize']
 
 - name: resize filesystem on root partition
@@ -87,12 +87,6 @@
     name: exfat-fuse
     state: absent
     autoremove: no
-  tags: resize
-
-- lineinfile:
-    dest: /etc/fstab
-    state: absent
-    regexp: 'exfat'
   tags: resize
 
 - name: Find partition UUID for {{ data_partition }}
