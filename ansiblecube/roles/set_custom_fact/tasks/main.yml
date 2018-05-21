@@ -55,6 +55,8 @@
       name: "{{ fqdn }}"
     name: Set hostname using to {{ fqdn }}
     notify: restart systemd-logind
+  
+  tags: ['master', 'rename', 'configure']
 
-- debug: msg="My name is {{ ansible_hostname }}"
+- debug: msg="My name is {{ ansible_hostname }} -- {{ fqdn }}"
   tags: ['master', 'rename']
