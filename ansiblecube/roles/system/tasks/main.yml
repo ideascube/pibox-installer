@@ -3,10 +3,22 @@
   file: path=/etc/udev/rules.d/70-persistent-net.rules state=absent
   tags: ['master']
 
+- name: install stretch debian keyring
+  apt:
+    deb: http://ftp.fr.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2017.5_all.deb
+  when: ansible_distribution_release == "stretch"
+  tags: master
+
+- name: install jessie debian keyring
+  apt:
+    deb: http://ftp.fr.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2017.5~deb8u1_all.deb
+  when: ansible_distribution_release == "jessie"
+  tags: master
+
 - name: Drop a complete source.list
-  copy: src=source.list dest=/etc/apt/sources.list
+  copy: src=sources_{{ ansible_distribution_release }}.list dest=/etc/apt/sources.list
   when: ansible_lsb.id == "Debian"
-  tags: ['master']
+  tags: master
 
 - name: Run apt update  
   apt:
