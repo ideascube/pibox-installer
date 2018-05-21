@@ -43,7 +43,7 @@
 
 - name: Remove nginx configuration otherwise, if hostname var change it won't be overrided
   file: path=/etc/nginx/sites-available/kiwix state=absent
-  tags: ['master', 'configure']
+  tags: ['master', 'rename']
 
 - name: Copy nginx vhost
   template: src=nginx.vhost.j2 dest=/etc/nginx/sites-available/kiwix
@@ -65,5 +65,5 @@
   notify: restart kiwix
   tags: ['master']
 
-- include: post_install.yml task=kiwix task_version="{{ kiwix_version }}"
-  tags: ['master']
+- include: mark_role.yml role=kiwix
+  tags: resize

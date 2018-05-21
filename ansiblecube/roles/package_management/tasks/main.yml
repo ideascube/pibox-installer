@@ -1,35 +1,16 @@
 ---
-- name: Install custom (move support) ideascube version
-  apt:
-    deb: "{{ mirror }}/dev/ideascube_0.37.1_move_armhf.deb"
-  tags: configure
-
 - name: Install catalogs
   become: yes
   become_user: ideascube
   command: ideascube catalog remotes add "{{ item.name }}" "{{ item.description }}" "{{ item.url }}"
   with_items: "{{ catalogs }}"
-  tags: ['download-content', 'move-content']
+  tags: move-content
 
 - name: Update ideascube catalog cache before downloading
   become: yes
   become_user: ideascube
   shell: ideascube catalog cache update
-  tags: ['download-content', 'move-content']
-
-- name: Install, upgrade or remove packages
-  become: yes
-  become_user: ideascube
-  shell: "{% if 'present' in item.status %}grep -m 1 -w \"{{ item.name }}\" /var/ideascube/main/catalog/installed.yml || ideascube catalog install {{ item.name }}
-    {% elif 'latest' in item.status %}grep -m 1 -w \"{{ item.name }}\" /var/ideascube/main/catalog/installed.yml || ideascube catalog install {{ item.name }} || ideascube catalog update {{ item.name }} && rm -f /var/cache/ideascube/catalog/packages/{{ item.name }}-*
-    {% elif 'absent' in item.status %}grep -m 1 -w \"{{ item.name }}\" /var/ideascube/main/catalog/installed.yml && ideascube catalog remove {{ item.name }} ; echo
-    {% else %}echo '[+] nothing to do'{% endif %}"
-  with_items: '{{ packages | default(omit) }}'
-  when: packages | length
-  register: ideascube_catalog_cmd
-  notify: restart kiwix
-  tags: ['download-content']
-
+  tags: move-content
 
 - name: Install, upgrade or remove packages
   become: yes
@@ -39,11 +20,18 @@
   when: packages | length
   register: ideascube_catalog_cmd
   notify: restart kiwix
-  tags: ['move-content']
+  tags: move-content
 
 - set_fact:
     pkg_list: "{{ ideascube_catalog_cmd.results | map(attribute='stdout') | list }}"
-  tags: ['download-content']
+  tags: move-content
 
 - debug: var=pkg_list
-  tags: ['download-content']
+  tags: ['move-content']
+
+- name: mark packages complete
+  ini_file: dest=/etc/ansible/facts.d/progress.fact
+    section=main
+    option=packages
+    value=complete
+  tags: move-content

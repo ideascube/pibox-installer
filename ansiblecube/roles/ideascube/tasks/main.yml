@@ -6,17 +6,16 @@
 
 #### Install last ideascube package
 
-- name: Install ideascube
-  apt: name=ideascube={{ ideascube_version}} force=yes update_cache=yes dpkg_options="force-confnew"
-  register: has_been_installed
-  when: ansible_distribution_release == "jessie"
-  tags: ['master']
+# - name: Install ideascube
+#   apt: name=ideascube={{ ideascube_version}} force=yes update_cache=yes dpkg_options="force-confnew"
+#   register: has_been_installed
+#   when: ansible_distribution_release == "jessie"
+#   tags: ['master']
 
 # TEMPORARY FIX UNTIL MOVE SUPPORT IS MERGED UPSTREAM
 - name: Install custom (move support) ideascube version
   apt:
     deb: "{{ mirror }}/dev/ideascube_0.37.1_move_armhf.deb"
-  when: ansible_distribution_release != "jessie"
   register: has_been_installed
   tags: master
 
@@ -139,14 +138,14 @@
   become: yes
   become_user: ideascube
   command: ideascube config set server site-name {{ hostname }}
-  tags: ['master', 'configure']
+  tags: ['master', 'rename']
 
 - name: Ensure a kiwix library file is built
   become: yes
   become_user: ideascube
   no_log: True
   command: ideascube shell -c "from ideascube.serveradmin.catalog import Kiwix ; Kiwix.commit()"
-  tags: ['master', 'configure']
+  tags: ['master', 'configure', 'rename']
 
 - name: Enable the Ideascube Nginx site
   file: src=/etc/nginx/sites-available/ideascube dest=/etc/nginx/sites-enabled/ideascube state=link force=yes
@@ -219,5 +218,5 @@
   service: name=remove_staticfiles_json.service enabled=yes
   tags: ['master']
 
-- include: post_install.yml task=ideascube task_version="{{ ideascube_newversion.stdout }}"
-  tags: ['master']
+- include: mark_role.yml role=ideascube
+  tags: resize

@@ -110,3 +110,6 @@
     state: mounted
     opts: umask=0022,uid=1001,gid=1001
   tags: resize
+
+- include: mark_role.yml role=resize
+  tags: resize

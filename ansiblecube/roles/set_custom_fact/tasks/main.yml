@@ -6,13 +6,17 @@
   file: path=/etc/ansible/facts.d recurse=yes state=directory
   tags: ['master']
 
-- name: Create installed_software.fact file
-  file: path=/etc/ansible/facts.d/installed_software.fact state=touch
-  tags: ['master']
+- name: Create progress.fact file
+  copy:
+    src: progress.fact
+    dest: /etc/ansible/facts.d/progress.fact
+  tags: master
 
-- name: reload ansible_local
-  setup: filter=ansible_local gather_timeout=240
-  tags: ['master', 'configure', 'rename']
+- name: reload local facts
+  setup:
+    filter: ansible_local
+    gather_timeout: 240
+  tags: master
 
 # set hostname and variants
 - block:
@@ -53,12 +57,4 @@
     notify: restart systemd-logind
 
 - debug: msg="My name is {{ ansible_hostname }}"
-  tags: ['master', 'rename']
-
-- name: Register hostname in facts
-  ini_file: dest=/etc/ansible/facts.d/installed_software.fact
-    section=management
-    option=hostname
-    value={{ fqdn }}
-  when: ansible_local.installed_software.management.hostname is undefined
   tags: ['master', 'rename']

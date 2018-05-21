@@ -1,0 +1,24 @@
+---
+# downloaded content was placed in a different location on data part
+- name: Move downloaded content to proper location
+  command: mv {{ aflatoun_content_path }}/ {{ aflatoun_root }}/content
+  tags: move-content
+
+# lang pack is downloaded after content as part of it sits in content/
+- name: Download Aflatoun language pack
+  get_url:
+    url: "{{ mirror }}/other/aflatoun/{{ item }}.zip"
+    dest: /tmp/aflatoun_langpack_{{ item }}.zip
+  with_items: "{{ aflatoun_languages }}"
+  tags: move-content
+
+- name: Install Aflatoun language pack
+  become: yes
+  become_user: ideascube
+  shell: KALITE_PYTHON={{ aflatoun_env }}/bin/python KALITE_HOME={{ aflatoun_root }} {{ aflatoun_env }}/bin/kalite manage retrievecontentpack local {{ item }} /tmp/aflatoun_langpack_{{ item }}.zip
+  with_items: "{{ aflatoun_languages }}"
+  notify: restart aflatoun
+  tags: move-content
+
+- include: mark_role.yml role=aflatoun_content
+  tags: move-content

@@ -226,3 +226,6 @@
   notify: Update grub
   when: is_grub.stat.exists is defined and is_grub.stat.exists
   tags: ['master']
+
+- include: mark_role.yml role=system
+  tags: resize

@@ -2,72 +2,7 @@
 - hosts: localhost
 
   handlers:
-    - name: restart systemd-logind
-      service:
-        name: systemd-logind
-        state: restarted
-      tags: ['master', 'rename']
-
-    - name: update timezone
-      command: dpkg-reconfigure --frontend noninteractive tzdata
-      tags: ['master', 'configure']
-
-    - name: Update grub
-      command: update-grub
-      tags: ['master']
-
-    - name: reboot device
-      command: reboot
-      tags: ['master', 'hardware']
-
-    - name: restart dnsmasq
-      service:
-        name: dnsmasq
-        state: restarted
-      tags: ['master']
-
-    - name: restart hostapd
-      service:
-        name: hostapd
-        state: restarted
-      tags: ['master', 'rename']
-
-    - name: restart nginx
-      service:
-        name: nginx
-        state: restarted
-      tags: ['master', 'configure', 'rename']
-
-    - name: restart uwsgi
-      service:
-        name: uwsgi
-        state: restarted
-      tags: ['master', 'configure', 'rename']
-
-    - name: restart edupi
-      service:
-        name: edupi
-        state: restarted
-      tags: ['master', 'configure', 'rename']
-
-    - name: restart aflatoun
-      service:
-        name: aflatoun
-        state: restarted
-      tags: ['configure', 'move-content']
-
-    - name: restart kalite
-      service:
-        name: kalite
-        state: restarted
-      tags: ['configure', 'move-content']
-
-    - name: restart kiwix
-      service:
-        name: kiwix-server
-        state: restarted
-      tags: ['master', 'download-content', 'move-content']
-
+    - include: handlers.yml
 
   pre_tasks:
     - name: Set the LED steady before upgrading !!!
@@ -77,34 +12,62 @@
       tags: ['always']
 
   roles:
-    - set_custom_fact
+    - role: set_custom_fact
     
-    - resize-partition
+      # master, resize
+    - role: resize-partition
+      when: ansible_local.progress.main.resize != "y"
 
-    - system
-    - nginx
-    - uwsgi
-    - ideascube
-    - kiwix
+      # master, configure (timezone)
+    - role: system
+      when: ansible_local.progress.main.system != "y"
 
+    - role: nginx
+      tags: master
+
+    - role: uwsgi
+      tags: master
+
+      # master, rename, configure
+    - role: ideascube
+      when: ansible_local.progress.main.ideascube != "y"
+
+      # master, rename
+    - role: kiwix
+      when: ansible_local.progress.main.kiwix != "y"
+
+      # master, rename
     - role: captive_portal
-      when: captive_portal|bool
+      when: captive_portal|bool and ansible_local.progress.main.captive != "y"
 
-    - role: package_management
-      when: packages | length
-
-    - role: kalite
-      when: kalite_languages | length
-
-    - role: aflatoun
-      when: aflatoun_languages | length
-
-    - role: wikifundi
-      when: wikifundi_languages | length
-
+      # content setup (install, dependencies)
     - role: edupi
       when: edupi|bool
 
+    - role: kalite_setup
+      when: kalite_languages | length and ansible_local.progress.main.kalite_setup != "y"
+
+    - role: aflatoun_setup
+      when: aflatoun_languages | length and ansible_local.progress.main.aflatoun_setup != "y"
+
+    - role: wikifundi_setup
+      when: wikifundi_languages | length and ansible_local.progress.main.wikifundi_setup != "y"
+
+      # move content
+    - role: package_management
+      when: packages | length and ansible_local.progress.main.packages != "y"
+      tags: move-content
+
+    - role: kalite_content
+      when: kalite_languages | length and ansible_local.progress.main.kalite_content != "y"
+
+    - role: aflatoun_content
+      when: aflatoun_languages | length and ansible_local.progress.main.aflatoun_content != "y"
+
+    - role: wikifundi_content
+      when: wikifundi_languages | length and ansible_local.progress.main.wikifundi_content != "y"
+
+      # seal the image
     - role: seal
       tags: seal
 
