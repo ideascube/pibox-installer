@@ -30,7 +30,7 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
         os.unlink(fp.name)
 
     # prepare ansible command
-    ansible_cmd = ('/usr/local/bin/ansible-playbook -vvv '
+    ansible_cmd = ('/usr/local/bin/ansible-playbook -vvv'
                    ' --inventory hosts'
                    ' --tags {tags}'
                    ' --extra-vars="@{ev_path}"'
