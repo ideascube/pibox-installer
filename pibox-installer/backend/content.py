@@ -223,7 +223,7 @@ def run_packages_actions(cache_folder, mount_point, logger, packages=[]):
 def content_is_cached(content, cache_folder, check_sum=False):
     ''' whether a content is already present in cache '''
     content_fpath = os.path.join(cache_folder, content.get('name'))
-    if os.path.exists(content_fpath) \
+    if not os.path.exists(content_fpath) \
             or os.path.getsize(content_fpath) != content.get('archive_size'):
         return False
 
