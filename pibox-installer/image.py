@@ -41,12 +41,6 @@ def run_in_qemu(image_fpath, disk_size, root_size,
 
         # Run emulation
         with emulator.run(cancel_event) as emulation:
-
-            # fix sources.list
-            logger.step("Fix sources.list")
-            emulation.exec_cmd(
-                "sudo sed -i s/mirrordirector/archive/ /etc/apt/sources.list")
-
             # enable SSH for good
             logger.step("Enable SSH")
             emulation.exec_cmd("sudo /bin/systemctl enable ssh")
@@ -59,7 +53,9 @@ def run_in_qemu(image_fpath, disk_size, root_size,
 
             # Run ansiblecube
             logger.step("Run ansiblecube")
-            run_for_image(machine=emulation)
+            run_for_image(machine=emulation,
+                          root_partition_size=root_size,
+                          disk_size=disk_size)
 
     except Exception as e:
         logger.step("Failed")
@@ -136,8 +132,8 @@ def main(logger,
 
 
 parser = argparse.ArgumentParser(description="pibox base image creator")
-parser.add_argument("--root", help="root partition size (GB)", default=3)
-parser.add_argument("--size", help="SD card size (GB)", default=4)
+parser.add_argument("--root", help="root partition size (GB)", default=4)
+parser.add_argument("--size", help="SD card size (GB)", default=8)
 parser.add_argument("--build", help="Folder to create files in",
                     default=os.path.abspath('.'))
 parser.add_argument("--ram", help="Max RAM for QEMU", default="2G")
