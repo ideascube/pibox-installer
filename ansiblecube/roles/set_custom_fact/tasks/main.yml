@@ -18,6 +18,18 @@
     gather_timeout: 240
   tags: master
 
+- name: set python3.4 for jessie
+  set_fact:
+    python3_version: "3.4"
+  when: ansible_distribution_release == "jessie"
+  tags: ['master', 'configure']
+
+- name: set python3.5 for stretch
+  set_fact:
+    python3_version: "3.5"
+  when: ansible_distribution_release == "stretch"
+  tags: ['master', 'configure']
+
 # set hostname and variants
 - block:
 

@@ -32,6 +32,7 @@ kiwix_version: "0.5.0"
 kalite_version: "0.17.4"
 ideascube_version: "0.37.1"
 edupi_version: "1.4.1"
+python3_version: "3.4"
 
 # Apps path
 zim_path: /var/ideascube/kiwix

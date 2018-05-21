@@ -59,10 +59,10 @@
   notify: restart edupi
   tags: ['configure', 'rename']
 
-- name: Create python3.4 environment
+- name: Create python{{ python3_version }} environment
   become: yes
   become_user: ideascube
-  command: virtualenv --python=python3.4 {{ edupi_env }}
+  command: virtualenv --python=python{{ python3_version }} {{ edupi_env }}
   tags: configure
 
 - name: Install requirements
