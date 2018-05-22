@@ -40,11 +40,19 @@
     - "{{ edupi_root }}/stats"
   tags: configure
 
+- name: remove edupi folder if it exists
+  become: yes
+  become_user: ideascube
+  file:
+    dest: "{{ edupi_root }}/edupi"
+    state: absent
+  tags: configure
+
 - name: Download edupi
   become: yes
   become_user: ideascube
   git:
-    repo: https://github.com/Orange-Foundation/edupi.git
+    repo: https://github.com/rgaudin/edupi.git
     dest: "{{ edupi_root }}/edupi/"
     version: v{{ edupi_version }}
   tags: configure
@@ -136,5 +144,5 @@
     enabled: yes
   tags: configure
 
-- include: mark_role.yml role=edupi
+- include: mark_role.yml role=edupi_setup
   tags: configure
