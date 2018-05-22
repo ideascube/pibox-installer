@@ -22,6 +22,10 @@ CANCEL_TIMEOUT = 5
 
 
 def set_config(config, args):
+    def setif(key, value):
+        if getattr(args, key, None) is None:
+            setattr(args, key, value)
+
     if not isinstance(config, dict):
             return
 
@@ -31,7 +35,7 @@ def set_config(config, args):
                          'language': 'language',
                          'size': 'size'}.items():
         if key in config and config.get(key) is not None:
-            setattr(args, arg_key, str(config.get(key)))
+            setif(arg_key, str(config.get(key)))
 
     # branding files
     if "branding" in config and isinstance(config["branding"], dict):
@@ -45,13 +49,13 @@ def set_config(config, args):
                 except Exception:
                     pass
                 else:
-                    setattr(args, key, os.path.abspath(fpath))
+                    setif(key, os.path.abspath(fpath))
 
     # wifi
     if "wifi" in config and isinstance(config["wifi"], dict):
         if "password" in config["wifi"] \
                 and config["wifi"].get("protected", True):
-            args.wifi_pwd = config["wifi"]["password"]
+            setif('wifi_pwd', config["wifi"]["password"])
 
     # admin account
     if "admin_account" in config \
@@ -61,12 +65,12 @@ def set_config(config, args):
             # we need both login and password
             if config["admin_account"].get("login") is not None \
                     and config["admin_account"].get("password") is not None:
-                args.admin_account = [config["admin_account"]["login"],
-                                      config["admin_account"]["password"]]
+                setif('admin_account', [config["admin_account"]["login"],
+                                        config["admin_account"]["password"]])
 
     # build_dir
     if config.get("build_dir") is not None:
-        args.build_dir = os.path.abspath(config["build_dir"])
+        setif('build_dir', os.path.abspath(config["build_dir"]))
 
     # content
     if "content" in config and isinstance(config["content"], dict):
@@ -77,12 +81,13 @@ def set_config(config, args):
                              'zims': 'zim_install'}.items():
             if key in config["content"] \
                     and isinstance(config["content"][key], list):
-                setattr(args, arg_key, config["content"][key])
+                setif(arg_key, config["content"][key])
 
         # bool contents (switch)
         for key in ('edupi', 'aflatoun'):
             if config["content"].get(key) is not None:
-                setattr(args, key, config["content"][key])
+                vl = "yes" if config["content"][key] in ("yes", True) else "no"
+                setif(key, vl)
 
 
 try:
@@ -99,28 +104,54 @@ for catalog in YAML_CATALOGS:
 
 languages = [code for code, language in data.ideascube_languages]
 
+defaults = {
+    'name': "mybox",
+    'timezone': "Europe/Paris",
+    'language': "en",
+    'size': "5GiB",
+    'build_dir': ".",
+    'catalog': False,
+    'edupi': "no",
+    'aflatoun': "no",
+    'kalite': [],
+    'wikifundi': [],
+    'zim_install': [],
+}
+
 parser = argparse.ArgumentParser(description="ideascube/kiwix installer for raspberrypi.")
-parser.add_argument("--name", help="name of the box (mybox)", default="mybox")
-parser.add_argument("--timezone", help="timezone (Europe/Paris)", default="Europe/Paris")
-parser.add_argument("--language", help="language (en)", choices=languages, default="en")
-parser.add_argument("--wifi-pwd", help="wifi password (Open)")
-parser.add_argument("--kalite", help="install kalite", choices=["fr", "en", "es"], nargs="+")
-parser.add_argument("--aflatoun", help="install aflatoun", action="store_true")
-parser.add_argument("--wikifundi", help="install wikifundi", choices=["fr", "en"], nargs="+")
-parser.add_argument("--edupi", help="install edupi", action="store_true")
-parser.add_argument("--zim-install", help="install zim", choices=zim_choices, nargs="+")
-parser.add_argument("--size", help="resize image (5GiB)", default='5GiB')
+parser.add_argument("--name", help="name of the box ({})"
+                    .format(defaults['name']))
+parser.add_argument("--timezone", help="timezone ({})"
+                    .format(defaults['timezone']))
+parser.add_argument("--language", help="language ({})"
+                    .format(defaults['language']), choices=languages)
+parser.add_argument("--wifi-pwd", help="wifi password (None, Network is Open)")
+parser.add_argument("--kalite", help="install kalite",
+                    choices=["fr", "en", "es"], nargs="+")
+parser.add_argument("--aflatoun", help="install aflatoun",
+                    choices=["yes", "no"])
+parser.add_argument("--wikifundi", help="install wikifundi",
+                    choices=["fr", "en"], nargs="+")
+parser.add_argument("--edupi", help="install edupi", choices=["yes", "no"])
+parser.add_argument("--zim-install", help="install zim",
+                    choices=zim_choices, nargs="+")
+parser.add_argument("--size", help="resize image ({})"
+                    .format(defaults['size']))
 parser.add_argument("--favicon", help="set favicon")
 parser.add_argument("--logo", help="set logo")
 parser.add_argument("--css", help="set css style")
-parser.add_argument("--build-dir", help="set build directory (default current)", default=".")
-parser.add_argument("--catalog", help="show catalog and exit", action="store_true")
-parser.add_argument("--admin-account", help="create admin account [LOGIN, PWD]", nargs=2)
+parser.add_argument("--build-dir", help="set build directory ({})"
+                    .format(defaults['build_dir']))
+parser.add_argument("--catalog",
+                    help="show catalog and exit", action="store_true")
+parser.add_argument("--admin-account",
+                    help="create admin account [LOGIN, PWD]", nargs=2)
 parser.add_argument("--config", help="use a JSON config file to set parameters (superseeds cli parameters)")
 
 
 args = parser.parse_args()
 
+# apply options from config file if requested
 if args.config:
     try:
         with open(args.config, 'r') as fd:
@@ -130,6 +161,11 @@ if args.config:
         exit(1)
     else:
         set_config(config, args)
+
+# apply defaults for all non-set options
+for key, value in defaults.items():
+    if getattr(args, key, None) is None:
+        setattr(args, key, value)
 
 if args.catalog:
     for catalog in YAML_CATALOGS:
@@ -145,7 +181,7 @@ else:
 try:
     args.size = humanfriendly.parse_size(args.size)
 except Exception:
-    print("Unable to understand requiered size ({})".format(args.size))
+    print("Unable to understand required size ({})".format(args.size))
     sys.exit(1)
 else:
     args.human_size = human_readable_size(args.size)
@@ -161,12 +197,12 @@ for name in keys:
         space=" " * (longest - len(name))))
 
 # check disk space
-collection = get_collection(edupi=args.edupi,
+collection = get_collection(edupi=args.edupi == "yes",
                             packages=args.zim_install,
                             kalite_languages=args.kalite,
                             wikifundi_languages=args.wikifundi,
                             aflatoun_languages=['fr', 'en']
-                            if args.aflatoun else [])
+                            if args.aflatoun == "yes" else [])
 cache_folder = get_cache(args.build_dir)
 # how much space is available on the build directory?
 avail_space_in_build_dir = get_free_space_in_dir(args.build_dir)
@@ -177,8 +213,10 @@ required_image_size = get_required_image_size(collection)
 
 if avail_space_in_build_dir < space_required_to_build:
     print("Not enough space available at {dir} ({free}) to build image ({img})"
-          .format(dir=args.build_dir, free=avail_space_in_build_dir,
-                  img=required_image_size), file=sys.stderr)
+          .format(dir=args.build_dir,
+                  free=human_readable_size(avail_space_in_build_dir),
+                  img=human_readable_size(required_image_size)),
+          file=sys.stderr)
     exit(1)
 
 if args.size < required_image_size:
