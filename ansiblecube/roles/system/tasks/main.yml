@@ -18,12 +18,15 @@
   tags: master
 
 - name: regenerate modules list
-  command: depmod -a
+  command: depmod -a -b /lib/modules/{{ item }}+/
+  with_items:
+    - "{{ kernel_version }}"
+    - "{{ kernel_version }}-v7"
   tags: master
 
 - name: add exfat module to startup list
   lineinfile:
-    dest: /etc/modules
+    dest: /etc/modules-load.d/modules.conf
     line: exfat
     state: present
   tags: master
