@@ -17,8 +17,18 @@
     - "{{ kernel_version }}-v7"
   tags: master
 
+- name: make temp dir to fool depmod
+  file:
+    src: /lib/modules/{{ item }}+
+    dest: /tmp/{{ item }}/lib/modules/{{ qemu_kernel_version }}
+    state: link
+  with_items:
+    - "{{ kernel_version }}"
+    - "{{ kernel_version }}-v7"
+  tags: master
+
 - name: regenerate modules list
-  command: depmod -a -b /lib/modules/{{ item }}+/
+  command: depmod -a -b /tmp/{{ item }}
   with_items:
     - "{{ kernel_version }}"
     - "{{ kernel_version }}-v7"
