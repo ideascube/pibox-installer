@@ -17,7 +17,16 @@
     - "{{ kernel_version }}-v7"
   tags: master
 
-- name: make temp dir to fool depmod
+- name: make temp directories to fool depmod
+  file:
+    dest: /tmp/{{ item }}/lib/modules
+    state: directory
+  with_items:
+    - "{{ kernel_version }}"
+    - "{{ kernel_version }}-v7"
+  tags: master
+
+- name: create symlinks to fool depmod
   file:
     src: /lib/modules/{{ item }}+
     dest: /tmp/{{ item }}/lib/modules/{{ qemu_kernel_version }}
