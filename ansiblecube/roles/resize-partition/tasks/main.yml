@@ -41,6 +41,19 @@
   register: nb_partitions
   tags: ['master', 'resize']
 
+- name: delete data partition if it exists
+  become: yes
+  shell: /bin/echo -e "d\n3\nw" | fdisk {{ disk }}
+  ignore_errors: True
+  when: nb_partitions.stdout.strip()|int >= 3
+  tags: ['master', 'resize']
+
+- name: informing kernel about partition deletion
+  become: yes
+  command: partprobe -s
+  when: nb_partitions.stdout.strip()|int >= 3
+  tags: ['master', 'resize']
+
 - name: recreating root partition
   become: yes
   shell: /bin/echo -e "d\n2\nn\np\n2\n{{ disk_partition_infos.stdout.split()[0] }}\n{{ disk_partition_infos.stdout.split()[1] }}\nt\n2\n83\nw" | fdisk {{ disk }}
@@ -55,19 +68,6 @@
 - name: resize filesystem on root partition
   become: yes
   command: resize2fs {{ root_partition }}
-  tags: ['master', 'resize']
-
-- name: delete data partition if it exists
-  become: yes
-  shell: /bin/echo -e "d\n3\nw" | fdisk {{ disk }}
-  ignore_errors: True
-  when: nb_partitions.stdout.strip()|int >= 3
-  tags: ['master', 'resize']
-
-- name: informing kernel about partition deletion
-  become: yes
-  command: partprobe -s
-  when: nb_partitions.stdout.strip()|int >= 3
   tags: ['master', 'resize']
 
 # should raise an error because acting on mounted partitions
