@@ -1,8 +1,11 @@
 2.0a
+* Friendlier cli arguments handling
+* Bundled Exfat support in vexpress (QEMU) kernel and as a kernel module on image
+* Better size estimations for content
 * Updated to KA-Lite 0.17.4
 * Kiwix-serve doesn't use library.xml anymore (metadata retrieved from zim: better http://kiwix.FQDN)
 * Large contents are extracted directly into mounted partition
-* Downloads are slighty more reliable (retried 3 times)
+* Downloads are slighty more reliable (retried with increasing delays)
 * Large files are downloaded into a cache and retrieved from it
 * Large content files listed in a JSON file with details
 * Large content file downloaded in pibox-installer
