@@ -18,7 +18,7 @@
     - role: resize-partition
       when: ansible_local.progress.main.resize != "y"
 
-      # master, configure (timezone)
+      # master, configure (timezone, apt-update)
     - role: system
       when: ansible_local.progress.main.system != "y"
 
