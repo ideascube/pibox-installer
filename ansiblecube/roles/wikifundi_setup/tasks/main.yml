@@ -1,4 +1,11 @@
 ---
+- name: make sur wikifundi_root exists
+  file:
+    dest: "{{ wikifundi_root }}"
+    state: directory
+  tags: configure
+  
+
 - name: Install dependencies
   apt:
     name: "{{ item }}"
