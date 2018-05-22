@@ -42,7 +42,7 @@
 
       # content setup (install, dependencies)
     - role: edupi
-      when: edupi|bool and ansible_local.progress.main.edupi != "y"
+      when: edupi|bool and ansible_local.progress.main.edupi_setup != "y"
 
     - role: kalite_setup
       when: kalite_languages | length and ansible_local.progress.main.kalite_setup != "y"
