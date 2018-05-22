@@ -48,6 +48,14 @@
     state: absent
   tags: configure
 
+- name: remove edupi env if it exists
+  become: yes
+  become_user: ideascube
+  file:
+    dest: "{{ edupi_env }}"
+    state: absent
+  tags: configure
+
 - name: Download edupi
   become: yes
   become_user: ideascube
