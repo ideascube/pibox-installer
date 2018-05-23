@@ -43,7 +43,10 @@
     state: link
   tags: configure
 
+# needs to be extracted as ideascube other otherwise tries to chmod www-data
 - name: Download Parsoid
+  become: yes
+  become_user: ideascube
   unarchive:
     src: "{{ mirror }}/other/wikifundi/parsoid_2016-08.tar.bz2"
     dest: "{{ wikifundi_root }}"
