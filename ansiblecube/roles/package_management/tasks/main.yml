@@ -29,9 +29,5 @@
 - debug: var=pkg_list
   tags: ['move-content']
 
-- name: mark packages complete
-  ini_file: dest=/etc/ansible/facts.d/progress.fact
-    section=main
-    option=packages
-    value=complete
+- include: mark_role.yml role=packages
   tags: move-content

@@ -27,23 +27,23 @@
 
 - name: Delete ideascube handlers directories
   command: rm -rf "/var/ideascube/{{ item }}"
-  with_items: ideascube_handlers
-  tags: ['master', 'configure']
+  with_items: "{{ ideascube_handlers }}"
+  tags: configure
 
 - name: Create ideascube handlers directories
   file:
     path: "{{ data_path }}/ideascube/{{ item }}"
     state: directory
-  with_items: ideascube_handlers
-  tags: ['master', 'configure']
+  with_items: "{{ ideascube_handlers }}"
+  tags: configure
 
 - name: Symlink ideascube handlers in idascube folder
   file:
     src: "{{ data_path }}/ideascube/{{ item }}"
     dest: "/var/ideascube/{{ item }}"
     state: link
-  with_items: ideascube_handlers
-  tags: ['master', 'configure']
+  with_items: "{{ ideascube_handlers }}"
+  tags: configure
 
 - block:
 
