@@ -15,7 +15,7 @@
     - role: set_custom_fact
     
       # master, resize
-    - role: resize-partition
+    - role: resize
       when: ansible_local.progress.main.resize != "y"
 
       # master, configure (timezone, apt-update)
@@ -54,7 +54,7 @@
       when: wikifundi_languages | length and ansible_local.progress.main.wikifundi_setup != "y"
 
       # move content
-    - role: package_management
+    - role: packages
       when: packages | length and ansible_local.progress.main.packages != "y"
       tags: move-content
 
