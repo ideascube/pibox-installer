@@ -5,6 +5,12 @@
     state: present
   tags: master
 
+- name: disable exfat-fuse as handler for exfat fs
+  file:
+    dest: /sbin/mount.exfat
+    state: absent
+  tags: master
+
 - name: Unmount {{ data_path }} partition
   become: yes
   command: umount {{ data_path }}
@@ -17,6 +23,12 @@
     state: absent
     regexp: 'exfat'
   tags: ['master', 'resize']
+
+- name: remove {{ data_path }} if it exists
+  file:
+    dest: "{{ data_path }}"
+    state: absent
+  tags: resize
 
 - name: Copy partition table analysis script
   copy:
@@ -87,18 +99,24 @@
   command: mkfs.exfat {{ data_partition }}
   tags: ['master', 'resize']
 
-- name: Remove exfat-fuse
-  become: yes
-  apt:
-    name: exfat-fuse
-    state: absent
-    autoremove: no
-  tags: resize
+# - name: Remove exfat-fuse
+#   become: yes
+#   apt:
+#     name: exfat-fuse
+#     state: absent
+#     autoremove: no
+#   tags: resize
 
 - name: Find partition UUID for {{ data_partition }}
   become: yes
   command: blkid {{ data_partition }}
   register: blkidline
+  tags: resize
+
+- name: create {{ data_path }} placeholder
+  file:
+    dest: "{{ data_path }}"
+    state: directory
   tags: resize
 
 - name: Mounting third partition to {{ data_path }} and creating entry in fstab
