@@ -23,6 +23,8 @@ with open(content_file, 'r') as fp:
 
 
 def get_content(key):
+    if key not in CONTENTS:
+        raise KeyError("requested content `{}` is not in CONTENTS".format(key))
     return CONTENTS.get(key)
 
 
@@ -164,7 +166,7 @@ def run_kalite_actions(cache_folder, mount_point, logger, languages=[]):
              final_path=os.path.join(mount_point, lang_pack['name']))
 
         # videos
-        videos = get_content('kalitekalite_videos_{lang}'.format(lang=lang))
+        videos = get_content('kalite_videos_{lang}'.format(lang=lang))
         extract_and_move(
             content=videos,
             cache_folder=cache_folder,
