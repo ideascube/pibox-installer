@@ -106,7 +106,7 @@
   become: yes
   become_user: ideascube
   command: /bin/echo "from django.contrib.auth.models import User; print('****{}****'.format(User.objects.filter(username='{{ admin_account }}').count()))" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/edupi/manage.py shell --plain
-  register: shell_output
+  register: edupi_admin_shell_output
   when: admin_account is defined
   tags: configure
 
@@ -114,7 +114,7 @@
   become: yes
   become_user: ideascube
   command: /bin/echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{ admin_account }}', None, '{{ admin_password }}')" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/edupi/manage.py shell --plain
-  when: admin_account is defined and shell_output.stdout.split('****')[1]|int == 0
+  when: admin_account is defined and edupi_admin_shell_output.stdout.split('****')[1]|int == 0
   tags: configure
 
 - name: Manage collectstatic
