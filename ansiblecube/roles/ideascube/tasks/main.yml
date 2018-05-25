@@ -91,26 +91,26 @@
   tags: ['master', 'configure']
 
 - name: Edit pibox.py to change ALLOWED_HOSTS
-  lineinfile:
+  replace:
     dest: /opt/venvs/ideascube/lib/python{{ python3_version }}/site-packages/ideascube/conf/{{ ideascube_id }}.py
-    regexp: '^ALLOWED_HOSTS'
-    line: 'ALLOWED_HOSTS = [".{{ fqdn }}", "{{ fqdn }}", "{{ hostname }}", "localhost", "127.0.0.1"]'
+    regexp: '^ALLOWED_HOSTS =.+$'
+    replace: 'ALLOWED_HOSTS = [".{{ fqdn }}", "{{ fqdn }}", "{{ hostname }}", "localhost", "127.0.0.1"]'
   notify: restart uwsgi
   tags: rename
 
 - name: Edit pibox.py to change DOMAIN
-  lineinfile:
+  replace:
     dest: /opt/venvs/ideascube/lib/python{{ python3_version }}/site-packages/ideascube/conf/{{ ideascube_id }}.py
-    regexp: '^DOMAIN'
-    line: 'DOMAIN = "{{ fqdn }}"'
+    regexp: '^DOMAIN = .+'
+    replace: 'DOMAIN = "{{ fqdn }}"'
   notify: restart uwsgi
   tags: rename
 
 - name: Edit pibox.py to change cards URLs
-  lineinfile:
+  replace:
     dest: /opt/venvs/ideascube/lib/python{{ python3_version }}/site-packages/ideascube/conf/{{ ideascube_id }}.py
-    regexp: '"url": "http://{{ item.slug }}'
-    line: '"url": "http://{{ item.fqdn }}",'
+    regexp: '^     "url": "http://{{ item.slug }}.+$'
+    replace: '     "url": "http://{{ item.fqdn }}",'
   with_items:
      - { slug: 'fr.wikifundi', fqdn: 'fr.{{ wikifundi_fqdn }}' }
      - { slug: 'en.wikifundi', fqdn: 'en.{{ wikifundi_fqdn }}' }
