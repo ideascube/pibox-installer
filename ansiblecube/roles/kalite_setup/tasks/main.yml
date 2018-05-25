@@ -18,6 +18,15 @@
   register: kalite_installation 
   tags: configure
 
+- name: Install cherrypy 6.1.0 to fix an issue
+  become: yes
+  become_user: ideascube
+  pip:
+    name: cherrypy
+    version: 6.1.0
+    virtualenv: "{{ kalite_env }}"
+  tags: configure
+
 - name: Create a user admin for kalite
   become: yes
   become_user: ideascube

@@ -25,7 +25,7 @@
   environment:
     KALITE_PYTHON: "{{ kalite_env }}/bin/python"
     KALITE_HOME: "{{ kalite_root }}"
-  command: "{{ kalite_env }}/bin/kalite manage videoscan -l {{ item }}"
+  command: "{{ kalite_env }}/bin/kalite manage videoscan --language={{ item }}"
   async: 1800
   poll: 0
   with_items: "{{ kalite_languages | default(omit) }}"
