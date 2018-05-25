@@ -9,6 +9,7 @@
   apt:
     name: "{{ item }}"
     state: latest
+    autoremove: yes
   with_items:
     - texlive
     - texlive-latex-extra
@@ -22,6 +23,7 @@
   apt:
     name: "{{ item }}"
     state: latest
+    autoremove: yes
   with_items:
     - php5-fpm
     - php5-curl
@@ -33,6 +35,7 @@
   apt:
     name: "{{ item }}"
     state: latest
+    autoremove: yes
   with_items:
     - php-fpm
     - php-curl
@@ -44,6 +47,7 @@
   apt:
     name: "{{ item }}"
     state: latest
+    autoremove: yes
   with_items:
     - nginx
     - memcached

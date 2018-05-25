@@ -12,7 +12,10 @@
   tags: ['master']
 
 - name: Install hostapd
-  apt: name=hostapd state=latest
+  apt:
+    name: hostapd
+    state: latest
+    autoremove: yes
   when: dpkg_hostapd.stdout == ""
   tags: ['master']
 

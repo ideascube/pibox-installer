@@ -1,6 +1,9 @@
 ---
 - name: Install conntrack
-  apt: name={{item}} state=latest
+  apt:
+    name: "{{item}}"
+    state: latest
+    autoremove: yes
   with_items:
     - conntrack
     - uwsgi-plugin-python

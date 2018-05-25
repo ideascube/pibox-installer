@@ -3,6 +3,7 @@
   apt:
     name: exfat-utils
     state: present
+    autoremove: yes
   tags: master
 
 - name: disable exfat-fuse as handler for exfat fs

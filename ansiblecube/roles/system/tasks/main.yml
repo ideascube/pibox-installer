@@ -80,6 +80,7 @@
 - name: Run apt update
   apt:
     update_cache: yes
+    autoremove: yes
   tags: ['master', 'configure']
 
 - name: Fix broken package
@@ -87,7 +88,11 @@
   tags: ['master']
 
 - name: Remove unwanted packages before upgrading
-  apt: name={{ item }} state=absent purge=yes
+  apt:
+    name: "{{ item }}"
+    state: absent
+    purge: yes
+    autoremove: yes
   with_items:
    - apache2
    - apache2-mpm-worker
@@ -109,7 +114,10 @@
   tags: ['master']
 
 - name: Install all required package
-  apt: name={{ item }} state=latest
+  apt:
+    name: "{{ item }}"
+    state: latest
+    autoremove: yes
   with_items:
    - python-pip
    - python-dev
@@ -150,7 +158,10 @@
   tags: ['master']
 
 - name: Install avahi packages
-  apt: name={{ item }} state=latest
+  apt:
+    name: "{{ item }}"
+    state: latest
+    autoremove: yes
   with_items:
    - avahi-daemon
    - libnss-mdns
@@ -206,7 +217,9 @@
   tags: ['master']
 
 - name: Upgrade packages
-  apt: upgrade=safe
+  apt:
+    upgrade: safe
+    autoremove: yes
   tags: ['master']
 
 - name: Remove the unauthenticated hack

@@ -1,6 +1,9 @@
 ---
 - name: Install iptables
-  apt: name=iptables state=latest
+  apt:
+    name: iptables
+    state: latest
+    autoremove: yes
   tags: ['master']
 
 - name: Authorize routing

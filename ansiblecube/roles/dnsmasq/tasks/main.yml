@@ -1,6 +1,9 @@
 ---
 - name: Install dnsmasq
-  apt: name=dnsmasq state=latest
+  apt:
+    name: dnsmasq
+    state: latest
+    autoremove: yes
   tags: ['master']
 
 - name: Copy dnsmasq.conf file

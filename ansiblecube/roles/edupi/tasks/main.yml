@@ -3,6 +3,7 @@
   apt:
     name: "{{ item }}"
     state: latest
+    autoremove: yes
   with_items:
     - nginx
     - python3-pip

@@ -1,6 +1,10 @@
 ---
 - name: Install nginx web server
-  apt: name=nginx state=latest force=yes
+  apt:
+    name: nginx
+    state: latest
+    force: yes
+    autoremove: yes
   tags: ['master']
 
 - name: Remove default nginx vhost config file (if configured).
