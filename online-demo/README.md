@@ -48,18 +48,18 @@ useradd -g www-data -l -m -N -s /bin/bash qdemo
 echo "192.168.1.3        ideascube.lan plug-demo.kiwix.org kiwix.plug-demo.kiwix.org khanacademy.plug-demo.kiwix.org aflatoun.plug-demo.kiwix.org edupi.plug-demo.kiwix.org wikifundi.plug-demo.kiwix.org sites.plug-demo.kiwix.org plug-demo kiwix.plug-demo khanacademy.plug-demo aflatoun.plug-demo edupi.plug-demo wikifundi.plug-demo sites.plug-demo" >> /etc/hosts
 
 # download and execute at-boot script
-wget https://framagit.org/ideascube/pibox-installer/tree/master/online-demo/host-setup.sh -O /root/host-setup.sh && sh /root/host-setup.sh
+wget https://framagit.org/ideascube/pibox-installer/raw/master/online-demo/host-setup.sh -O /root/host-setup.sh && sh /root/host-setup.sh
 
 # add cron task for this script
 echo "@reboot /root/host-setup.sh" >> /etc/crontab
 
 # download and install nginx vhost
-wget https://framagit.org/ideascube/pibox-installer/tree/master/online-demo/nginx-vhost -O /etc/nginx/sites-available/demo.kiwix.ml
+wget https://framagit.org/ideascube/pibox-installer/raw/master/online-demo/nginx-vhost -O /etc/nginx/sites-available/demo.kiwix.ml
 ln -s /etc/nginx/sites-available/nginx-vhost /etc/nginx/sites-enabled/demo.kiwix.ml
 nginx -s reload
 
 # download and install qemu-shortcut
-wget https://framagit.org/ideascube/pibox-installer/tree/master/online-demo/img_run -O /usr/local/bin/img_run
+wget https://framagit.org/ideascube/pibox-installer/raw/master/online-demo/img_run -O /usr/local/bin/img_run
 chmod +x /usr/local/bin/img_run
 ```
 
@@ -76,7 +76,7 @@ img_run https://kiwix.ml/images/pibox-kiwix_2018-05-04.img.zip
 sudo systemctl start ssh
 
 # setup the VM (only once). SSH password is `raspberry`
-ssh pi@locahost -p 5022 "sudo ifconfig eth0 192.168.1.3 up && sudo route add default gw 192.168.1.1 && wget https://framagit.org/ideascube/pibox-installer/tree/master/online-demo/guest-setup.sh -O /tmp/guest-setup.sh && sudo sh /tmp/guest-setup.sh"
+ssh pi@locahost -p 5022 "sudo ifconfig eth0 192.168.1.3 up && sudo route add default gw 192.168.1.1 && wget https://framagit.org/ideascube/pibox-installer/raw/image/online-demo/guest-setup.sh -O /tmp/guest-setup.sh && sudo sh /tmp/guest-setup.sh"
 ```
 
 Now host can talk to guest:
