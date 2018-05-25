@@ -15,6 +15,15 @@
   notify: restart nginx
   tags: move-content
 
+- name: Change hostname in LocalSettings.custom.php
+  replace:
+    name: "{{ wikifundi_root }}/{{ item }}.africapack.kiwix.org/w/LocalSettings.custom.php"
+    regexp: "^.+'domain' => '{{ item }}.africapack.kiwix.org',$"
+    replace: "\t\t\t\t\t\t   'domain' => '{{ item }}.{{ wikifundi_fqdn }}',"
+  with_items: "{{ wikifundi_languages | default(omit) }}"
+  notify: restart nginx
+  tags: move-content
+
 # fix extensions in the content
 - name: Get the Math renderer correctly
   become: yes

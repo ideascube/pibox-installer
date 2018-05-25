@@ -4,23 +4,52 @@
     dest: "{{ wikifundi_root }}"
     state: directory
   tags: configure
-  
 
-- name: Install dependencies
+- name: Install dependencies (text)
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - texlive
+    - texlive-latex-extra
+    - cjk-latex
+    - texlive-fonts-recommended
+    - texlive-lang-greek
+    - texlive-latex-recommended
+  tags: configure
+
+- name: Install dependencies (PHP, jessie)
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - php5-fpm
+    - php5-curl
+    - php5-sqlite
+  when: ansible_distribution_release == "jessie"
+  tags: configure
+
+- name: Install dependencies (PHP, stretch)
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - php-fpm
+    - php-curl
+    - php-sqlite3
+  when: ansible_distribution_release == "stretch"
+  tags: configure
+
+- name: Install dependencies (others)
   apt:
     name: "{{ item }}"
     state: latest
   with_items:
     - nginx
-    - php5-fpm
     - memcached
     - nodejs
     - imagemagick
-    - texlive
-    - texlive-latex-extra
     - php-pear
-    - php5-curl
-    - php5-sqlite
     - libav-tools
     - librsvg2-bin
     - poppler-utils
@@ -30,10 +59,6 @@
     - lua5.1
     - build-essential
     - ocaml
-    - cjk-latex
-    - texlive-fonts-recommended
-    - texlive-lang-greek
-    - texlive-latex-recommended
   tags: configure
 
 - name: Link node to nodejs binary
@@ -51,6 +76,15 @@
     src: "{{ mirror }}/other/wikifundi/parsoid_2016-08.tar.bz2"
     dest: "{{ wikifundi_root }}"
     remote_src: True
+  tags: configure
+
+- name: Change hostnames in localsettings.js
+  replace:
+    name: "{{ wikifundi_root }}/parsoid/localsettings.js"
+    regexp: "{{ item }}.africapack.kiwix.org"
+    replace: "{{ item }}.{{ wikifundi_fqdn }}"
+  with_items: "{{ wikifundi_languages | default(omit) }}"
+  notify: restart nginx
   tags: configure
 
 - name: Setup parsoid service
