@@ -7,7 +7,12 @@
 #### Install last ideascube package
 
 # - name: Install ideascube
-#   apt: name=ideascube={{ ideascube_version}} force=yes update_cache=yes dpkg_options="force-confnew"
+#   apt:
+#     name: ideascube={{ ideascube_version}}
+#     force: yes
+#     update_cache: yes
+#     dpkg_options: "force-confnew"
+#     autoremove: yes
 #   register: has_been_installed
 #   when: ansible_distribution_release == "jessie"
 #   tags: ['master']
@@ -17,6 +22,7 @@
   apt:
     deb: "{{ mirror }}/dev/ideascube_{{ ideascube_version }}_armhf.deb"
     force: yes
+    autoremove: yes
   register: has_been_installed
   tags: master
 
@@ -82,7 +88,37 @@
     dest: /opt/venvs/ideascube/lib/python{{ python3_version }}/site-packages/ideascube/conf/{{ ideascube_id }}.py
     mode: 0644
   notify: restart uwsgi
-  tags: ['master', 'configure', 'rename']
+  tags: ['master', 'configure']
+
+- name: Edit pibox.py to change ALLOWED_HOSTS
+  lineinfile:
+    dest: /opt/venvs/ideascube/lib/python{{ python3_version }}/site-packages/ideascube/conf/{{ ideascube_id }}.py
+    regexp: '^ALLOWED_HOSTS'
+    line: 'ALLOWED_HOSTS = [".{{ fqdn }}", "{{ fqdn }}", "{{ hostname }}", "localhost", "127.0.0.1"]'
+  notify: restart uwsgi
+  tags: rename
+
+- name: Edit pibox.py to change DOMAIN
+  lineinfile:
+    dest: /opt/venvs/ideascube/lib/python{{ python3_version }}/site-packages/ideascube/conf/{{ ideascube_id }}.py
+    regexp: '^DOMAIN'
+    line: 'DOMAIN = "{{ fqdn }}"'
+  notify: restart uwsgi
+  tags: rename
+
+- name: Edit pibox.py to change cards URLs
+  lineinfile:
+    dest: /opt/venvs/ideascube/lib/python{{ python3_version }}/site-packages/ideascube/conf/{{ ideascube_id }}.py
+    regexp: '"url": "http://{{ item.slug }}'
+    line: '"url": "http://{{ item.fqdn }}",'
+  with_items:
+     - { slug: 'fr.wikifundi', fqdn: 'fr.{{ wikifundi_fqdn }}' }
+     - { slug: 'en.wikifundi', fqdn: 'en.{{ wikifundi_fqdn }}' }
+     - { slug: 'aflatoun', fqdn: '{{ aflatoun_fqdn }}' }
+     - { slug: 'edupi', fqdn: '{{ edupi_fqdn }}' }
+
+  notify: restart uwsgi
+  tags: rename
 
 - name: Change IDEASCUBE_ID
   lineinfile: dest=/etc/default/ideascube
