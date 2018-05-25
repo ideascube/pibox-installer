@@ -68,25 +68,13 @@
     state: directory
   tags: ['master']
 
-- name: Copy captive portal public key
-  copy: 
-    src: ideascube.crt
-    dest: /etc/nginx/ssl/ideascube.crt
-    owner: root
-    group: root
-    mode: 0644
-  notify: restart nginx
-  tags: ['master']
+- name: Create Certificate Signing Request
+  command: openssl req -new -sha256 -key /etc/nginx/ssl/ideascube.key -out /etc/nginx/ssl/ideascube.csr -subj "/C=CH/ST=Vaud/L=Lausanne/O=Kiwix/OU=Kiwix Plug/CN={{ fqdn }}"
+  tags: ['master', 'rename']
 
-- name: Copy captive portal private key
-  copy:
-    src: ideascube.key
-    dest: /etc/nginx/ssl/ideascube.key
-    owner: root
-    group: root
-    mode: 0640
-  notify: restart nginx
-  tags: ['master']
+- name: Sign the certificate
+  command: openssl x509 -req -sha256 -days 3650 -in /etc/nginx/ssl/ideascube.csr -signkey /etc/nginx/ssl/ideascube.key -out /etc/nginx/ssl/ideascube.crt
+  tags: ['master', 'rename']  
 
 - name: Copy new catch-all redirect 301 vhost
   template:
