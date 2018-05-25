@@ -1,7 +1,20 @@
 ---
+- name: Make sure aflatoun content directory does not exist
+  file:
+    dest: "{{ aflatoun_root }}/content"
+    state: absent
+  tags: move-content
+
 # downloaded content was placed in a different location on data part
 - name: Move downloaded content to proper location
-  command: mv {{ aflatoun_content_path }}/ {{ aflatoun_root }}/content
+  command: mv {{ aflatoun_content_path }} {{ aflatoun_root }}/content
+  tags: move-content
+
+- name: re-launch setup for it annotates the content items
+  become: yes
+  become_user: ideascube
+  shell: KALITE_PYTHON={{ aflatoun_env }}/bin/python KALITE_HOME={{ aflatoun_root }} {{ aflatoun_env }}/bin/kalite manage setup --noinput --no-assessment-items
+  when: admin_account is not defined
   tags: move-content
 
 # lang pack is downloaded after content as part of it sits in content/

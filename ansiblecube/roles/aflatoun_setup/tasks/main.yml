@@ -11,22 +11,29 @@
     dest: /tmp/ka-lite-static-0.16.7b3.tar.gz
   tags: configure
 
-- name: Install Aflatoun
+- name: downgrade setuptools for KA-lite 0.16 (aflatoun)
   pip:
-    name: /tmp/ka-lite-static-0.16.7b3.tar.gz
-    chdir: "{{ aflatoun_root }}"
+    name: setuptools
+    version: 28.8.0
     virtualenv_command: /usr/bin/virtualenv
     virtualenv: "{{ aflatoun_env }}"
   tags: configure
 
-- name: Create a user admin for aflatoun
+- name: Install Aflatoun
+  pip:
+    name: /tmp/ka-lite-static-0.16.7b3.tar.gz
+    chdir: "{{ aflatoun_root }}"
+    virtualenv: "{{ aflatoun_env }}"
+  tags: configure
+
+- name: Initialize aflatoun and Create an admin user
   become: yes
   become_user: ideascube
   shell: KALITE_PYTHON={{ aflatoun_env }}/bin/python KALITE_HOME={{ aflatoun_root }} {{ aflatoun_env }}/bin/kalite manage setup --username={{ admin_account }} --password={{ admin_password }} --noinput --no-assessment-items
   when: admin_account is defined
   tags: configure
 
-- name: Create a user admin for aflatoun
+- name: Initialize Aflatoun without creating an admin user
   become: yes
   become_user: ideascube
   shell: KALITE_PYTHON={{ aflatoun_env }}/bin/python KALITE_HOME={{ aflatoun_root }} {{ aflatoun_env }}/bin/kalite manage setup --noinput --no-assessment-items
