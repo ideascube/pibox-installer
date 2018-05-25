@@ -106,7 +106,7 @@
   become: yes
   become_user: ideascube
   command: ideascube shell -c "from ideascube.models import User; print('****{}****'.format(User.objects.filter(serial='{{ admin_account }}').count()))"
-  register: shell_output
+  register: ideascube_admin_shell_output
   when: admin_account is defined
   tags: ['configure']
 
@@ -114,7 +114,7 @@
   become: yes
   become_user: ideascube
   command: ideascube shell -c "from ideascube.models import User; User.objects.create_superuser('{{ admin_account }}', '{{ admin_password }}')"
-  when: admin_account is defined and shell_output.stdout.split('****')[1]|int == 0
+  when: admin_account is defined and ideascube_admin_shell_output.stdout.split('****')[1]|int == 0
   tags: ['configure']
 
 - name: Ensure that Ideascube folder belong the ideascube user
