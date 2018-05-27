@@ -125,6 +125,7 @@ def run_phase_one(machine, extra_vars, secret_keys,
     branding = {'favicon.png': favicon,
                 'header-logo.png': logo, 'style.css': css}
 
+    has_custom_branding = False
     for fname, item in [(k, v) for k, v in branding.items() if v is not None]:
         has_custom_branding = True
         machine.put_file(item, "/tmp/{}".format(fname))
