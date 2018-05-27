@@ -312,14 +312,18 @@ class _RunningInstance:
 
         # configure network for tap
         if self._emulation._tap:
+            # display network config before changes
+            self.exec_cmd("sudo ifconfig && sudo route -n")
+            # remove default gateway (only one can be active at a time)
+            self.exec_cmd("sudo ip route del 0/0")
             # set requested static IP on tap
             self.exec_cmd("sudo ifconfig eth0 {} up"
                           .format(self._emulation._tap_ip))
             # add gateway using tap
-            self.exec_cmd("sudo route add default gw {}"
+            self.exec_cmd("sudo ip route add default via {}"
                           .format(self._emulation._tap_gw))
-            # remove gateway using qemu iface
-            self.exec_cmd("route del -net 0.0.0.0 netmask 0.0.0.0 dev eth1")
+            # display network config after changes
+            self.exec_cmd("sudo ifconfig && sudo route -n")
 
     def _shutdown(self):
         self.exec_cmd("sudo shutdown -P 0")
