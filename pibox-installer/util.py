@@ -147,7 +147,7 @@ class CLILogger:
 def get_checksum(fpath, func=hashlib.sha256):
     h = func()
     with open(fpath, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
+        for chunk in iter(lambda: f.read(ONE_MB * 8), b""):
             h.update(chunk)
     return h.hexdigest()
 
