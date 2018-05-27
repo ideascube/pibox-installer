@@ -244,7 +244,7 @@ try:
             wifi_pwd=args.wifi_pwd,
             kalite=args.kalite,
             wikifundi=args.wikifundi,
-            aflatoun=args.aflatoun,
+            aflatoun=args.aflatoun == "yes",
             edupi=args.edupi,
             zim_install=args.zim_install,
             size=args.size,
