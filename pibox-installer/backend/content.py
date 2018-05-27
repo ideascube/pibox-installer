@@ -265,7 +265,7 @@ def get_required_image_size(collection):
     return math.ceil(required_size / 2 ** 30) * 2 ** 30
 
 
-def get_required_building_space(collection, cache_folder):
+def get_required_building_space(collection, cache_folder, image_size=None):
     ''' total required space to host downlaods ans image '''
     # the pibox master image
     # we neglect the master's expanded size as it is going to be moved
@@ -273,7 +273,8 @@ def get_required_building_space(collection, cache_folder):
     base_image_size = get_content('pibox_base_image').get('archive_size')
 
     # the created image
-    image_size = get_required_image_size(collection)
+    if image_size is None:
+        image_size = get_required_image_size(collection)
 
     # download cache
     downloads_size = get_collection_download_size_using_cache(
