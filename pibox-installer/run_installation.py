@@ -22,7 +22,7 @@ def log_duration(logger, started_on, ended_on=None):
         start=started_on, end=ended_on,
         duration=humanfriendly.format_timespan(duration.total_seconds())))
 
-def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, aflatoun, wikifundi, edupi, zim_install, size, logger, cancel_event, sd_card, favicon, logo, css, done_callback=None, build_dir="."):
+def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, aflatoun, wikifundi, edupi, zim_install, size, logger, cancel_event, sd_card, favicon, logo, css, done_callback=None, build_dir=".", tap=None):
 
     started_on = datetime.now()
     logger.std("started on {}".format(started_on))
@@ -121,7 +121,8 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         logger.step("Preparing qemu VM")
         emulator = qemu.Emulator(data.vexpress_boot_kernel,
                                  data.vexpress_boot_dtb,
-                                 image_building_path, "2G", logger)
+                                 image_building_path, logger,
+                                 ram="2G", tap=tap)
 
         # Resize image
         logger.step("Resizing image file to {s}"

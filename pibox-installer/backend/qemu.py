@@ -67,13 +67,19 @@ class Emulator:
     # password=raspberry
     # prompt end by ":~$ "
     # sudo doesn't require password
-    def __init__(self, kernel, dtb, image, ram, logger):
+    def __init__(self, kernel, dtb, image, logger, ram, tap=None):
         self._kernel = kernel
         self._dtb = dtb
         self._image = image
         self._logger = logger
         self._binary = qemu_system_arm_exe_path
         self._set_ram(ram.lower())
+        self._tap = None
+        if tap:
+            try:
+                self._tap, self._tap_ip, self._tap_gw = tap.split(",")
+            except Exception:
+                pass
 
     def _set_ram(self, requested_ram):
         ''' applies requested RAM to qemu if it's available otherwise less '''
@@ -244,16 +250,24 @@ class _RunningInstance:
                 "-serial", "stdio",
                 "-drive", "format=raw,if=sd,file={}"
                 .format(self._emulation._image),
-                "-netdev", "user,id=eth0,hostfwd=tcp::{}-:22".format(ssh_port),
-                "-device", "virtio-net-device,netdev=eth0",
                 "-display", "none",
                 "-no-reboot", "-no-acpi",
+                "-netdev", "user,id=eth1,hostfwd=tcp::{}-:22".format(ssh_port),
+                "-device", "virtio-net-device,netdev=eth1",
             ]
+            # add parameters to qemu if tap device is available
+            if self._emulation._tap:
+                command += [
+                    "-netdev",
+                    "tap,id=eth0,ifname={},script=no,downscript=no"
+                    .format(self._emulation._tap),
+                    "-device",
+                    "virtio-net-device,netdev=eth0"
+                ]
             if qemu_cpu > 1:
                 command += ["-smp", str(qemu_cpu),
                             "--accel", "tcg,thread=multi"]
             self._logger.std("--\n{}\n--".format(" ".join(command)))
-
             self._qemu = subprocess.Popen(
                 command,
                 stdin=stdin_reader, stdout=stdout_writer,
@@ -295,6 +309,17 @@ class _RunningInstance:
         self._client.connect("localhost", port=ssh_port,
                              username="pi", password="raspberry",
                              allow_agent=False, look_for_keys=False)
+
+        # configure network for tap
+        if self._emulation._tap:
+            # set requested static IP on tap
+            self.exec_cmd("sudo ifconfig eth0 {} up"
+                          .format(self._emulation._tap_ip))
+            # add gateway using tap
+            self.exec_cmd("sudo route add default gw {}"
+                          .format(self._emulation._tap_gw))
+            # remove gateway using qemu iface
+            self.exec_cmd("route del -net 0.0.0.0 netmask 0.0.0.0 dev eth1")
 
     def _shutdown(self):
         self.exec_cmd("sudo shutdown -P 0")
