@@ -19,7 +19,7 @@
         "url": "{mirror}/other/pibox-kiwix_2018-05-28.img.zip",
         "name": "pibox-kiwix_2018-05-28.img.zip",
         "root_partition_size": 5368709120,
-        "checksum": "32e6648a61076b51befac530de618893320f45ca8877515d6a12949a52c2489e",
+        "checksum": "cad4c233012a8c2d089a72e28f916c849923e7d0568c24a453a4f6bf3e634d01",
         "archive_size": 1343354856,
         "expanded_size": 8589934592
     },
