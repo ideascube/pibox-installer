@@ -77,7 +77,8 @@ class Emulator:
         self._tap = None
         if tap:
             try:
-                self._tap, self._tap_ip, self._tap_gw = tap.split(",")
+                self._tap, self._tap_net, \
+                    self._tap_ip, self._tap_gw = tap.split(",")
             except Exception:
                 pass
 
@@ -310,20 +311,29 @@ class _RunningInstance:
                              username="pi", password="raspberry",
                              allow_agent=False, look_for_keys=False)
 
-        # configure network for tap
+        # configure network for tap (to speed-up networking inside qemu)
+        # - disable parasite service (DHCP, DNS)
+        # - remove default routes (using qemu network)
+        # - Set static IP and route to the host
         if self._emulation._tap:
-            # display network config before changes
-            self.exec_cmd("sudo ifconfig && sudo route -n")
+            # kill dhclient so we can use a static IP
+            self.exec_cmd("sudo systemctl stop NetworkManager dnsmasq")
+            self.exec_cmd("sudo killall dhclient")
             # remove default gateway (only one can be active at a time)
             self.exec_cmd("sudo ip route del 0/0")
             # set requested static IP on tap
-            self.exec_cmd("sudo ifconfig eth0 {} up"
-                          .format(self._emulation._tap_ip))
+            self.exec_cmd("sudo ip addr add {ip}dev eth0"
+                          .format(ip=self._emulation._tap_ip))
+            # bring the interface up
+            self.exec_cmd("sudo ip link set dev eth0 up")
+            # add route to the tap network
+            self.exec_cmd("sudo ip route add {} dev eth0"
+                          .format(self._tap_net))
             # add gateway using tap
-            self.exec_cmd("sudo ip route add default via {}"
+            self.exec_cmd("sudo ip route add default via {} dev eth0"
                           .format(self._emulation._tap_gw))
             # display network config after changes
-            self.exec_cmd("sudo ifconfig && sudo route -n")
+            self.exec_cmd("ip addr show eth0 && ip route route show")
 
     def _shutdown(self):
         self.exec_cmd("sudo shutdown -P 0")
