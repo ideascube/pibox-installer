@@ -107,7 +107,7 @@ def get_package_content(package_id):
             package = catalog['all'][package_id]
             return {
                 "url": package['url'],
-                "name": "package_{id}-{version}".format(**package),
+                "name": "package_{langid}-{version}".format(**package),
                 "checksum": package['sha256sum'],
                 "archive_size": package['size'],
                 "expanded_size": package['size'] * 1
