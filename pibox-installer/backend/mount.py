@@ -14,8 +14,8 @@ def mount_data_partition(image_fpath):
     if sys.platform == "linux":
         losetup_out = subprocess.check_output([
             'losetup', '--partscan',
-            '--show', '--find', image_fpath])
-        target_dev = losetup_out.strip()
+            '--show', '--find', image_fpath]).decode('utf-8', 'ignore')
+        target_dev = str(losetup_out.strip())
         target_part = "{dev}p3".format(dev=target_dev)
         mount_point = tempfile.mkdtemp()
         subprocess.check_call(['mount', '-t', 'exfat',
