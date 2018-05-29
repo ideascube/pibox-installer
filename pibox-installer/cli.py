@@ -245,7 +245,7 @@ try:
             kalite=args.kalite,
             wikifundi=args.wikifundi,
             aflatoun=args.aflatoun == "yes",
-            edupi=args.edupi,
+            edupi=args.edupi == "yes",
             zim_install=args.zim_install,
             size=args.size,
             logger=CLILogger,
