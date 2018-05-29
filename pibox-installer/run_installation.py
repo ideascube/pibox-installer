@@ -32,10 +32,11 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         if sd_card:
             if sys.platform == "linux":
                 #TODO restore sd_card mod
-                subprocess_pretty_check_call(["pkexec", "chmod", "-c", "o+w", sd_card], logger)
+                subprocess_pretty_check_call(["chmod", "-c", "o+w", sd_card], logger)
             elif sys.platform == "darwin":
                 #TODO restore sd_card mod
-                subprocess_pretty_check_call(["osascript", "-e", "do shell script \"diskutil unmountDisk {0} && chmod -v o+w {0}\" with administrator privileges".format(sd_card)], logger)
+                subprocess_pretty_check_call(["diskutil", "unmountDisk", sd_card], logger)
+                subprocess_pretty_check_call(["chmod", "-v", "o+w", sd_card], logger)
             elif sys.platform == "win32":
                 matches = re.findall(r"\\\\.\\PHYSICALDRIVE(\d*)", sd_card)
                 if len(matches) != 1:
@@ -61,7 +62,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         base_image = get_content('pibox_base_image')
         rf = download_content(base_image, logger, build_dir)
         if not rf.successful:
-            logger.err("Failed to download raspbian.\n{e}"
+            logger.err("Failed to download pibox base image.\n{e}"
                        .format(e=rf.exception))
             sys.exit(1)
         elif rf.found:
