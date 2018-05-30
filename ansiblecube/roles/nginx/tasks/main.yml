@@ -7,6 +7,12 @@
     autoremove: yes
   tags: ['master']
 
+- name: install 502.html
+  template:
+    src: 502.html.j2
+    dest: /var/www/502.html
+  tags: master
+
 - name: Remove default nginx vhost config file (if configured).
   file:
     path: /etc/nginx/sites-enabled/default

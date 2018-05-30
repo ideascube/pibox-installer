@@ -39,4 +39,8 @@ server {
     location ~ ^/[^w].*\.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
         expires 10d;
     }
+
+    location /ideascube-static/ { alias /var/ideascube/static/; expires 1y; }
+    location /502.html { internal; root /var/www; }
+    error_page 502 /502.html;
 }
