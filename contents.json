@@ -16,11 +16,11 @@
         "expanded_size": 1725629563
     },
     "pibox_base_image": {
-        "url": "{mirror}/plug/base/pibox-kiwix_2018-05-28.img.zip",
-        "name": "pibox-kiwix_2018-05-28.img.zip",
+        "url": "{mirror}/plug/base/pibox-kiwix_2018-05-30.img.zip",
+        "name": "pibox-kiwix_2018-05-30.img.zip",
         "root_partition_size": 5368709120,
-        "checksum": "f70809430fbda1494b93671ff3b6393236c7b96bc66fb1c98dbb9d7ee98cdbfe",
-        "archive_size": 1343354856,
+        "checksum": "1ed7791eb5c8ec44829271d4bca714102d1b2b3a048a83e9383889511bef96a2",
+        "archive_size": 1354750005,
         "expanded_size": 8589934592
     },
     "aflatoun_content": {
