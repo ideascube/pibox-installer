@@ -248,7 +248,7 @@ class _RunningInstance:
                 "-kernel", self._emulation._kernel,
                 "-dtb", self._emulation._dtb,
                 "-append", "root=/dev/mmcblk0p2 console=ttyAMA0 console=tty",
-                "-serial", "stdio",
+                "-nographic",
                 "-drive", "format=raw,if=sd,file={}"
                 .format(self._emulation._image),
                 "-display", "none",
