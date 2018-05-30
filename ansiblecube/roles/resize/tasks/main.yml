@@ -100,11 +100,12 @@
   command: mkfs.exfat {{ data_partition }}
   tags: ['master', 'resize']
 
-- name: Find partition UUID for {{ data_partition }}
-  become: yes
-  command: blkid {{ data_partition }}
-  register: blkidline
-  tags: resize
+- name: replace UUID=* by {{ disk }} references in fstab
+  replace:
+    name: /etc/fstab
+    regexp: 'PARTUUID=[a-z0-9]+\-0'
+    replace: '{{ disk }}p'
+  tags: master
 
 - name: create {{ data_path }} placeholder
   file:
@@ -116,7 +117,7 @@
 - name: Mounting third partition to {{ data_path }} and creating entry in fstab
   become: yes
   mount:
-    src: "PARTUUID={{ blkidline.stdout.rsplit('=')[-1][1:-1] }}"
+    src: "{{ disk }}p3"
     name: "{{ data_path }}"
     fstype: exfat
     state: mounted
