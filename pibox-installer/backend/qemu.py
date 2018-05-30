@@ -252,7 +252,7 @@ class _RunningInstance:
                 "-drive", "format=raw,if=sd,file={}"
                 .format(self._emulation._image),
                 "-display", "none",
-                "-no-reboot", "-no-acpi",
+                "-no-reboot",
                 "-netdev", "user,id=eth1,hostfwd=tcp::{}-:22".format(ssh_port),
                 "-device", "virtio-net-device,netdev=eth1",
             ]
