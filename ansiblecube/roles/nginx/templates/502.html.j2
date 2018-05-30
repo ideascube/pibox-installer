@@ -17,36 +17,34 @@
     </head>
     <body class="">
         <header>
-		    <section>
-		      <a href="{% url 'index' %}">
-		        <h1>
-		          <img src="/ideascube-static/branding/header-logo.png"></img>
-		        </h1>
-		      </a>
-		      <span class="boxid">{{ hostname }}</span>
-		    </section>
-		</header>
-		<ul class="messages">
-		    <li class="error">HTTP 502 Bad Gateway</li>
-		</ul>
+            <section>
+              <a href="/">
+                <h1>
+                  <img src="/ideascube-static/branding/header-logo.png"></img>
+                </h1>
+              </a>
+              <span class="boxid">{{ hostname }}</span>
+            </section>
+        </header>
+        <ul class="messages">
+            <li class="error">HTTP 502 Bad Gateway</li>
+        </ul>
         <div class="content">
-        	<h2>Unable to connect to the requested gateway.</h2>
-
-        	<ul>
-        		<li>The service might be busy.</li>
-        		<li>The service might have crashed.</li>
-        		<li>The service might not be installed.</li>
-    		</ul>
-    		<p>Please, retry in a few moments and get an administrator's help in case it doesn't come back.</p>
+            <h2>Unable to connect to the requested gateway.</h2>
+            <ul>
+                <li>The service might be busy.</li>
+                <li>The service might have crashed.</li>
+                <li>The service might not be installed.</li>
+            </ul>
+            <p>Please, <a href="/">retry in a few moments</a> and get an administrator's help in case it doesn't come back.</p>
         </div>
-		<footer>
-		    <div class="row">
-		        <div class="col third i18n_switch"></div>
-		        <div class="col half">
-		            <img src="/ideascube-static/ideascube/img/logoBSF.png" />
-		        </div>
-		    </div>
-		</footer>
-
+        <footer>
+            <div class="row">
+                <div class="col third i18n_switch"></div>
+                <div class="col half">
+                    <img src="/ideascube-static/ideascube/img/logoBSF.png" />
+                </div>
+            </div>
+        </footer>
     </body>
 </html>
