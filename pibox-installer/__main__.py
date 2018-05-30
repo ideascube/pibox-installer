@@ -19,7 +19,7 @@ elif sys.argv[1] == "cli":
     run_as_admin(get_callback(sys.argv[1], True))
 elif sys.argv[1] == "image":
     # master image creation does not require admin privileges
-    get_callback(sys.argv[1], True)
+    get_callback(sys.argv[1], True)()
 else:
     parser = argparse.ArgumentParser(description="ideascube/kiwix installer for raspberrypi.")
     sub_parser = parser.add_subparsers()
