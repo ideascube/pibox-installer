@@ -6,10 +6,8 @@ import os
 import sys
 import ctypes
 import subprocess
-try:
-    import win32con
-except ImportError:
-    pass
+
+sys_argv = sys.argv[1 if getattr(sys, "frozen", False) else 0:]
 
 
 def is_admin():
@@ -43,7 +41,7 @@ def run_as_admin(callback, from_gui=False):
 
 def run_as_win_admin(from_gui):
     # Re-run the program with admin rights
-    params = " ".join(['"{}"'.format(x) for x in sys.argv])
+    params = " ".join(['"{}"'.format(x) for x in sys_argv])
     rc = ctypes.windll.shell32.ShellExecuteW(None, "runas",
                                              sys.executable,
                                              params, None, 1)
@@ -59,7 +57,7 @@ def run_as_mac_admin(from_gui):
             '/usr/bin/osascript', '-e',
             "do shell script \"{script} {args} 2>&1\" "
             "with administrator privileges"
-            .format(script=sys.executable, args=" ".join(sys.argv))
+            .format(script=sys.executable, args=" ".join(sys_argv))
         ]
         # rc is oascript returns 1 of user could not elevate
         rc = subprocess.call(elevation_cmd)
@@ -67,10 +65,10 @@ def run_as_mac_admin(from_gui):
             raise PermissionError()
         return rc
     else:
-        return subprocess.call(['sudo', sys.executable] + sys.argv)
+        return subprocess.call(['sudo', sys.executable] + sys_argv)
 
 
 def run_as_root(from_gui):
     elevation_cmd = ['pkexec' if from_gui
-                     else 'sudo', sys.executable] + sys.argv
+                     else 'sudo', sys.executable] + sys_argv
     return subprocess.call(elevation_cmd)
