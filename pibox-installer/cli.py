@@ -22,6 +22,9 @@ CANCEL_TIMEOUT = 5
 
 
 def set_config(config, args):
+    def get_choices(option):
+        return [x for x in parser._actions if x.dest == option][-1].choices
+
     def setif(key, value):
         if getattr(args, key, None) is None:
             setattr(args, key, value)
@@ -81,7 +84,14 @@ def set_config(config, args):
                              'zims': 'zim_install'}.items():
             if key in config["content"] \
                     and isinstance(config["content"][key], list):
-                setif(arg_key, config["content"][key])
+                value = config["content"][key]
+                # check that all elements are valid choices
+                wrong = [x for x in value if x not in get_choices(arg_key)]
+                if len(wrong):
+                    raise ValueError("Incorrect values for `{key}`: {val}"
+                                     .format(key=arg_key, val=" ".join(wrong)))
+                else:
+                    setif(arg_key, value)
 
         # bool contents (switch)
         for key in ('edupi', 'aflatoun'):
@@ -149,7 +159,6 @@ parser.add_argument("--admin-account",
 parser.add_argument("--config", help="use a JSON config file to set parameters (superseeds cli parameters)")
 parser.add_argument("--tap", help="Specify a TAP network interface to use: `ifname,net,vm-ip,gw-ip` (tap0,192.168.1.0/24,192.168.1.3,192.168.1.1)")
 
-
 args = parser.parse_args()
 
 # apply options from config file if requested
@@ -161,7 +170,13 @@ if args.config:
         print("Failed to parse JSON file {}".format(args.config))
         exit(1)
     else:
-        set_config(config, args)
+        try:
+            set_config(config, args)
+        except Exception as exp:
+            print("Error while parsing your config file ({})"
+                  .format(args.config))
+            print(exp)
+            sys.exit(1)
 
 # apply defaults for all non-set options
 for key, value in defaults.items():
