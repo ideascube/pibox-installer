@@ -18,7 +18,7 @@ chmod +x /usr/local/bin/plugdemo
 
 sudo ln -s /usr/local/bin/plugdemo /etc/network/if-up.d/plugdemo
 
-echo "@reboot /usr/local/bin/plugdemo" >> /etc/crontab
+sudo sh -c 'echo "@reboot /usr/local/bin/plugdemo" >> /etc/crontab'
 
 echo "rename image for demo"
 cd /var/lib/ansible/local && sudo /usr/local/bin/ansible-playbook --inventory hosts --tags rename  --extra-vars "tld=kiwix.org project_name=plug-demo" main.yml

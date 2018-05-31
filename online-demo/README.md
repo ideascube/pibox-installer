@@ -34,7 +34,7 @@ Please, update the scripts to your needs.
 
 ``` sh
 # install dependency
-apt install -y uml-utilities
+apt install -y uml-utilities unzip nginx
 
 # download a regular static qemu (linux64). We need qemu 2.8+
 wget http://download.kiwix.org/dev/qemu-2.12.0-linux-x86_64.tar.gz
@@ -54,8 +54,8 @@ wget https://framagit.org/ideascube/pibox-installer/raw/master/online-demo/host-
 echo "@reboot /root/host-setup.sh" >> /etc/crontab
 
 # download and install nginx vhost
-wget https://framagit.org/ideascube/pibox-installer/raw/master/online-demo/nginx-vhost -O /etc/nginx/sites-available/demo.kiwix.ml
-ln -s /etc/nginx/sites-available/nginx-vhost /etc/nginx/sites-enabled/demo.kiwix.ml
+wget https://framagit.org/ideascube/pibox-installer/raw/master/online-demo/nginx-vhost -O /etc/nginx/sites-available/plug-demo.kiwix.org
+ln -s /etc/nginx/sites-available/nginx-vhost /etc/nginx/sites-enabled/plug-demo.kiwix.org
 nginx -s reload
 
 # download and install qemu-shortcut
@@ -89,7 +89,7 @@ ssh pi@192.168.1.3
 ssh pi@localhost -p 5022
 # full network is exposed to host
 curl http://192.168.1.3/
-curl -L http://demo.kiwix.ml/
+curl -L http://plug-demo.kiwix.org/
 # shutdown the VM
 ssh pi@demo "sudo shutdown -P 0"
 ```
