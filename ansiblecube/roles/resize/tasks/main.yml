@@ -113,15 +113,16 @@
     state: directory
   tags: resize
 
-# /data is mounted with uid=ideascube and gid=www-data chmod 775 (exfat cant chmod/chown)
-- name: Mounting third partition to {{ data_path }} and creating entry in fstab
-  become: yes
-  mount:
-    src: "{{ disk }}p3"
-    name: "{{ data_path }}"
-    fstype: exfat
-    state: mounted
-    opts: umask=0002,uid=1001,gid=33
+- name: installing a new fstab with longer device timeouts and {{ data_path }} mout point
+  template:
+    src: fstab.j2
+    dest: /etc/fstab
+  register: fstab_install
+  tags: resize
+
+- name: Mounting third partition to {{ data_path }}
+  command: mount {{ data_path }}
+  when: fstab_install.changed
   tags: resize
 
 - include: mark_role.yml role=resize
