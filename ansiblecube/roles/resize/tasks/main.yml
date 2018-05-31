@@ -100,25 +100,35 @@
   command: mkfs.exfat {{ data_partition }}
   tags: ['master', 'resize']
 
-- name: replace UUID=* by {{ disk }} references in fstab
-  replace:
-    name: /etc/fstab
-    regexp: 'PARTUUID=[a-z0-9]+\-0'
-    replace: '{{ disk }}p'
-  tags: master
-
 - name: create {{ data_path }} placeholder
   file:
     dest: "{{ data_path }}"
     state: directory
-  tags: resize
+  tags: ['master', 'resize']
 
 - name: installing a new fstab with longer device timeouts and {{ data_path }} mout point
   template:
     src: fstab.j2
     dest: /etc/fstab
   register: fstab_install
-  tags: resize
+  tags: ['master', 'resize']
+
+- name: create systemd-service to mount /boot
+  template:
+    src: mount-boot-partition.service
+    dest: /etc/systemd/system/mount-boot-partition.service
+  tags: master
+
+- name: make systemd-udev-trigger dependent on our boot service
+  replace:
+    name: /lib/systemd/system/systemd-udev-trigger.service
+    regexp: '^Wants=systemd-udevd.service$'
+    replace: 'Wants=systemd-udevd.service mount-boot-partition.service'
+  tags: master
+
+- name: reload systemd
+  command: systemctl daemon-reload
+  tags: master
 
 - name: Mounting third partition to {{ data_path }}
   command: mount {{ data_path }}

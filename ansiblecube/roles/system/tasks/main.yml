@@ -3,6 +3,10 @@
   file: path=/etc/udev/rules.d/70-persistent-net.rules state=absent
   tags: ['master']
 
+- name: reload udev
+  shell: udevadm control --reload-rules && udevadm trigger
+  tags: master
+
 - name: download exfat kernel module
   unarchive:
     src: "{{ mirror }}/dev/exfat_{{ kernel_version }}.tar"
