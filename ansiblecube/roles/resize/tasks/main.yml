@@ -122,7 +122,11 @@
     fstype: exfat
     state: mounted
     opts: umask=0002,uid=1001,gid=33
-  tags: resize
+  tags: resize-NOT
+
+- name: Mounting third partition to {{ data_path }} (without fstab)
+  command: mount {{ disk }}p3 -t exfat -o umask=0002,uid=1001,gid=33 {{ data_path }}
+  tags: ['master', 'configure', 'rename']
 
 - include: mark_role.yml role=resize
   tags: resize
