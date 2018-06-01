@@ -13,11 +13,6 @@
 - name: reboot device
   command: reboot
 
-- name: restart dnsmasq
-  service:
-    name: dnsmasq
-    state: restarted
-
 - name: restart hostapd
   service:
     name: hostapd
@@ -51,4 +46,14 @@
 - name: restart kiwix
   service:
     name: kiwix-server
+    state: restarted
+
+- name: restart dnsmasq
+  service:
+    name: dnsmasq
+    state: restarted
+
+- name: restart network manager
+  service:
+    name: network-manager
     state: restarted

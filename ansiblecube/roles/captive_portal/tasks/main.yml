@@ -124,6 +124,7 @@
     src: dnsmasq.j2
     dest: /etc/NetworkManager/dispatcher.d/03dnsmasq
     mode: 0755
+  notify: restart network manager
   tags: ['master', 'rename']
 
 - name: Copy clear_iptables.sh to /usr/bin/local
