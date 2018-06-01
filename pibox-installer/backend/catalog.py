@@ -1,5 +1,5 @@
 
-import urllib.request
+import requests
 import yaml
 
 CATALOGS = [
@@ -14,7 +14,7 @@ CATALOGS = [
 YAML_CATALOGS = []
 try:
     for catalog in CATALOGS:
-        with urllib.request.urlopen(catalog.get('url')) as f:
-            YAML_CATALOGS.append(yaml.load(f.read().decode("utf-8")))
+        YAML_CATALOGS.append(yaml.load(
+            requests.get(catalog.get('url')).content.decode("utf-8")))
 except Exception:
     pass
