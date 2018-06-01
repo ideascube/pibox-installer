@@ -235,11 +235,11 @@ if args.size < required_image_size:
           file=sys.stderr)
     exit(3)
 
-if avail_space_in_build_dir < space_required_to_build:
+if avail_space_in_build_dir < args.size:
     print("Not enough space available at {dir} ({free}) to build image ({img})"
           .format(dir=args.build_dir,
                   free=human_readable_size(avail_space_in_build_dir),
-                  img=human_readable_size(required_image_size)),
+                  img=human_readable_size(args.size)),
           file=sys.stderr)
     exit(1)
 
