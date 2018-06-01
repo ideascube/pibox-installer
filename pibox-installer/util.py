@@ -130,11 +130,17 @@ class ReportHook():
 class CLILogger:
     @classmethod
     def step(cls, step):
-        print("\033[00;34m--> " + step + "\033[00m")
+        if sys.platform == "win32":
+            print("--> {}".format(step))
+        else:
+            print("\033[00;34m--> " + step + "\033[00m")
 
     @classmethod
     def err(cls, err):
-        print("\033[00;31m" + err + "\033[00m")
+        if sys.platform == "win32":
+            print(err)
+        else:
+            print("\033[00;31m" + err + "\033[00m")
 
     @classmethod
     def raw_std(cls, std):

@@ -15,18 +15,29 @@ def startup_info_args():
         si = None
     return {'startupinfo': si}
 
-def subprocess_pretty_check_call(cmd, logger, stdin=None):
+def subprocess_pretty_call(cmd, logger, stdin=None,
+                           check=False, decode=False, silent=False):
     # We should use subprocess.run but it is not available in python3.4
     process = subprocess.Popen(cmd, stdin=stdin, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **startup_info_args())
     logger.std("Call: " + str(process.args))
     process.wait()
 
-    lines = process.stdout.readlines()
+    lines = [l.decode('utf-8', 'ignore')
+             for l in process.stdout.readlines()] \
+        if decode else process.stdout.readlines()
 
-    for line in lines:
-        logger.raw_std(line.decode("utf-8", "ignore"))
+    if not silent:
+        for line in lines:
+            logger.raw_std(line if decode else line.decode("utf-8", "ignore"))
 
-    if process.returncode != 0:
-        raise CheckCallException("Process %s failed" % process.args)
+    if check:
+        if process.returncode != 0:
+            raise CheckCallException("Process %s failed" % process.args)
+        return lines
 
-    return lines
+    return process.returncode, lines
+
+
+def subprocess_pretty_check_call(cmd, logger, stdin=None):
+    return subprocess_pretty_call(cmd=cmd, logger=logger,
+                                  stdin=stdin, check=True)
