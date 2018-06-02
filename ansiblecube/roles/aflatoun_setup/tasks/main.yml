@@ -22,7 +22,6 @@
 - name: Install Aflatoun
   pip:
     name: /tmp/ka-lite-static-0.16.7b3.tar.gz
-    chdir: "{{ aflatoun_root }}"
     virtualenv: "{{ aflatoun_env }}"
   tags: configure
 

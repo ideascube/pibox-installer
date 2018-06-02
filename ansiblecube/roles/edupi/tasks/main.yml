@@ -87,7 +87,6 @@
   become_user: ideascube
   pip:
     requirements: "{{ edupi_root }}/edupi/requirements.txt"
-    chdir: "{{ edupi_root }}"
     executable: "{{ edupi_env }}/bin/pip"
   tags: configure
 

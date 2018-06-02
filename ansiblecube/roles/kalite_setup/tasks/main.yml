@@ -6,13 +6,19 @@
     state: directory
   tags: configure
 
+- name: update pip setuptools and wheel
+  become: yes
+  pip:
+    name: pip setuptools wheel
+    state: latest
+  tags: configure
+
 - name: Install Ka-lite
   become: yes
   become_user: ideascube
   pip:
     name: ka-lite
     version: "{{ kalite_version }}"
-    chdir: "{{ kalite_root }}"
     virtualenv_command: /usr/bin/virtualenv
     virtualenv: "{{ kalite_env }}"
   register: kalite_installation 
