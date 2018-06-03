@@ -8,6 +8,11 @@
 
 - name: update pip setuptools and wheel
   command: python2 -m pip install -U pip setuptools wheel
+  ignore_errors: yes
+  tags: configure
+
+- name: update pip setuptools and wheel
+  command: python2 -m pip install -U pip setuptools wheel
   tags: configure
 
 - name: Setup kalite virtualenv
