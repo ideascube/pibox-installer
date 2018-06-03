@@ -56,12 +56,13 @@ def run_for_image(machine, root_partition_size, disk_size):
     tags = ['master', 'rename']
 
     machine.exec_cmd("sudo apt-get update")
-
-    machine.exec_cmd("sudo apt-get install -y python-pip python-yaml "
-                     "python-jinja2 python-httplib2 python-paramiko "
-                     "python-pkg-resources libffi-dev libssl-dev git "
-                     "lsb-release")
-    machine.exec_cmd("sudo pip install ansible==2.2.0")
+    machine.exec_cmd("sudo apt-get install -y "
+                     "libffi-dev libssl-dev git lsb-release")
+    machine.exec_cmd("wget https://bootstrap.pypa.io/get-pip.py "
+                     "-O /tmp/get-pip.py")
+    machine.exec_cmd("sudo python /tmp/get-pip.py")
+    machine.exec_cmd("sudo sudo python -m pip install -U "
+                     "pip virtualenv jinja2 paramiko pyyaml httplib2 ansible")
 
     # prepare ansible files
     machine.exec_cmd("sudo mkdir --mode 0755 -p /etc/ansible")
