@@ -7,10 +7,13 @@
   tags: configure
 
 - name: update pip setuptools and wheel
+  command: python2 -m pip install -U pip setuptools wheel
+  tags: configure
+
+- name: Setup kalite virtualenv
   become: yes
-  pip:
-    name: pip setuptools wheel
-    state: latest
+  become_user: ideascube
+  command: /usr/bin/virtualenv --no-site-packages {{ kalite_env }}
   tags: configure
 
 - name: Install Ka-lite
@@ -19,7 +22,6 @@
   pip:
     name: ka-lite
     version: "{{ kalite_version }}"
-    virtualenv_command: /usr/bin/virtualenv
     virtualenv: "{{ kalite_env }}"
   register: kalite_installation 
   tags: configure
