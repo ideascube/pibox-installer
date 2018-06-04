@@ -374,8 +374,7 @@ class _RunningInstance:
             for filename in filenames:
                 file_local_path = os.path.normpath(
                     os.path.join(localdirpath, filename))
-                file_remote_path = os.path.normpath(
-                    posixpath.join(tmpremotepath, remotedirpath, filename))
+                file_remote_path = posixpath.join(tmpremotepath, remotedirpath, filename)
                 self._logger.std("copy local file {} to tmp file {}".format(file_local_path, file_remote_path))
                 sftp_client.put(file_local_path, file_remote_path)
         sftp_client.close()

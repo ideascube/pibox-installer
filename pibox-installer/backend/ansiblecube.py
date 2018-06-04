@@ -5,6 +5,7 @@
 import os
 import json
 import tempfile
+import posixpath
 
 from data import mirror
 from util import ONE_GB
@@ -25,7 +26,7 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
     ansible_vars.update(extra_vars)
 
     # save extra_vars to a file on guest
-    extra_vars_path = os.path.join(ansiblecube_path, "extra_vars.json")
+    extra_vars_path = posixpath.join(ansiblecube_path, "extra_vars.json")
     with tempfile.NamedTemporaryFile('w', delete=False) as fp:
         json.dump(ansible_vars, fp, indent=4)
         fp.close()
