@@ -57,7 +57,7 @@ def run_for_image(machine, root_partition_size, disk_size):
 
     machine.exec_cmd("sudo apt-get update")
     machine.exec_cmd("sudo apt-get install -y "
-                     "libffi-dev libssl-dev git lsb-release")
+                     "python-dev libffi-dev libssl-dev git lsb-release")
     machine.exec_cmd("wget https://bootstrap.pypa.io/get-pip.py "
                      "-O /tmp/get-pip.py")
     machine.exec_cmd("sudo python /tmp/get-pip.py")
