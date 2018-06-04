@@ -177,44 +177,6 @@
     state: latest
   tags: ['master']
 
-- name: Check for Ralink Wireless Network Adapter
-  shell: lsusb | grep -F "Ralink Technology" ; echo
-  register: lsusb_ralink
-  tags: ['master', 'hardware']
-
-- include: ralink.yml
-  when: lsusb_ralink.stdout != "" and (ansible_architecture == 'x86_64' or ansible_architecture == 'i386')
-  tags: ['master', 'hardware']
-
-- name: Check for Realtek Wireless Network Adapter
-  shell: lspci | grep -F "Realtek Semiconductor" ; echo
-  register: lspci_realtek
-  tags: ['master', 'hardware']
-
-- include: realtek.yml
-  when: lspci_realtek.stdout != "" and (ansible_architecture == 'x86_64' or ansible_architecture == 'i386')
-  tags: ['master', 'hardware']
-
-- name: Test if a fex file exist (old olimex lime2 image)
-  stat: path=/boot/bin/lime2.bin
-  register: fex_file
-  tags: ['master', 'hardware']
-
-- name: Test if a DTB Lime2 file exist (new olimex lime2 image)
-  stat: path=/boot/dtb/sun7i-a20-olinuxino-lime2.dtb
-  register: dtb_file
-  tags: ['master', 'hardware']
-
-- include: lime2.yml
-  when: fex_file.stat.exists is defined and fex_file.stat.exists 
-    or dtb_file.stat.exists is defined and dtb_file.stat.exists
-
-- name: List services to restart (1/2)
-  shell: checkrestart | grep ^service | awk '{print $2}'
-  register: services
-  changed_when: False
-  tags: ['master', 'hardware']
-
 - name: Allow unauthenticated packages
   lineinfile: dest=/etc/apt/apt.conf.d/9999IDEASCUBEISABADBADBOY line='APT::Get::AllowUnauthenticated "true";' create=yes
   tags: ['master']

@@ -1,3 +1,0 @@
----  
-- name: Install the Ralink firmware for wifi interfaces
-  apt: name=firmware-ralink state=present
