@@ -118,7 +118,7 @@ defaults = {
     'name': "mybox",
     'timezone': "Europe/Paris",
     'language': "en",
-    'size': "5GiB",
+    'size': "8GB",
     'build_dir': ".",
     'catalog': False,
     'edupi': "no",
