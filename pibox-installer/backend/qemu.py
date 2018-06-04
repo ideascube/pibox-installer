@@ -336,6 +336,7 @@ class _RunningInstance:
             self.exec_cmd("ip addr show eth0 && ip route route show")
 
     def _shutdown(self):
+        self.exec_cmd("sudo sync")
         self.exec_cmd("sudo shutdown -P 0")
         self._client.close()
         try:
