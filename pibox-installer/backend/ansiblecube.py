@@ -8,7 +8,7 @@ import tempfile
 import posixpath
 
 from data import mirror
-from util import ONE_GiB
+from util import ONE_GB
 from backend.catalog import CATALOGS
 from backend.content import get_content
 
@@ -74,8 +74,8 @@ def run_for_image(machine, root_partition_size, disk_size):
     extra_vars = {
         'project_name': "default",
         'timezone': "UTC",
-        'root_partition_size': root_partition_size // ONE_GiB,
-        'disk_size': disk_size // ONE_GiB,
+        'root_partition_size': root_partition_size // ONE_GB,
+        'disk_size': disk_size // ONE_GB,
     }
 
     run(machine, tags, extra_vars)
@@ -88,8 +88,8 @@ def build_extra_vars(name, timezone, language, language_name, wifi_pwd,
                      root_partition_size, disk_size):
 
     extra_vars = {
-        'root_partition_size': root_partition_size // ONE_GiB,
-        'disk_size': disk_size // ONE_GiB,
+        'root_partition_size': root_partition_size // ONE_GB,
+        'disk_size': disk_size // ONE_GB,
         'project_name': name,
         'timezone': timezone,
         'language': language,
