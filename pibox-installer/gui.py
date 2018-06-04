@@ -3,6 +3,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
 from backend.catalog import YAML_CATALOGS
+from backend.content import get_expanded_size, get_collection, get_required_image_size
 from run_installation import run_installation
 import pytz
 import tzlocal
@@ -13,9 +14,8 @@ import tempfile
 import threading
 from util import CancelEvent
 import sd_card_info
-from util import human_readable_size
+from util import human_readable_size, ONE_GB, ONE_MiB
 from util import get_free_space_in_dir
-from util import compute_space_required
 from util import relpathto
 from util import b64encode, b64decode
 import data
@@ -286,23 +286,28 @@ class Application:
         choosen_zim_filter.set_visible_func(self.choosen_zim_filter_func)
         self.component.choosen_zim_tree_view.set_model(choosen_zim_filter)
 
+        def get_project_size(name, lang):
+            langs = ['fr', 'en'] if name == 'aflatoun' else [lang]
+            return get_expanded_size(get_collection(
+                **{"{}_languages".format(name): langs}))
+
         # kalite
         for lang, button in self.iter_kalite_check_button():
-            button.set_label("{} ({})".format(button.get_label(), human_readable_size(data.kalite_sizes[lang])))
+            button.set_label("{} ({})".format(button.get_label(), human_readable_size(get_project_size('kalite', lang))))
             button.connect("toggled", lambda button: self.update_free_space())
 
         # wikifundi
         for lang, button in self.iter_wikifundi_check_button():
-            button.set_label("{} ({})".format(button.get_label(), human_readable_size(data.wikifundi_sizes[lang])))
+            button.set_label("{} ({})".format(button.get_label(), human_readable_size(get_project_size('wikifundi', lang))))
             button.connect("toggled", lambda button: self.update_free_space())
 
         # aflatoun
         self.component.aflatoun_switch.connect("notify::active", lambda switch, state: self.update_free_space())
-        self.component.aflatoun_label.set_label("{} ({})".format(self.component.aflatoun_label.get_label(), human_readable_size(data.aflatoun_size)))
+        self.component.aflatoun_label.set_label("{} ({})".format(self.component.aflatoun_label.get_label(), human_readable_size(get_project_size('aflatoun', lang))))
 
         # edupi
         self.component.edupi_switch.connect("notify::active", lambda switch, state: self.update_free_space())
-        self.component.edupi_label.set_label("{} ({})".format(self.component.edupi_label.get_label(), human_readable_size(data.edupi_size)))
+        self.component.edupi_label.set_label("{} ({})".format(self.component.edupi_label.get_label(), human_readable_size(ONE_MiB)))
 
         # language tree view
         renderer_text = Gtk.CellRendererText()
@@ -526,7 +531,7 @@ class Application:
             try:
                 size = humanfriendly.parse_size(config["size"]) \
                     if isinstance(config['size'], str) else config['size']
-                size = int(size / pow(1024, 3))
+                size = int(size / ONE_GB)
             except Exception:
                 size = None
             if size is not None:
@@ -600,7 +605,7 @@ class Application:
             if button.get_active()]
 
         try:
-            size = int(self.component.size_entry.get_text()) * pow(1024, 3)
+            size = int(self.component.size_entry.get_text()) * ONE_GB
         except Exception:
             size = None
 
@@ -631,7 +636,7 @@ class Application:
             }),
             ("build_dir",
                 relpathto(self.component.build_path_chooser.get_filename())),
-            ("size", human_readable_size(size)),
+            ("size", human_readable_size(size, False)),
             ("content", {
                 "zims": zim_install,  # content-ids list
                 "kalite": kalite_active_langs,  # languages list
@@ -841,15 +846,15 @@ class Application:
         aflatoun = self.component.aflatoun_switch.get_active()
         edupi = self.component.edupi_switch.get_active()
 
-        used_space = compute_space_required(
-                catalog=self.catalog,
-                zim_list=zim_list,
-                kalite=kalite,
-                wikifundi=wikifundi,
-                aflatoun=aflatoun,
-                edupi=edupi)
+        collection = get_collection(
+            edupi=edupi,
+            packages=zim_list,
+            kalite_languages=kalite,
+            wikifundi_languages=wikifundi,
+            aflatoun_languages=['fr', 'en'] if aflatoun else [])
+        required_image_size = get_required_image_size(collection)
 
-        return self.get_output_size() - used_space
+        return self.get_output_size() - required_image_size
 
     def update_free_space(self):
         free_space = self.get_free_space()
@@ -876,7 +881,7 @@ class Application:
                 size = int(self.component.sd_card_list_store[sd_card_id][get_size_index])
         else:
             try:
-                size = int(self.component.size_entry.get_text()) * 2**30
+                size = int(self.component.size_entry.get_text()) * ONE_GB
             except:
                 size = -1
 

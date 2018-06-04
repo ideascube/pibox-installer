@@ -21,7 +21,7 @@ from backend.content import get_content
 from backend.download import download_content, unzip_file
 from backend.ansiblecube import (
     run_for_image, ansiblecube_path as ansiblecube_emulation_path)
-from util import CLILogger, CancelEvent, ONE_GB
+from util import CLILogger, CancelEvent, ONE_GiB
 
 
 def run_in_qemu(image_fpath, disk_size, root_size,
@@ -36,7 +36,7 @@ def run_in_qemu(image_fpath, disk_size, root_size,
                                  logger,
                                  ram=qemu_ram, tap=qemu_tap)
 
-        logger.step("resizing QEMU image to {}GiB".format(disk_size // ONE_GB))
+        logger.step("resizing QEMU image to {}GiB".format(disk_size // ONE_GiB))
         emulator.resize_image(disk_size)
 
         # Run emulation
@@ -74,8 +74,8 @@ def main(logger,
          qemu_tap=None, image_fname=None):
 
     try:
-        root_size = int(root_size) * ONE_GB
-        disk_size = int(disk_size) * ONE_GB
+        root_size = int(root_size) * ONE_GiB
+        disk_size = int(disk_size) * ONE_GiB
 
         if root_size <= 4:
             raise ValueError("root partition must be greater than 4GB")

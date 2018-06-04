@@ -13,7 +13,7 @@ import random
 import time
 import threading
 import posixpath
-from util import ONE_GB, ONE_MB, human_readable_size
+from util import ONE_GiB, ONE_MiB, human_readable_size
 from .util import startup_info_args
 from .util import subprocess_pretty_check_call
 
@@ -86,12 +86,12 @@ class Emulator:
         ''' applies requested RAM to qemu if it's available otherwise less '''
 
         # less than a GB is very short
-        if host_ram / ONE_GB <= 1.0:
+        if host_ram / ONE_GiB <= 1.0:
             self._ram = '256m'
             return
 
         # at most, use RAM - 512m
-        max_ram = int(host_ram - ONE_GB / 2)
+        max_ram = int(host_ram - ONE_GiB / 2)
 
         if re.match(r'\d+[mg]$', requested_ram):
             ram_amount, ram_unit = int(requested_ram[:-1]), requested_ram[-1]
@@ -99,16 +99,16 @@ class Emulator:
             # no unit, assuming M
             ram_amount, ram_unit = int(requested_ram), 'm'
         if ram_unit == 'g':
-            ram_amount = ram_amount * (ONE_GB)
+            ram_amount = ram_amount * (ONE_GiB)
 
         # use requested if it doesn't exceed max_ram
         ram = max_ram if ram_amount > max_ram else ram_amount
 
         # vexpress-a15 is capped at 30G
-        if int(ram / ONE_GB) > 30:
-            ram = 30 * ONE_GB
+        if int(ram / ONE_GiB) > 30:
+            ram = 30 * ONE_GiB
 
-        self._ram = "{ram}M".format(ram=int(ram / ONE_MB))
+        self._ram = "{ram}M".format(ram=int(ram / ONE_MiB))
         self._logger.std(" using {ram} RAM"
                          .format(ram=human_readable_size(ram)))
 

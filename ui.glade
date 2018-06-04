@@ -1057,7 +1057,7 @@ In File mode the image is created at build path, you can choose the size
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Size of the image to build</property>
-                        <property name="label" translatable="yes">File size (GiB) :</property>
+                        <property name="label" translatable="yes">File size (GB) :</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>

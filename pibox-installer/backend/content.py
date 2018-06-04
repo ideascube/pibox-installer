@@ -10,7 +10,7 @@ import shutil
 import itertools
 
 from data import content_file, mirror
-from util import get_temp_folder, get_checksum, ONE_GB
+from util import get_temp_folder, get_checksum, ONE_GiB
 from backend.catalog import YAML_CATALOGS
 from backend.download import get_content_cache, unarchive
 
@@ -254,7 +254,7 @@ def get_expanded_size(collection):
                       if item.get('copied_on_destination', False)
                       else item.get('expanded_size')
                       for item in get_all_contents_for(collection)])
-    margin = min([2 * ONE_GB, total_size * 0.1])
+    margin = min([2 * ONE_GiB, total_size * 0.1])
     return total_size + margin
 
 
@@ -264,7 +264,7 @@ def get_required_image_size(collection):
         get_expanded_size(collection)])
 
     # round it up to next GiB
-    return math.ceil(required_size / ONE_GB) * ONE_GB
+    return math.ceil(required_size / ONE_GiB) * ONE_GiB
 
 
 def get_required_building_space(collection, cache_folder, image_size=None):
@@ -284,5 +284,5 @@ def get_required_building_space(collection, cache_folder, image_size=None):
 
     total_size = sum([base_image_size, image_size, downloads_size])
 
-    margin = min([2 * ONE_GB, total_size * 0.2])
+    margin = min([2 * ONE_GiB, total_size * 0.2])
     return total_size + margin

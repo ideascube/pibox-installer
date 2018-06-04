@@ -12,34 +12,10 @@ import data
 from path import Path
 import humanfriendly
 
-ONE_MB = 2 ** 20
-ONE_GB = 2 ** 30
+ONE_MiB = 2 ** 20
+ONE_GiB = 2 ** 30
+ONE_GB = int(1e9)
 
-def compute_space_required(catalog, zim_list, kalite, wikifundi, aflatoun, edupi):
-    # TODO: compute actual space used with empty install
-    used_space = 2 * 2**30 # space of raspbian with ideascube without content
-    if zim_list:
-        zim_space_required = {}
-        for one_catalog in catalog:
-            for (key, value) in one_catalog["all"].items():
-                if zim_space_required.get(key):
-                    raise ValueError("same key in two catalogs")
-                zim_space_required[key] = value["size"]*2
-
-        for zim in zim_list:
-            used_space += zim_space_required[zim]
-    if kalite:
-        for lang in kalite:
-            used_space += data.kalite_sizes[lang]
-    if wikifundi:
-        for lang in wikifundi:
-            used_space += data.wikifundi_sizes[lang]
-    if aflatoun:
-        used_space += data.aflatoun_size
-    if edupi:
-        used_space += data.edupi_size
-
-    return used_space
 
 def get_free_space_in_dir(dirname):
     """Return folder/drive free space."""
@@ -84,7 +60,7 @@ class _CancelEventRegister:
     def unregister(self, pid):
         self._pids.remove(pid)
 
-def human_readable_size(size):
+def human_readable_size(size, binary=True):
     if isinstance(size, (int, float)):
         num_bytes = size
     else:
@@ -95,7 +71,7 @@ def human_readable_size(size):
     is_neg = num_bytes < 0
     if is_neg:
         num_bytes = abs(num_bytes)
-    output = humanfriendly.format_size(num_bytes, binary=True)
+    output = humanfriendly.format_size(num_bytes, binary=binary)
     if is_neg:
         return "- {}".format(output)
     return output
@@ -153,7 +129,7 @@ class CLILogger:
 def get_checksum(fpath, func=hashlib.sha256):
     h = func()
     with open(fpath, "rb") as f:
-        for chunk in iter(lambda: f.read(ONE_MB * 8), b""):
+        for chunk in iter(lambda: f.read(ONE_MiB * 8), b""):
             h.update(chunk)
     return h.hexdigest()
 
