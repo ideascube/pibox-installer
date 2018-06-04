@@ -69,19 +69,13 @@ def get_partitions_boundaries(lines, root_size, disk_size=None):
     if is_full:
         pass  # whether root part was already expanded
 
-    # calculate new end of root
-    if disk_size is not None:
-        disk_size_b = disk_size * ONE_GB
-        nb_expected_clusters = disk_size_b // sector_size
-        assert number_of_sector == nb_expected_clusters
-
     size_up_to_root_b = root_size * ONE_GB
     nb_clusters_endofroot = size_up_to_root_b // sector_size
 
     root_start = second_partition_start
     root_end = nb_clusters_endofroot
 
-    data_start = root_end + 1
+    data_start = root_end + sector_size
     data_end = number_of_sector - 1
 
     return root_start, root_end, data_start, data_end

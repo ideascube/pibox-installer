@@ -77,8 +77,8 @@ def main(logger,
         root_size = int(root_size) * ONE_GB
         disk_size = int(disk_size) * ONE_GB
 
-        if root_size <= 4:
-            raise ValueError("root partition must be greater than 4GB")
+        if root_size <= 5:
+            raise ValueError("root partition must be greater than 5GB")
 
         if root_size > disk_size:
             raise ValueError("root partition can't exceed disk size")
