@@ -107,6 +107,10 @@ matrix:
     - wget http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
     - unzip pibox-installer-vexpress-boot.zip
 
+    # exfat-fuse
+    - wget http://download.kiwix.org/dev/exfat-fuse-1.2.8-linux_x86_64.tar
+    - tar xf exfat-fuse-1.2.8-linux_x86_64.tar
+
     # Download playbook
     - wget https://framagit.org/ideascube/ansiblecube/repository/oneUpdateFile0.4/archive.zip -O oneUpdateFile0.4.zip
     - unzip oneUpdateFile0.4.zip

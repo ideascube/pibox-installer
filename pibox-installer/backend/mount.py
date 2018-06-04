@@ -20,6 +20,21 @@ if sys.platform == "win32":
     imdisk_exe = os.path.join(system32, 'imdisk.exe')
 
 
+def system_has_exfat():
+    try:
+        with open('/proc/filesystems', 'r') as f:
+            return 'exfat' in [line.rstrip().split('\t')[1]
+                               for line in f.readlines()]
+    except Exception:
+        pass
+    return False
+
+
+if sys.platform == "linux":
+    mount_exfat = ['mount', '-t', 'exfat'] if system_has_exfat() \
+        else [os.path.join(data_dir, 'mount.exfat-fuse')]
+
+
 def install_imdisk(logger=None, force=False):
     ''' install imdisk manually (replacating steps from install.cmd) '''
 
@@ -156,8 +171,7 @@ def mount_data_partition(image_fpath, logger=None):
         target_dev = str(losetup_out.strip())
         target_part = "{dev}p3".format(dev=target_dev)
         mount_point = tempfile.mkdtemp()
-        subprocess.check_call(['mount', '-t', 'exfat',
-                              target_part, mount_point])
+        subprocess.check_call(mount_exfat + [target_part, mount_point])
         return mount_point, target_dev
 
     elif sys.platform == "darwin":
