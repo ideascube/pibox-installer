@@ -10,7 +10,7 @@ import shutil
 import itertools
 
 from data import content_file, mirror
-from util import get_temp_folder, get_checksum
+from util import get_temp_folder, get_checksum, ONE_GB
 from backend.catalog import YAML_CATALOGS
 from backend.download import get_content_cache, unarchive
 
@@ -250,9 +250,11 @@ def get_collection_download_size_using_cache(collection, cache_folder):
 
 def get_expanded_size(collection):
     ''' sum of extracted sizes of all collection with 10%|2GB margin '''
-    total_size = sum([item.get('expanded_size')
+    total_size = sum([item.get('expanded_size') * 2
+                      if item.get('copied_on_destination', False)
+                      else item.get('expanded_size')
                       for item in get_all_contents_for(collection)])
-    margin = min([2 * 2 ** 30, total_size * 0.1])
+    margin = min([2 * ONE_GB, total_size * 0.1])
     return total_size + margin
 
 
@@ -262,11 +264,11 @@ def get_required_image_size(collection):
         get_expanded_size(collection)])
 
     # round it up to next GiB
-    return math.ceil(required_size / 2 ** 30) * 2 ** 30
+    return math.ceil(required_size / ONE_GB) * ONE_GB
 
 
 def get_required_building_space(collection, cache_folder, image_size=None):
-    ''' total required space to host downlaods ans image '''
+    ''' total required space to host downlaods and image '''
     # the pibox master image
     # we neglect the master's expanded size as it is going to be moved
     # to the image path and resized in-place (never reduced)
@@ -282,5 +284,5 @@ def get_required_building_space(collection, cache_folder, image_size=None):
 
     total_size = sum([base_image_size, image_size, downloads_size])
 
-    margin = min([2 * 2 ** 30, total_size * 0.1])
+    margin = min([2 * ONE_GB, total_size * 0.2])
     return total_size + margin

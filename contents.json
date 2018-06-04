@@ -52,6 +52,7 @@
         "name": "kalite_pack_fr.zip",
         "folder_name": null,
         "checksum": "90807ceff17694d74a7748dab76c5765cd87347ea09b260ba83604c2f4b4019b",
+        "copied_on_destination": true,
         "archive_size": 101891723,
         "expanded_size": 102690816
     },
@@ -60,6 +61,7 @@
         "name": "kalite_pack_en.zip",
         "folder_name": null,
         "checksum": "011d45a47df66de445526122495b7146f755bceb0186219b834b244223aae059",
+        "copied_on_destination": true,
         "archive_size": 929916955,
         "expanded_size": 1117425664
     },
@@ -68,6 +70,7 @@
         "name": "kalite_pack_es.zip",
         "folder_name": null,
         "checksum": "69567e9fe94ed6185af1ee3f1bde31bebf474d9e7019f516402d35a214aeea72",
+        "copied_on_destination": true,
         "archive_size": 93567392,
         "expanded_size": 95309824
     },
