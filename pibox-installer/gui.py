@@ -55,8 +55,8 @@ class Logger:
     def raw_std(self, std):
         GLib.idle_add(self.main_thread_raw_std, std)
 
-    def std(self, std):
-        GLib.idle_add(self.main_thread_std, std)
+    def std(self, std, end=None):
+        GLib.idle_add(self.main_thread_std, std, end)
 
     def main_thread_step(self, text):
         text_iter = self.text_buffer.get_end_iter()
@@ -71,9 +71,10 @@ class Logger:
         text_iter = self.text_buffer.get_end_iter()
         self.text_buffer.insert(text_iter, text)
 
-    def main_thread_std(self, text):
+    def main_thread_std(self, text, end=None):
         text_iter = self.text_buffer.get_end_iter()
-        self.text_buffer.insert(text_iter, text + "\n")
+        text += end if end is not None else "\n"
+        self.text_buffer.insert(text_iter, text)
 
 class Component:
     def __init__(self, builder):
