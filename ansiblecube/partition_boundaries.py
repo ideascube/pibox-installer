@@ -12,8 +12,10 @@ try:
 except NameError:
     text_type = str      # Python 3
 
+ONE_GB = int(1e9)
 
-def main(root_size=2, disk_size=8):
+
+def main(root_size=5, disk_size=8):
     if disk_size == '-':
         disk_size = None
     elif not isinstance(disk_size, int):
@@ -69,12 +71,12 @@ def get_partitions_boundaries(lines, root_size, disk_size=None):
 
     # calculate new end of root
     if disk_size is not None:
-        disk_size_b = disk_size * 2 ** 30  # 8589934592
-        nb_expected_clusters = disk_size_b // sector_size  # 16777216
+        disk_size_b = disk_size * ONE_GB
+        nb_expected_clusters = disk_size_b // sector_size
         assert number_of_sector == nb_expected_clusters
 
-    size_up_to_root_b = root_size * 2 ** 30  # 2147483648
-    nb_clusters_endofroot = size_up_to_root_b // sector_size  # 4194304
+    size_up_to_root_b = root_size * ONE_GB
+    nb_clusters_endofroot = size_up_to_root_b // sector_size
 
     root_start = second_partition_start
     root_end = nb_clusters_endofroot

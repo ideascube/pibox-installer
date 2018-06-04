@@ -21,7 +21,7 @@ from backend.content import get_content
 from backend.download import download_content, unzip_file
 from backend.ansiblecube import (
     run_for_image, ansiblecube_path as ansiblecube_emulation_path)
-from util import CLILogger, CancelEvent, ONE_GiB
+from util import CLILogger, CancelEvent, ONE_GB
 
 
 def run_in_qemu(image_fpath, disk_size, root_size,
@@ -36,7 +36,7 @@ def run_in_qemu(image_fpath, disk_size, root_size,
                                  logger,
                                  ram=qemu_ram, tap=qemu_tap)
 
-        logger.step("resizing QEMU image to {}GiB".format(disk_size // ONE_GiB))
+        logger.step("resizing QEMU image to {}GB".format(disk_size // ONE_GB))
         emulator.resize_image(disk_size)
 
         # Run emulation
@@ -74,8 +74,8 @@ def main(logger,
          qemu_tap=None, image_fname=None):
 
     try:
-        root_size = int(root_size) * ONE_GiB
-        disk_size = int(disk_size) * ONE_GiB
+        root_size = int(root_size) * ONE_GB
+        disk_size = int(disk_size) * ONE_GB
 
         if root_size <= 4:
             raise ValueError("root partition must be greater than 4GB")
@@ -133,7 +133,7 @@ def main(logger,
 
 
 parser = argparse.ArgumentParser(description="pibox base image creator")
-parser.add_argument("--root", help="root partition size (GB)", default=4)
+parser.add_argument("--root", help="root partition size (GB)", default=5)
 parser.add_argument("--size", help="SD card size (GB)", default=8)
 parser.add_argument("--build", help="Folder to create files in",
                     default=os.path.abspath('.'))
