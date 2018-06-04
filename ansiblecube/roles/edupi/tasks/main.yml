@@ -6,7 +6,6 @@
     autoremove: yes
   with_items:
     - nginx
-    - python3-pip
     - libmagickwand-dev
     - virtualenv
     - npm
