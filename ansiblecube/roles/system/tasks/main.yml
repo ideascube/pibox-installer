@@ -114,6 +114,10 @@
    - apt-listchanges
    - clipit
    - sslh
+   - python-pip
+   - python-setuptools
+   - python-virtualenv
+   - virtualenv
   tags: ['master']
 
 - name: Install all required package
@@ -122,11 +126,7 @@
     state: latest
     autoremove: yes
   with_items:
-   - python-pip
    - python-dev
-   - python-setuptools
-   - python-virtualenv
-   - virtualenv
    - git
    - sudo
    - lsb-release
@@ -171,11 +171,21 @@
    - avahi-utils
   tags: ['master']
 
-- name: Upgrade pip to the latest version
-  pip:
-    name: pip
-    state: latest
-  tags: ['master']
+- name: Download pip install script
+  get_url:
+    url: https://bootstrap.pypa.io/get-pip.py
+    dest: /tmp/get-pip.py
+    timeout: 60
+    force: yes
+  tags: master
+
+- name: Install pip for python{{ python3_version }}
+  command: python{{ python3_version }} /tmp/get-pip.py
+  tags: master
+
+- name: Upgrade pip and virtualenv for python{{ python3_version }}
+  command: python{{ python3_version }} -m pip install -U pip virtualenv
+  tags: master
 
 - name: Allow unauthenticated packages
   lineinfile: dest=/etc/apt/apt.conf.d/9999IDEASCUBEISABADBADBOY line='APT::Get::AllowUnauthenticated "true";' create=yes
