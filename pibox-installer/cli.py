@@ -200,7 +200,7 @@ except Exception:
     print("Unable to understand required size ({})".format(args.size))
     sys.exit(1)
 else:
-    args.human_size = human_readable_size(args.size)
+    args.human_size = human_readable_size(args.size, False)
 
 # display configuration and offer time to cancel
 print("Pibox-installer configuration:")
@@ -230,8 +230,8 @@ required_image_size = get_required_image_size(collection)
 
 if args.size < required_image_size:
     print("image size ({img}) is not large enough for the content ({req})"
-          .format(img=human_readable_size(args.size),
-                  req=human_readable_size(required_image_size)),
+          .format(img=human_readable_size(args.size, False),
+                  req=human_readable_size(required_image_size, False)),
           file=sys.stderr)
     exit(3)
 
