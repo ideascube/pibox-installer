@@ -13,12 +13,6 @@ import subprocess
 from data import data_dir
 from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
 
-if sys.platform == "win32":
-    imdiskinst = os.path.join(data_dir, 'imdiskinst')
-    # imdisk installs in System32 on all platforms
-    system32 = os.path.join(os.environ['SystemRoot'], 'System32')
-    imdisk_exe = os.path.join(system32, 'imdisk.exe')
-
 
 def system_has_exfat():
     try:
@@ -30,9 +24,32 @@ def system_has_exfat():
     return False
 
 
-if sys.platform == "linux":
+def get_free_loop_device(logger=None):
+    ''' the first available loop device '''
+    lo = subprocess_pretty_call(['losetup', '--find'],
+                                logger, check=True, decode=True)[0].strip()
+    assert re.match(r'/dev/loop[0-9]', lo)
+    return lo
+
+
+if sys.platform == "win32":
+    imdiskinst = os.path.join(data_dir, 'imdiskinst')
+    # imdisk installs in System32 on all platforms
+    system32 = os.path.join(os.environ['SystemRoot'], 'System32')
+    imdisk_exe = os.path.join(system32, 'imdisk.exe')
+elif sys.platform == "linux":
+    loop_device = get_free_loop_device()
     mount_exfat = ['mount', '-t', 'exfat'] if system_has_exfat() \
         else [os.path.join(data_dir, 'mount.exfat-fuse')]
+
+
+def get_loop_device_for(image_fpath, logger=None):
+    ''' the loop device (/dev/loopX) for an attached image path '''
+    losetup_out = subprocess_pretty_call(['losetup', '-a'],
+                                         logger, check=True, decode=True)
+    lo = [l.strip().split(':')[0] for l in losetup_out if image_fpath in l][0]
+    assert re.match(r'/dev/loop[0-9]', lo)
+    return lo
 
 
 def install_imdisk(logger=None, force=False):
@@ -165,13 +182,12 @@ def mount_data_partition(image_fpath, logger=None):
     ''' mount the QEMU image and return its mount point/drive '''
 
     if sys.platform == "linux":
-        losetup_out = subprocess.check_output([
-            'losetup', '--partscan',
-            '--show', '--find', image_fpath]).decode('utf-8', 'ignore')
-        target_dev = str(losetup_out.strip())
+        target_dev = subprocess_pretty_call([
+            'losetup', '--partscan', '--show', loop_device, image_fpath
+            ], logger, check=True, decode=True)[0].strip()
         target_part = "{dev}p3".format(dev=target_dev)
         mount_point = tempfile.mkdtemp()
-        subprocess.check_call(mount_exfat + [target_part, mount_point])
+        subprocess_pretty_check_call(mount_exfat + [target_part, mount_point])
         return mount_point, target_dev
 
     elif sys.platform == "darwin":
@@ -203,13 +219,13 @@ def unmount_data_partition(mount_point, device, logger=None):
     ''' unmount data partition and free virtual resources '''
 
     if sys.platform == "linux":
-        subprocess.call(['umount', mount_point])
+        subprocess_pretty_call(['umount', mount_point], logger)
         os.rmdir(mount_point)
-        subprocess.call(['losetup', '-d', device])
+        subprocess_pretty_call(['losetup', '-d', device], logger)
 
     elif sys.platform == "darwin":
-        subprocess.call(['umount', mount_point])
+        subprocess_pretty_call(['umount', mount_point], logger)
         os.rmdir(mount_point)
-        subprocess.call(['hdiutil', 'detach', device])
+        subprocess_pretty_call(['hdiutil', 'detach', device], logger)
     elif sys.platform == "win32":
         subprocess_pretty_call([imdisk_exe, '-D', '-m', device], logger)

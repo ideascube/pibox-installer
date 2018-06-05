@@ -3,7 +3,7 @@ from backend import qemu
 from backend.content import get_collection, get_content, get_all_contents_for
 from backend.download import download_content, unzip_file
 from backend.mount import mount_data_partition, unmount_data_partition
-from backend.util import subprocess_pretty_check_call
+from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
 import data
 from util import ReportHook, human_readable_size, get_cache
 from datetime import datetime
@@ -14,6 +14,9 @@ import data
 import sys
 import re
 import humanfriendly
+
+if sys.platform == "linux":
+    from backend.mount import loop_device
 
 def log_duration(logger, started_on, ended_on=None):
     ended_on = datetime.now() if ended_on is None else ended_on
@@ -28,15 +31,27 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
     logger.std("started on {}".format(started_on))
 
     try:
+        # set image names
+        today = datetime.today().strftime('%Y_%m_%d-%H_%M_%S')
+
+        image_final_path = os.path.join(build_dir, "pibox-{}.img".format(today))
+        image_building_path = os.path.join(build_dir, "pibox-{}.BUILDING.img".format(today))
+        image_error_path = os.path.join(build_dir, "pibox-{}.ERROR.img".format(today))
+
+        # linux needs root to use loop devices
+        if sys.platform == "linux":
+            subprocess_pretty_check_call(
+                ["chmod", "-c", "o+rwx", loop_device], logger, as_admin=True)
+
         # Prepare SD Card
         if sd_card:
             if sys.platform == "linux":
-                #TODO restore sd_card mod
-                subprocess_pretty_check_call(["chmod", "-c", "o+w", sd_card], logger)
+                subprocess_pretty_check_call(
+                    ["chmod", "-c", "o+w", sd_card], logger, as_admin=True)
             elif sys.platform == "darwin":
-                #TODO restore sd_card mod
                 subprocess_pretty_check_call(["diskutil", "unmountDisk", sd_card], logger)
-                subprocess_pretty_check_call(["chmod", "-v", "o+w", sd_card], logger)
+                subprocess_pretty_check_call(
+                    ["chmod", "-v", "o+w", sd_card], logger, as_admin=True)
             elif sys.platform == "win32":
                 matches = re.findall(r"\\\\.\\PHYSICALDRIVE(\d*)", sd_card)
                 if len(matches) != 1:
@@ -49,13 +64,6 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                 os.close(w)
                 logger.std("diskpart select disk {} and clean".format(device_number))
                 subprocess_pretty_check_call(["diskpart"], logger, stdin=r)
-
-        # set image names
-        today = datetime.today().strftime('%Y_%m_%d-%H_%M_%S')
-
-        image_final_path = os.path.join(build_dir, "pibox-{}.img".format(today))
-        image_building_path = os.path.join(build_dir, "pibox-{}.BUILDING.img".format(today))
-        image_error_path = os.path.join(build_dir, "pibox-{}.ERROR.img".format(today))
 
         # Download Base image
         logger.step("Retrieving pibox base image file")
@@ -173,7 +181,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
 
         # mount image's 3rd partition on host
         logger.step("Mounting data partition on host")
-        mount_point, device = mount_data_partition(image_building_path)
+        mount_point, device = mount_data_partition(image_building_path, logger)
 
         # copy contents from cache to mount point
         try:
@@ -185,12 +193,12 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                                mount_point=mount_point,
                                logger=logger, **cb_kwargs)
         except Exception as e:
-            unmount_data_partition(mount_point, device)
+            unmount_data_partition(mount_point, device, logger)
             raise e
 
         # unmount partition
         logger.step("Unmounting data partition")
-        unmount_data_partition(mount_point, device)
+        unmount_data_partition(mount_point, device, logger)
 
         # rerun emulation for discovery
         logger.step("Starting-up VM again for content-discovery")
@@ -222,6 +230,17 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         logger.step("Done")
         log_duration(logger, started_on)
         error = None
+    finally:
+        if sys.platform == "linux":
+            subprocess_pretty_call(
+                ["chmod", "-c", "o-rwx", loop_device], logger, as_admin=True)
+        if sd_card:
+            if sys.platform == "linux":
+                subprocess_pretty_call(
+                    ["chmod", "-c", "o-w", sd_card], logger, as_admin=True)
+            elif sys.platform == "darwin":
+                subprocess_pretty_call(
+                    ["chmod", "-v", "o-w", sd_card], logger, as_admin=True)
 
     if done_callback:
         done_callback(error)
