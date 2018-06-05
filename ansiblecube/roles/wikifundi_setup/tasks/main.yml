@@ -72,37 +72,10 @@
     state: link
   tags: configure
 
-# needs to be extracted as ideascube other otherwise tries to chmod www-data
-- name: Download Parsoid
-  become: yes
-  become_user: ideascube
-  unarchive:
-    src: "{{ mirror }}/other/wikifundi/parsoid_2016-08.tar.bz2"
-    dest: "{{ wikifundi_root }}"
-    remote_src: True
-  tags: configure
-
-- name: Change hostnames in localsettings.js
-  replace:
-    name: "{{ wikifundi_root }}/parsoid/localsettings.js"
-    regexp: "{{ item }}.africapack.kiwix.org"
-    replace: "{{ item }}.{{ wikifundi_fqdn }}"
-  with_items: "{{ wikifundi_languages | default(omit) }}"
-  notify: restart nginx
-  tags: configure
-
 - name: Setup parsoid service
   template:
     src: parsoid.service.j2
     dest: /etc/systemd/system/parsoid.service
-  tags: configure
-
-- name: Enable and Start Parsoid
-  systemd:
-    name: parsoid
-    state: started
-    daemon_reload: yes
-    enabled: yes
   tags: configure
 
 - name: Enable and Start php-fpm

@@ -48,6 +48,7 @@ edupi_env: "{{ venvs_root }}/edupi"
 kalite_root: "{{ data_path }}/kalite"
 kalite_env: "{{ venvs_root }}/kalite"
 wikifundi_root: "{{ data_path }}/wikifundi"
+wikifundi_parsoid: "{{ wikifundi_root }}/parsoid"
 
 # Domain names
 kiwix_server_name: kiwix.{{ hostname }}
@@ -82,3 +83,4 @@ kalite_langpack_prefix: "{{ data_path }}/kalite_pack_"
 kalite_videos_prefix: "{{ data_path }}/kalite_videos_"
 packages_cache: "{{ data_path }}/packages_cache"
 wikifundi_langpack_prefix: "{{ data_path }}/wikifundi_langpack_"
+wikifundi_parsoid_path: "{{ data_path }}/wikifundi_parsoid"

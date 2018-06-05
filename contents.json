@@ -49,6 +49,14 @@
         "archive_size": 773285,
         "expanded_size": 2097152
     },
+    "wikifundi_parsoid": {
+        "url": "{mirror}/other/wikifundi/parsoid_2016-08.tar.bz2",
+        "name": "parsoid_2016-08.tar.bz2",
+        "folder_name": "parsoid",
+        "checksum": "46e4a5f48c633c621f33bdbcd436dc27959e6fd2f6469260e51c74ae7a8cae12",
+        "archive_size": 40469264,
+        "expanded_size": 5540544512
+    },
     "wikifundi_langpack_fr": {
         "url": "{mirror}/other/wikifundi/fr.africapack.kiwix.org_2017-01.tar.bz2",
         "name": "wikifundi_fr_2017-01.tar.bz2",

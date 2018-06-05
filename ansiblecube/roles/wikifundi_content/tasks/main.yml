@@ -36,5 +36,34 @@
   notify: restart nginx
   tags: move-content
 
+# parsoid
+- name: Make sure parsoid directory does not exist
+  file:
+    dest: "{{ wikifundi_root }}/parsoid"
+    state: absent
+  tags: move-content
+
+# downloaded content was placed in a different location on data part
+- name: Move downloaded parsoid to proper location
+  command: mv {{ aflatoun_parsoid_path }} {{ wikifundi_parsoid }}
+  tags: move-content
+
+- name: Change hostnames in localsettings.js
+  replace:
+    name: "{{ wikifundi_parsoid }}/localsettings.js"
+    regexp: "{{ item }}.africapack.kiwix.org"
+    replace: "{{ item }}.{{ wikifundi_fqdn }}"
+  with_items: "{{ wikifundi_languages | default(omit) }}"
+  notify: restart nginx
+  tags: configure
+
+- name: Enable and Start Parsoid
+  systemd:
+    name: parsoid
+    state: started
+    daemon_reload: yes
+    enabled: yes
+  tags: configure
+
 - include: mark_role.yml role=wikifundi_content
   tags: move-content

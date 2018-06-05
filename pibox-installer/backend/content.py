@@ -92,8 +92,9 @@ def get_kalite_contents(languages=[]):
 
 def get_wikifundi_contents(languages=[]):
     ''' wikifundi: large language pack for each lang '''
-    return [get_content('wikifundi_langpack_{lang}'.format(lang=lang))
-            for lang in languages]
+    return [get_content('wikifundi_parsoid')] + [
+        get_content('wikifundi_langpack_{lang}'.format(lang=lang))
+        for lang in languages]
 
 
 def get_aflatoun_contents(languages=[]):
@@ -182,6 +183,11 @@ def run_wikifundi_actions(cache_folder, mount_point, logger, languages=[]):
     if not len(languages):
         return
 
+    extract_and_move(content=get_content('wikifundi_parsoid'),
+                     cache_folder=cache_folder,
+                     root_path=mount_point,
+                     final_path=os.path.join(mount_point, 'wikifundi_parsoid'))
+
     for lang in languages:
         lang_key = 'wikifundi_langpack_{lang}'.format(lang=lang)
         content = get_content(lang_key)
@@ -202,6 +208,14 @@ def run_aflatoun_actions(cache_folder, mount_point, logger, languages=[]):
                      cache_folder=cache_folder,
                      root_path=mount_point,
                      final_path=os.path.join(mount_point, 'aflatoun_content'))
+
+    for lang in languages:
+        # language pack
+        lang_key = 'aflatoun_langpack_{lang}'.format(lang=lang)
+        lang_pack = get_content(lang_key)
+        move(content=lang_pack,
+             cache_folder=cache_folder,
+             final_path=os.path.join(mount_point, lang_pack['name']))
 
 
 def run_packages_actions(cache_folder, mount_point, logger, packages=[]):
