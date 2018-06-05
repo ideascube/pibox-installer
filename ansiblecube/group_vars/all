@@ -77,6 +77,7 @@ catalogs: []
 
 # temporary path for contents in data partition
 aflatoun_content_path: "{{ data_path }}/aflatoun_content"
+aflatoun_langpack_prefix: "{{ data_path }}/aflatoun_pack_"
 kalite_langpack_prefix: "{{ data_path }}/kalite_pack_"
 kalite_videos_prefix: "{{ data_path }}/kalite_videos_"
 packages_cache: "{{ data_path }}/packages_cache"

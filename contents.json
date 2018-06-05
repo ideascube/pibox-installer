@@ -31,6 +31,24 @@
         "archive_size": 3494985803,
         "expanded_size": 3742367744
     },
+    "aflatoun_langpack_fr": {
+        "url": "{mirror}/other/aflatoun/fr.zip",
+        "name": "aflatoun_pack_fr.zip",
+        "folder_name": null,
+        "checksum": "936e9f7051b5a9cba7fef61e4598568588f2ba6f1aa441b42234c8e41d11e372",
+        "copied_on_destination": true,
+        "archive_size": 966934,
+        "expanded_size": 1966080
+    },
+    "aflatoun_langpack_en": {
+        "url": "{mirror}/other/aflatoun/en.zip",
+        "name": "aflatoun_pack_en.zip",
+        "folder_name": null,
+        "checksum": "77ef69f7acd596cbf7c59c7f9316d3a97127d70b097af80cd20ef275801a4358",
+        "copied_on_destination": true,
+        "archive_size": 773285,
+        "expanded_size": 2097152
+    },
     "wikifundi_langpack_fr": {
         "url": "{mirror}/other/wikifundi/fr.africapack.kiwix.org_2017-01.tar.bz2",
         "name": "wikifundi_fr_2017-01.tar.bz2",

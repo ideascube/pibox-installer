@@ -97,8 +97,10 @@ def get_wikifundi_contents(languages=[]):
 
 
 def get_aflatoun_contents(languages=[]):
-    ''' aflatoun: single large tarball with content '''
-    return [get_content('aflatoun_content')]
+    ''' aflatoun: single large tarball with content + mini lang packs '''
+    return [get_content('aflatoun_content')] + [
+        get_content('aflatoun_langpack_{lang}'.format(lang=lang))
+        for lang in languages]
 
 
 def get_package_content(package_id):
