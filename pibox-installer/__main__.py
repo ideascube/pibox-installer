@@ -2,23 +2,17 @@ import argparse
 import sys
 import runpy
 
-
-def get_callback(module, pop=False):
-    def _cb():
-        if pop:
-            sys.argv.pop(1)
-        runpy.run_module(module)
-    return _cb
-
-
 if len(sys.argv) == 1:
-    get_callback("gui")()
+    runpy.run_module("gui")
 elif sys.argv[1] == "cli":
-    get_callback(sys.argv[1], True)()
+    sys.argv.pop(1)
+    runpy.run_module("cli")
 elif sys.argv[1] == "image":
-    get_callback(sys.argv[1], True)()
+    sys.argv.pop(1)
+    runpy.run_module("image")
 else:
-    parser = argparse.ArgumentParser(description="ideascube/kiwix installer for raspberrypi.")
+    parser = argparse.ArgumentParser(
+        description="ideascube/kiwix installer for raspberrypi.")
     sub_parser = parser.add_subparsers()
     sub_parser.add_parser("cli", help="run CLI mode")
     sub_parser.add_parser("image", help="prepare a base image")
