@@ -74,16 +74,5 @@
   template:
     src: kalite.service.j2
     dest: /etc/systemd/system/kalite.service
+  notify: reload systemd
   tags: setup
-
-- name: Enable service kalite
-  service:
-    name: kalite
-    enabled: yes
-  tags: reconfigure
-
-- name: Start Kalite
-  service:
-    name: kalite
-    state: started
-  tags: reconfigure

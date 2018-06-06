@@ -63,11 +63,3 @@
   with_items: "{{ wikifundi_languages | default(omit) }}"
   notify: restart nginx
   tags: reconfigure
-
-- name: Enable and Start Parsoid
-  systemd:
-    name: parsoid
-    state: started
-    daemon_reload: yes
-    enabled: yes
-  tags: reconfigure

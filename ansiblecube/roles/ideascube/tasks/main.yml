@@ -278,8 +278,5 @@
     dest: /etc/systemd/system/remove_staticfiles_json.service
   tags: master
 
-- name: Enable unit remove_staticfiles_json.service
-  service:
-    name: remove_staticfiles_json.service
-    enabled: yes
+- include: enable_service.yml service=remove_staticfiles_json
   tags: master

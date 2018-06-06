@@ -112,10 +112,7 @@
     dest: /etc/systemd/system/clean-up.service
   tags: master
 
-- name: Enabling systemd service clean-up.service
-  service:
-    enabled: yes
-    name: clean-up
+- include: enable_service.yml service=clean-up
   tags: master
 
 - name: Copy shell script that actually does the job

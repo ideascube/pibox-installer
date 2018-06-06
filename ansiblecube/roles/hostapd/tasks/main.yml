@@ -37,5 +37,5 @@
     mode: 0664
   tags: master
 
-- include: enable_service.yml role=hostapd
+- include: enable_service.yml service=hostapd
   tags: master
