@@ -230,11 +230,7 @@ class Application:
                 name = value["name"]
                 url = value["url"]
                 description = value.get("description") or "none"
-                # We double indicated size because in ideascube throught ansiblecube
-                # will first download the zip file and then extract the content
-                # TODO: an improvment would be to delete zip file after extraction and
-                # compute a temporar space needed that is max of all installed size
-                size = str(value["size"]*2)
+                size = str(value["size"])
                 languages_iso = (value.get("language") or "Unkown language").split(",")
                 languages = set(map(lambda l: langcodes.Language.get(l).language_name(), languages_iso))
                 typ = value["type"]
