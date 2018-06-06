@@ -10,7 +10,7 @@ import shutil
 import itertools
 
 from data import content_file, mirror
-from util import get_temp_folder, get_checksum, ONE_GiB
+from util import get_temp_folder, get_checksum, ONE_GiB, ONE_GB
 from backend.catalog import YAML_CATALOGS
 from backend.download import get_content_cache, unarchive
 
@@ -280,7 +280,7 @@ def get_required_image_size(collection):
         get_expanded_size(collection)])
 
     # round it up to next GiB
-    return math.ceil(required_size / ONE_GiB) * ONE_GiB
+    return math.ceil(required_size / ONE_GB) * ONE_GB
 
 
 def get_required_building_space(collection, cache_folder, image_size=None):
