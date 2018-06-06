@@ -39,13 +39,19 @@ if sys.platform == "win32":
     imdisk_exe = os.path.join(system32, 'imdisk.exe')
 elif sys.platform == "linux":
     loop_device = get_free_loop_device()
-    mount_exfat = ['mount', '-t', 'exfat'] if system_has_exfat() \
+    losetup_exe = '/sbin/losetup'
+    mount_exfat = ['/bin/mount', '-t', 'exfat'] if system_has_exfat() \
         else [os.path.join(data_dir, 'mount.exfat-fuse')]
+    umount_exe = '/bin/umount'
+elif sys.platform == "darwin":
+    hdiutil_exe = '/usr/bin/hdiutil'
+    mount_exe = '/sbin/mount'
+    umount_exe = '/sbin/umount'
 
 
 def get_loop_device_for(image_fpath, logger=None):
     ''' the loop device (/dev/loopX) for an attached image path '''
-    losetup_out = subprocess_pretty_call(['losetup', '-a'],
+    losetup_out = subprocess_pretty_call([losetup_exe, '-a'],
                                          logger, check=True, decode=True)
     lo = [l.strip().split(':')[0] for l in losetup_out if image_fpath in l][0]
     assert re.match(r'/dev/loop[0-9]', lo)
@@ -183,7 +189,7 @@ def mount_data_partition(image_fpath, logger=None):
 
     if sys.platform == "linux":
         target_dev = subprocess_pretty_call([
-            'losetup', '--partscan', '--show', loop_device, image_fpath
+            losetup_exe, '--partscan', '--show', loop_device, image_fpath
             ], logger, check=True, decode=True)[0].strip()
         target_part = "{dev}p3".format(dev=target_dev)
         mount_point = tempfile.mkdtemp()
@@ -193,12 +199,12 @@ def mount_data_partition(image_fpath, logger=None):
     elif sys.platform == "darwin":
         # attach image to create pseudo devices
         hdiutil_out = subprocess.check_output(
-            ['hdiutil', 'attach', '-nomount', image_fpath]) \
+            [hdiutil_exe, 'attach', '-nomount', image_fpath]) \
             .decode('utf-8', 'ignore')
         target_dev = str(hdiutil_out.splitlines()[0].split()[0])
         target_part = "{dev}s3".format(dev=target_dev)
         mount_point = tempfile.mkdtemp()
-        subprocess.check_call(['mount', '-t', 'exfat',
+        subprocess.check_call([mount_exe, '-t', 'exfat',
                               target_part, mount_point])
         return mount_point, target_dev
 
@@ -219,13 +225,13 @@ def unmount_data_partition(mount_point, device, logger=None):
     ''' unmount data partition and free virtual resources '''
 
     if sys.platform == "linux":
-        subprocess_pretty_call(['umount', mount_point], logger)
+        subprocess_pretty_call([umount_exe, mount_point], logger)
         os.rmdir(mount_point)
-        subprocess_pretty_call(['losetup', '-d', device], logger)
+        subprocess_pretty_call([losetup_exe, '-d', device], logger)
 
     elif sys.platform == "darwin":
-        subprocess_pretty_call(['umount', mount_point], logger)
+        subprocess_pretty_call([umount_exe, mount_point], logger)
         os.rmdir(mount_point)
-        subprocess_pretty_call(['hdiutil', 'detach', device], logger)
+        subprocess_pretty_call([hdiutil_exe, 'detach', device], logger)
     elif sys.platform == "win32":
         subprocess_pretty_call([imdisk_exe, '-D', '-m', device], logger)
