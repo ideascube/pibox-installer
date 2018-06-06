@@ -2,24 +2,15 @@
 # kalite content folder is placed on data part
 - name: Ensure kalite folder exists on data part
   file:
-    path: "{{ data_path }}/kalite"
+    path: "{{ kalite_root }}"
     state: directory
-  tags: configure
-
-- name: update pip setuptools and wheel
-  command: python2 -m pip install -U pip setuptools wheel
-  ignore_errors: yes
-  tags: configure
-
-- name: update pip setuptools and wheel
-  command: python2 -m pip install -U pip setuptools wheel
-  tags: configure
+  tags: ['setup', 'reconfigure']
 
 - name: Setup kalite virtualenv
   become: yes
   become_user: ideascube
   command: /usr/bin/virtualenv --no-site-packages {{ kalite_env }}
-  tags: configure
+  tags: setup
 
 - name: Install Ka-lite
   become: yes
@@ -29,7 +20,7 @@
     version: "{{ kalite_version }}"
     virtualenv: "{{ kalite_env }}"
   register: kalite_installation 
-  tags: configure
+  tags: setup
 
 - name: Install cherrypy 6.1.0 to fix an issue
   become: yes
@@ -38,7 +29,7 @@
     name: cherrypy
     version: 6.1.0
     virtualenv: "{{ kalite_env }}"
-  tags: configure
+  tags: setup
 
 - name: Create a user admin for kalite
   become: yes
@@ -48,7 +39,9 @@
     KALITE_HOME: "{{ kalite_root }}"
   command: "{{ kalite_env }}/bin/kalite manage setup --username={{ admin_account }} --password={{ admin_password }} --noinput"
   when: admin_account is defined
-  tags: configure
+  tags:
+    - setup
+    - reconfigure
 
 - name: Run kalite manage setup without admin user
   become: yes
@@ -58,14 +51,16 @@
     KALITE_HOME: "{{ kalite_root }}"
   command: "{{ kalite_env }}/bin/kalite manage setup --noinput"
   when: admin_account is not defined
-  tags: configure
+  tags:
+    - setup
+    - reconfigure
 
 - name: Copy nginx vhost
   template:
     src: kalite.vhost.j2
     dest: /etc/nginx/sites-available/kalite
   notify: restart nginx
-  tags: ['configure', 'rename']
+  tags: ['setup', 'rename']
 
 - name: Enable nginx vhost
   file:
@@ -73,39 +68,22 @@
     dest: /etc/nginx/sites-enabled/kalite
     state: link
   notify: restart nginx
-  tags: configure
+  tags: setup
 
 - name: Setup startup file
   template:
     src: kalite.service.j2
     dest: /etc/systemd/system/kalite.service
-  tags: configure
+  tags: setup
 
 - name: Enable service kalite
   service:
     name: kalite
     enabled: yes
-  tags: configure
+  tags: reconfigure
 
 - name: Start Kalite
   service:
     name: kalite
     state: started
-  tags: configure
-
-- name: Get ka-lite version
-  environment:
-    KALITE_PYTHON: "{{ kalite_env }}/bin/python"
-    KALITE_HOME: "{{ kalite_root }}"
-  shell: "{{ kalite_env }}/bin/kalite --version ; echo"
-  register: kalite_newversion
-  tags: configure
-
-- set_fact: kalite_version="{{ kalite_newversion.stdout }}"
-  tags: configure
-
-- debug: msg="kalite {{ kalite_version }} is now the current version."
-  tags: configure
-
-- include: mark_role.yml role=kalite_setup
-  tags: configure
+  tags: reconfigure

@@ -26,8 +26,6 @@
     pkg_list: "{{ ideascube_catalog_cmd.results | map(attribute='stdout') | list }}"
   tags: move-content
 
-- debug: var=pkg_list
-  tags: ['move-content']
-
-- include: mark_role.yml role=packages
+- debug:
+    var: pkg_list
   tags: move-content

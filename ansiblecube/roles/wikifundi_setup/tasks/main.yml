@@ -3,9 +3,11 @@
   file:
     dest: "{{ wikifundi_root }}"
     state: directory
-  tags: configure
+  tags: 
+    - setup
+    - reconfigure
 
-- name: Install dependencies (text)
+- name: Install dependencies (tex)
   apt:
     name: "{{ item }}"
     state: latest
@@ -17,7 +19,7 @@
     - texlive-fonts-recommended
     - texlive-lang-greek
     - texlive-latex-recommended
-  tags: configure
+  tags: setup
 
 - name: Install dependencies (PHP, jessie)
   apt:
@@ -29,7 +31,7 @@
     - php5-curl
     - php5-sqlite
   when: ansible_distribution_release == "jessie"
-  tags: configure
+  tags: setup
 
 - name: Install dependencies (PHP, stretch)
   apt:
@@ -41,7 +43,7 @@
     - php-curl
     - php-sqlite3
   when: ansible_distribution_release == "stretch"
-  tags: configure
+  tags: setup
 
 - name: Install dependencies (others)
   apt:
@@ -63,28 +65,21 @@
     - lua5.1
     - build-essential
     - ocaml
-  tags: configure
+  tags: setup
 
 - name: Link node to nodejs binary
   file:
     src: /usr/bin/nodejs
     dest: /usr/bin/node
     state: link
-  tags: configure
+  tags: setup
 
 - name: Setup parsoid service
   template:
     src: parsoid.service.j2
     dest: /etc/systemd/system/parsoid.service
-  tags: configure
-
-- name: Enable and Start php-fpm
-  systemd:
-    name: php5-fpm
-    state: started
-    daemon_reload: yes
-    enabled: yes
-  tags: configure
+  notify: reload systemd
+  tags: setup
 
 - name: Copy nginx vhosts
   template:
@@ -92,7 +87,7 @@
     dest: /etc/nginx/sites-available/{{ item }}.wikifundi
   with_items: "{{ wikifundi_languages | default(omit) }}"
   notify: restart nginx
-  tags: ['configure', 'rename']
+  tags: ['setup', 'rename']
 
 - name: Enable nginx vhosts
   file:
@@ -101,7 +96,4 @@
     state: link
   with_items: "{{ wikifundi_languages | default(omit) }}"
   notify: restart nginx
-  tags: ['configure', 'rename']
-
-- include: mark_role.yml role=wikifundi_setup
-  tags: configure
+  tags: ['setup', 'rename']

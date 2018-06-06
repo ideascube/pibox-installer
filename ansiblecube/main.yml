@@ -12,15 +12,13 @@
       tags: ['always']
 
   roles:
-    - role: set_custom_fact
+    - role: variables
     
       # master, resize
     - role: resize
-      when: ansible_local.progress.main.resize != "y"
 
-      # master, configure (timezone, apt-update)
+      # master, setup (timezone, apt-update)
     - role: system
-      when: ansible_local.progress.main.system != "y"
 
     - role: nginx
       tags: master
@@ -28,47 +26,44 @@
     - role: uwsgi
       tags: master
 
-      # master, rename, configure
+      # master, rename, setup
     - role: ideascube
-      when: ansible_local.progress.main.ideascube != "y"
 
       # master, rename
     - role: kiwix
-      when: ansible_local.progress.main.kiwix != "y"
 
       # master, rename
     - role: captive_portal
-      when: captive_portal|bool and ansible_local.progress.main.captive != "y"
+      when: captive_portal|bool
 
       # content setup (install, dependencies)
     - role: edupi
-      when: edupi|bool and ansible_local.progress.main.edupi_setup != "y"
+      when: edupi|bool
 
     - role: kalite_setup
-      when: kalite_languages | length and ansible_local.progress.main.kalite_setup != "y"
+      when: kalite_languages | length
 
     - role: aflatoun_setup
-      when: aflatoun_languages | length and ansible_local.progress.main.aflatoun_setup != "y"
+      when: aflatoun_languages | length
 
     - role: wikifundi_setup
-      when: wikifundi_languages | length and ansible_local.progress.main.wikifundi_setup != "y"
+      when: wikifundi_languages | length
 
       # move content
     - role: packages
-      when: packages | length and ansible_local.progress.main.packages != "y"
+      when: packages | length
       tags: move-content
 
     - role: kalite_content
-      when: kalite_languages | length and ansible_local.progress.main.kalite_content != "y"
+      when: kalite_languages | length
 
     - role: aflatoun_content
-      when: aflatoun_languages | length and ansible_local.progress.main.aflatoun_content != "y"
+      when: aflatoun_languages | length
 
     - role: wikifundi_content
-      when: wikifundi_languages | length and ansible_local.progress.main.wikifundi_content != "y"
+      when: wikifundi_languages | length
 
-      # seal the image
-    - role: seal
+    - role: services
       tags: seal
 
   post_tasks:

@@ -39,7 +39,7 @@ build-pibox-image:
     - cat build/pibox-installer-linux/warnpibox-installer-linux.txt
 
     # start image builder
-    - eval "export OUT_IMG=pibox-kiwix_$(date +"%Y-%m-%d").img"
+    - eval "export OUT_IMG=pibox-master_$(date +"%Y-%m-%d").img"
     - dist/pibox-installer image --ram 8G --root 5 --size 8 --out ${OUT_IMG}
     - zip -9 ${OUT_IMG}.zip ${OUT_IMG}
     - scp ${OUT_IMG}.zip upload@download.kiwix.org:/var/www/download.kiwix.org/plug/base/

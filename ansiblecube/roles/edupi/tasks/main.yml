@@ -10,21 +10,21 @@
     - virtualenv
     - npm
     - nodejs
-  tags: configure
+  tags: setup
 
 - name: Link node to nodejs binary
   file:
     src: /usr/bin/nodejs
     dest: /usr/bin/node
     state: link
-  tags: configure
+  tags: setup
 
 - name: Install bower
   npm:
     name: bower
     global: yes
     state: latest
-  tags: configure
+  tags: setup
 
 - name: Create directories
   become: yes
@@ -33,20 +33,20 @@
     path: "{{ item }}"
     state: directory
   with_items:
-    - "{{ edupi_root }}/"
-    - "{{ edupi_root }}/database"
-    - "{{ edupi_root }}/static"
-    - "{{ edupi_root }}/media"
-    - "{{ edupi_root }}/stats"
-  tags: configure
+    - "{{ edupi_data_root }}/"
+    - "{{ edupi_data_root }}/database"
+    - "{{ edupi_data_root }}/static"
+    - "{{ edupi_data_root }}/media"
+    - "{{ edupi_data_root }}/stats"
+  tags: ['setup', 'reconfigure']
 
 - name: remove edupi folder if it exists
   become: yes
   become_user: ideascube
   file:
-    dest: "{{ edupi_root }}/edupi"
+    dest: "{{ edupi_root }}"
     state: absent
-  tags: configure
+  tags: ['setup']
 
 - name: remove edupi env if it exists
   become: yes
@@ -54,80 +54,86 @@
   file:
     dest: "{{ edupi_env }}"
     state: absent
-  tags: configure
+  tags: setup
 
 - name: Download edupi
   become: yes
   become_user: ideascube
   git:
     repo: https://github.com/rgaudin/edupi.git
-    dest: "{{ edupi_root }}/edupi/"
+    dest: "{{ edupi_root }}"
     version: v{{ edupi_version }}
-  tags: configure
+  tags: setup
 
 - name: Replace allowed hosts
   become: yes
   become_user: ideascube
   replace:
-    name: "{{ edupi_root }}/edupi/edupi/settings.py"
+    name: "{{ edupi_root }}/edupi/settings.py"
     regexp: '^ALLOWED_HOSTS = \[''edupi.fondationorange.org''\]$'
     replace: 'ALLOWED_HOSTS = [''.{{ fqdn }}'', ''{{ fqdn }}'', ''{{ hostname }}'', ''localhost'']'
   notify: restart edupi
-  tags: ['configure', 'rename']
+  tags: ['setup', 'rename']
+
+- name: Replace EduPi DATA_ROOT
+  become: yes
+  become_user: ideascube
+  replace:
+    name: "{{ edupi_root }}/edupi/settings.py"
+    regexp: '^DATA_ROOT ='
+    replace: 'DATA_ROOT = "{{ edupi_data_root }}"'
+  notify:
+    - restart edupi
+    - collectstatic edupi
+  tags: ['setup', 'reconfigure']
 
 - name: Create python{{ python3_version }} environment
   become: yes
   become_user: ideascube
   command: virtualenv --python=python{{ python3_version }} {{ edupi_env }}
-  tags: configure
+  tags: setup
 
 - name: Install requirements
   become: yes
   become_user: ideascube
   pip:
-    requirements: "{{ edupi_root }}/edupi/requirements.txt"
+    requirements: "{{ edupi_root }}/requirements.txt"
     executable: "{{ edupi_env }}/bin/pip"
-  tags: configure
+  tags: setup
 
 - name: Manage install bower
   become: yes
   become_user: ideascube
-  command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/edupi/manage.py bower install"
-  tags: configure
+  command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py bower install"
+  tags: setup
 
 - name: Manage migrate
   become: yes
   become_user: ideascube
-  command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/edupi/manage.py migrate"
-  tags: configure
+  command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py migrate"
+  tags: setup
 
 - name: Check if EduPi super user is installed
   become: yes
   become_user: ideascube
-  command: /bin/echo "from django.contrib.auth.models import User; print('****{}****'.format(User.objects.filter(username='{{ admin_account }}').count()))" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/edupi/manage.py shell --plain
+  command: /bin/echo "from django.contrib.auth.models import User; print('****{}****'.format(User.objects.filter(username='{{ admin_account }}').count()))" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py shell --plain
   register: edupi_admin_shell_output
   when: admin_account is defined
-  tags: configure
+  tags: ['setup', 'reconfigure']
 
 - name: Install EduPi super user
   become: yes
   become_user: ideascube
-  command: /bin/echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{ admin_account }}', None, '{{ admin_password }}')" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/edupi/manage.py shell --plain
+  command: /bin/echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{ admin_account }}', None, '{{ admin_password }}')" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py shell --plain
   when: admin_account is defined and edupi_admin_shell_output.stdout.split('****')[1]|int == 0
-  tags: configure
-
-- name: Manage collectstatic
-  become: yes
-  become_user: ideascube
-  command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/edupi/manage.py collectstatic --noinput"
-  tags: configure
+  tags: ['setup', 'reconfigure']
 
 - name: Copy nginx vhost
   template:
     src: edupi.vhost.j2
     dest: /etc/nginx/sites-available/edupi
   notify: restart nginx
-  tags: ['configure', 'rename']
+  tags: ['setup', 'rename']
 
 - name: Nginx enable Virtual host
   file:
@@ -135,21 +141,11 @@
     dest: /etc/nginx/sites-enabled/edupi
     state: link
   notify: restart nginx
-  tags: ['configure', 'rename']
+  tags: ['setup', 'rename']
 
 - name: Setup edupi service
   template:
     src: edupi.service.j2
     dest: /etc/systemd/system/edupi.service
-  tags: configure
-
-- name: Enable and Start Edupi
-  systemd:
-    name: edupi
-    state: started
-    daemon_reload: yes
-    enabled: yes
-  tags: configure
-
-- include: mark_role.yml role=edupi_setup
-  tags: configure
+  notify: reload systemd
+  tags: setup

@@ -1,6 +1,0 @@
----
-- name: Disable SSH
-  systemd:
-    name: ssh
-    enabled: no
-  tags: seal

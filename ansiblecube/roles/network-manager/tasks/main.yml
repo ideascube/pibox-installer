@@ -5,4 +5,4 @@
     state: latest
     autoremove: yes
   notify: restart dnsmasq
-  tags: ['master']
+  tags: master

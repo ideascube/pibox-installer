@@ -1,34 +1,27 @@
 ---
 - debug: msg="Start playbook {{ ansible_date_time["date"] }} - {{ ansible_date_time["time"] }}"
-  tags: ['master', 'configure']
+  tags: common
 
 - name: ensure custom facts directory exists
-  file: path=/etc/ansible/facts.d recurse=yes state=directory
-  tags: ['master']
-
-- name: Create progress.fact file
-  copy:
-    src: progress.fact
-    dest: /etc/ansible/facts.d/progress.fact
+  file:
+    path: /etc/ansible/facts.d
+    recurse: yes
+    state: directory
   tags: master
 
-- name: reload local facts
-  setup:
-    filter: ansible_local
-    gather_timeout: 240
-  tags: master
+- block:
+  
+  - name: set python3.4 for jessie
+    set_fact:
+      python3_version: "3.4"
+    when: ansible_distribution_release == "jessie"
 
-- name: set python3.4 for jessie
-  set_fact:
-    python3_version: "3.4"
-  when: ansible_distribution_release == "jessie"
-  tags: ['master', 'configure', 'rename']
+  - name: set python3.5 for stretch
+    set_fact:
+      python3_version: "3.5"
+    when: ansible_distribution_release == "stretch"
 
-- name: set python3.5 for stretch
-  set_fact:
-    python3_version: "3.5"
-  when: ansible_distribution_release == "stretch"
-  tags: ['master', 'configure', 'rename']
+  tags: common
 
 # set hostname and variants
 - block:
@@ -68,7 +61,20 @@
     name: Set hostname using to {{ fqdn }}
     notify: restart systemd-logind
   
-  tags: ['master', 'rename', 'configure']
+  tags: common
+
+- name: Create config.fact file
+  file:
+    src: /var/lib/ansible/local/extra_vars.json
+    dest: /etc/ansible/facts.d/config.fact
+    state: link
+  tags: ['master', 'reconfigure']
+
+- name: reload local facts
+  setup:
+    filter: ansible_local
+    gather_timeout: 240
+  tags: ['master', 'reconfigure']
 
 - debug: msg="My name is {{ ansible_hostname }} -- {{ fqdn }}"
-  tags: ['master', 'rename']
+  tags: common

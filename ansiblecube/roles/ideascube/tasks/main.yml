@@ -2,7 +2,7 @@
 # - name: Configure the ideascube package repository
 #   template: src=ideascube.list.j2 dest=/etc/apt/sources.list.d/ideascube.list owner=root group=root mode=644
 #   when: ansible_distribution_release == "jessie"
-#   tags: ['master']
+#   tags: master
 
 #### Install last ideascube package
 
@@ -15,7 +15,7 @@
 #     autoremove: yes
 #   register: has_been_installed
 #   when: ansible_distribution_release == "jessie"
-#   tags: ['master']
+#   tags: master
 
 # TEMPORARY FIX UNTIL MOVE SUPPORT IS MERGED UPSTREAM
 - name: Install custom (move support) ideascube version
@@ -29,19 +29,21 @@
 - name: Get ideascube version
   shell: dpkg-query -W  ideascube  | awk '{print $2}' ; echo
   register: ideascube_newversion
-  tags: ['master']
+  tags: master
 
 - name: Delete ideascube handlers directories
-  command: rm -rf "/var/ideascube/{{ item }}"
+  file:
+    path: /var/ideascube/{{ item }}
+    state: absent
   with_items: "{{ ideascube_handlers }}"
-  tags: configure
+  tags: setup
 
 - name: Create ideascube handlers directories
   file:
     path: "{{ data_path }}/ideascube/{{ item }}"
     state: directory
   with_items: "{{ ideascube_handlers }}"
-  tags: configure
+  tags: setup
 
 - name: Symlink ideascube handlers in idascube folder
   file:
@@ -49,18 +51,19 @@
     dest: "/var/ideascube/{{ item }}"
     state: link
   with_items: "{{ ideascube_handlers }}"
-  tags: configure
+  tags: setup
 
 - block:
 
   - debug: msg="Customize branding"
 
   - name: Ensure the branding directory exists
-    file: path=/usr/share/ideascube/static/branding
-      state=directory
-      owner=root
-      group=root
-      mode=0755
+    file:
+      path: /usr/share/ideascube/static/branding
+      state: directory
+      owner: root
+      group: root
+      mode: 0755
 
   - stat: 
       path: "{{ custom_branding_path }}/{{ item }}"
@@ -80,7 +83,7 @@
     with_items: "{{ branding_files_stat.results }}"
 
   when: has_custom_branding | bool
-  tags: ['configure']
+  tags: reconfigure
 
 - name: Create ideascube configuration file
   template:
@@ -88,7 +91,7 @@
     dest: /opt/venvs/ideascube/lib/python{{ python3_version }}/site-packages/ideascube/conf/{{ ideascube_id }}.py
     mode: 0644
   notify: restart uwsgi
-  tags: ['master', 'configure']
+  tags: ['master', 'setup', 'reconfigure']
 
 - name: Edit pibox.py to change ALLOWED_HOSTS
   replace:
@@ -121,12 +124,13 @@
   tags: rename
 
 - name: Change IDEASCUBE_ID
-  lineinfile: dest=/etc/default/ideascube
-              regexp='IDEASCUBE_ID='
-              line='IDEASCUBE_ID={{ ideascube_id }}'
-              state=present
+  lineinfile: 
+    dest: /etc/default/ideascube
+    regexp: 'IDEASCUBE_ID='
+    line: 'IDEASCUBE_ID={{ ideascube_id }}'
+    state: present
   notify: restart uwsgi
-  tags: ['master']
+  tags: master
 
 - name: Run Ideascube migrations after the first installation
   become: yes
@@ -136,7 +140,7 @@
   - default
   - transient
   when: has_been_installed.changed == True
-  tags: ['master']
+  tags: master
 
 - name: Check if ideascube super user is installed
   become: yes
@@ -144,14 +148,14 @@
   command: ideascube shell -c "from ideascube.models import User; print('****{}****'.format(User.objects.filter(serial='{{ admin_account }}').count()))"
   register: ideascube_admin_shell_output
   when: admin_account is defined
-  tags: ['configure']
+  tags: reconfigure
 
 - name: Install Ideascube super user
   become: yes
   become_user: ideascube
   command: ideascube shell -c "from ideascube.models import User; User.objects.create_superuser('{{ admin_account }}', '{{ admin_password }}')"
   when: admin_account is defined and ideascube_admin_shell_output.stdout.split('****')[1]|int == 0
-  tags: ['configure']
+  tags: reconfigure
 
 - name: Ensure that Ideascube folder belong the ideascube user
   file:
@@ -160,7 +164,7 @@
     group: "{{ username }}"
     recurse: yes
     state: directory
-  tags: ['master']
+  tags: master
 
 - name: Ensure that Ideascube cache folder belong the ideascube user
   file:
@@ -169,7 +173,7 @@
     group: "{{ username }}"
     recurse: yes
     state: directory
-  tags: ['master']
+  tags: master
 
 - name: Set Ideascube name
   become: yes
@@ -180,32 +184,42 @@
 - name: Ensure a kiwix library file is built
   become: yes
   become_user: ideascube
-  no_log: True
   command: ideascube shell -c "from ideascube.serveradmin.catalog import Kiwix ; Kiwix.commit()"
-  tags: ['master', 'configure', 'rename']
+  tags: ['master', 'setup', 'rename', 'reconfigure']
 
 - name: Enable the Ideascube Nginx site
-  file: src=/etc/nginx/sites-available/ideascube dest=/etc/nginx/sites-enabled/ideascube state=link force=yes
+  file:
+    src: /etc/nginx/sites-available/ideascube
+    dest: /etc/nginx/sites-enabled/ideascube
+    state: link
+    force: yes
   notify: restart nginx
-  tags: ['master']
+  tags: master
 
 - name: Enable the Ideascube uWSGI app
-  file: src=/etc/uwsgi/apps-available/ideascube.ini dest=/etc/uwsgi/apps-enabled/ideascube.ini state=link force=yes
+  file:
+    src: /etc/uwsgi/apps-available/ideascube.ini
+    dest: /etc/uwsgi/apps-enabled/ideascube.ini
+    state: link
+    force: yes
   notify: restart uwsgi
-  tags: ['master']
+  tags: master
 
 - name: Add router_cache to plugin uwsgi list
-  lineinfile: dest=/etc/uwsgi/apps-available/ideascube.ini
-              regexp='^plugins'
-              line='plugins         = pam,python3,router_cache'
-              state=present
+  lineinfile:
+    dest: /etc/uwsgi/apps-available/ideascube.ini
+    regexp: '^plugins'
+    line: 'plugins         = pam,python3,router_cache'
+    state: present
   notify: restart uwsgi
-  tags: ['master']
+  tags: master
 
 - name: Create and set up a cache for uwsgi
-  blockinfile: block="{{ lookup('file', 'uwsgi-cache.ini') }}" dest="/etc/uwsgi/apps-available/ideascube.ini"
+  blockinfile:
+    block: "{{ lookup('file', 'uwsgi-cache.ini') }}"
+    dest: /etc/uwsgi/apps-available/ideascube.ini
   notify: restart uwsgi
-  tags: ['master']
+  tags: master
 
 - block:
   - name: remove wrong server name in ideascube vhost
@@ -232,28 +246,40 @@
   tags: ['master', 'rename']
 
 - name: Copy ideascube_leftover_files.service systemd unit
-  copy: src=ideascube_leftover_files.service dest=/etc/systemd/system/ideascube_leftover_files.service
-  tags: ['master']
+  copy:
+    src: ideascube_leftover_files.service
+    dest: /etc/systemd/system/ideascube_leftover_files.service
+  notify: reload systemd
+  tags: master
 
 - name: Copy ideascube_leftover_files.timer systemd unit
-  copy: src=ideascube_leftover_files.timer dest=/etc/systemd/system/ideascube_leftover_files.timer
-  tags: ['master']
+  copy:
+    src: ideascube_leftover_files.timer
+    dest: /etc/systemd/system/ideascube_leftover_files.timer
+  notify: reload systemd
+  tags: master
 
 - name: Enable unit ideascube_leftover_files.timer
-  service: name=ideascube_leftover_files.timer enabled=yes
-  tags: ['master']
+  service:
+    name: ideascube_leftover_files.timer
+    enabled: yes
+  tags: master
 
 - name: Copy remove_staticfiles_json.sh
-  copy: src=remove_staticfiles_json.sh dest=/usr/local/bin/remove_staticfiles_json.sh mode=0755
-  tags: ['master']
+  copy: 
+    src: remove_staticfiles_json.sh
+    dest: /usr/local/bin/remove_staticfiles_json.sh
+    mode: 0755
+  tags: master
 
 - name: Copy remove_staticfiles_json.service
-  copy: src=remove_staticfiles_json.service dest=/etc/systemd/system/remove_staticfiles_json.service
-  tags: ['master']
+  copy:
+    src: remove_staticfiles_json.service
+    dest: /etc/systemd/system/remove_staticfiles_json.service
+  tags: master
 
 - name: Enable unit remove_staticfiles_json.service
-  service: name=remove_staticfiles_json.service enabled=yes
-  tags: ['master']
-
-- include: mark_role.yml role=ideascube
-  tags: resize
+  service:
+    name: remove_staticfiles_json.service
+    enabled: yes
+  tags: master

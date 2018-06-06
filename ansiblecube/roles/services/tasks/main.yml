@@ -1,0 +1,26 @@
+---
+- include: enable_service.yml role=edupi
+  when: ansible_local.config.edupi|bool
+
+- include: enable_service.yml role=kalite
+  when: ansible_local.config.kalite_languages | length
+
+- include: enable_service.yml role=aflatoun
+  when: ansible_local.config.aflatoun_languages | length
+
+- include: enable_service.yml role=parsoid
+  when: ansible_local.config.wikifundi_languages | length
+
+- include: enable_service.yml role=php5-fpm
+  when: ansible_local.config.wikifundi_languages | length and ansible_distribution_release == "jessie"
+
+- include: enable_service.yml role=php-fpm
+  when: ansible_local.config.wikifundi_languages | length and ansible_distribution_release == "stretch"
+
+- include: enable_service.yml role=dnsmsaq
+
+# TODO: set to no
+- name: Disable SSH
+  systemd:
+    name: ssh
+    enabled: yes

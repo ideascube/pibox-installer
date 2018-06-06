@@ -7,7 +7,7 @@
   with_items:
     - conntrack
     - uwsgi-plugin-python
-  tags: ['master']
+  tags: master
 
 - name: Create /var/www/captiveportal folder
   file:
@@ -16,7 +16,7 @@
     group: ideascube
     mode: 0755
     state: directory
-  tags: ['master']
+  tags: master
   
 - name: Copy captive portal script to /var/www/captiveportal
   template:
@@ -35,7 +35,7 @@
     owner: root
     group: root
     mode: 0644
-  tags: ['master']
+  tags: master
 
 - name: Make sure ideascube is not default_server
   lineinfile:
@@ -43,12 +43,15 @@
     regexp: '^(.*)listen(.*)default_server(.*)'
     line: "    listen      80 ;"
     backrefs: yes
-  tags: ['master']
+  tags: master
 
 - name: Enable captive portal vhost
-  file: src=/etc/nginx/sites-available/captiveportal dest=/etc/nginx/sites-enabled/captiveportal state=link
+  file:
+    src: /etc/nginx/sites-available/captiveportal
+    dest: /etc/nginx/sites-enabled/captiveportal
+    state: link
   notify: restart nginx
-  tags: ['master']
+  tags: master
 
 - name: Start dnsmasq-spoof.conf file by default - forcing short TTL
   lineinfile: 
@@ -57,7 +60,7 @@
     line: 'DNSMASQ_OPTS="--conf-file=/etc/dnsmasq-spoof.conf --local-ttl=600"'
     state: present
   notify: restart dnsmasq
-  tags: ['master']
+  tags: master
               
 - name: Create /etc/nginx/ssl folder
   file:
@@ -66,7 +69,7 @@
     group: root
     mode: 0644
     state: directory
-  tags: ['master']
+  tags: master
 
 - name: Generate a Private key
   command: openssl genrsa -out /etc/nginx/ssl/ideascube.key 2048
@@ -93,22 +96,27 @@
     owner: root
     group: root
     mode: 0644
-  tags: ['master']
+  tags: master
 
 - name: Enable captive.ini for UWSGI
-  file: src=/etc/uwsgi/apps-available/captive.ini dest=/etc/uwsgi/apps-enabled/captive.ini state=link
+  file:
+    src: /etc/uwsgi/apps-available/captive.ini
+    dest: /etc/uwsgi/apps-enabled/captive.ini
+    state: link
   notify: restart uwsgi
-  tags: ['master']
+  tags: master
 
 - name: Copy Systemd script to set /etc/default/dnsmasq default options
   copy:
     src: clean-up.service
     dest: /etc/systemd/system/clean-up.service
-  tags: ['master']
+  tags: master
 
 - name: Enabling systemd service clean-up.service
-  service: enabled=yes name=clean-up
-  tags: ['master']
+  service:
+    enabled: yes
+    name: clean-up
+  tags: master
 
 - name: Copy shell script that actually does the job
   copy:
@@ -116,8 +124,8 @@
     dest: /usr/local/bin/clean-up-dnsmasq.sh
     owner: root
     group: root
-    mode: 755
-  tags: ['master']
+    mode: 0755
+  tags: master
 
 - name: Copy dnsmasq script for NetworkManager
   template:
@@ -134,7 +142,7 @@
     owner: root
     group: root
     mode: 0755
-  tags: ['master']
+  tags: master
 
 - name: Add a cron entry to clean iptables rules
   cron:
@@ -142,11 +150,11 @@
     minute: "*/5"
     job: "/usr/local/bin/clean_iptables.sh"
     state: present
-  tags: ['master']
+  tags: master
 
 - name: Load current IPtables configuration
   shell: /etc/network/if-up.d/iptables
-  tags: ['master']
+  tags: master
 
 - name: Create iptables empty chains
   command: "{{item}}"
@@ -154,16 +162,16 @@
     - /sbin/iptables -t nat -N CAPTIVE_HTTP
     - /sbin/iptables -t nat -N CAPTIVE_HTTPS
     - /sbin/iptables -t nat -N CAPTIVE_PASSLIST
-  tags: ['master']
+  tags: master
   ignore_errors: yes
 
 - name: Send to CAPTIVE_HTTP if destination *:80/tcp
   command: iptables -t nat -A PREROUTING -p tcp -m tcp ! -s "{{ hotspot_ip }}" ! -d "{{ hotspot_ip }}" --dport 80 -j CAPTIVE_HTTP
-  tags: ['master']
+  tags: master
 
 - name: Send to CAPTIVE_HTTPS if destination *:443/tcp
   command: iptables -t nat -A PREROUTING -p tcp -m tcp ! -s "{{ hotspot_ip }}" ! -d "{{ hotspot_ip }}" --dport 443 -j CAPTIVE_HTTPS
-  tags: ['master']
+  tags: master
 
 - name: From CAPTIVE_HTTP, send to CAPTIVE_PASSLIST
   iptables:
@@ -171,7 +179,7 @@
     chain: CAPTIVE_HTTP
     protocol: tcp
     jump: CAPTIVE_PASSLIST
-  tags: ['master']
+  tags: master
 
 - name: From CAPTIVE_HTTPS, send to CAPTIVE_PASSLIST
   iptables:
@@ -179,7 +187,7 @@
     chain: CAPTIVE_HTTPS
     protocol: tcp
     jump: CAPTIVE_PASSLIST
-  tags: ['master']
+  tags: master
 
 - name: DNAT HTTP to hotspot_ip:82
   iptables:
@@ -189,7 +197,7 @@
     jump: DNAT
     to_destination: "{{ hotspot_ip }}:82"
     comment: Redirect HTTP traffic to server port 82
-  tags: ['master']
+  tags: master
 
 - name: DNAT HTTPS to hotspot_ip:83
   iptables:
@@ -199,7 +207,7 @@
     jump: DNAT
     to_destination: "{{ hotspot_ip }}:83"
     comment: Redirect HTTPS traffic to server port 83
-  tags: ['master']
+  tags: master
 
 - name: Last CAPTIVE_PASSLIST rules RETURN to calling chain
   iptables:
@@ -207,11 +215,8 @@
     chain: CAPTIVE_PASSLIST
     protocol: tcp
     jump: RETURN
-  tags: ['master']
+  tags: master
 
 - name: Overwrite /etc/iptables.rules to include new rules
   shell: /sbin/iptables-save > /etc/iptables.rules
-  tags: ['master']
-
-- include: mark_role.yml role=captive
-  tags: resize
+  tags: master

@@ -34,7 +34,7 @@ kernel_version: "4.14.34"
 kiwix_version: "0.5.0"
 kalite_version: "0.17.4"
 ideascube_version: "0.37.2"
-edupi_version: "1.4.2"
+edupi_version: "1.4.3"
 python3_version: "3.5"
 
 # Apps path
@@ -43,7 +43,8 @@ venvs_root: /home/{{ username }}/venvs
 ideascube_handlers: ['kiwix', 'nginx', 'mediacenter']
 aflatoun_root: "{{ data_path }}/aflatoun"
 aflatoun_env: "{{ venvs_root }}/aflatoun"
-edupi_root: "{{ data_path }}/edupi"
+edupi_root: "/home/{{ username }}/edupi"
+edupi_data_root: "{{ data_path }}/edupi"
 edupi_env: "{{ venvs_root }}/edupi"
 kalite_root: "{{ data_path }}/kalite"
 kalite_env: "{{ venvs_root }}/kalite"

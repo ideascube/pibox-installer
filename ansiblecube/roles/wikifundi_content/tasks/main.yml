@@ -1,4 +1,11 @@
 ---
+- name: make sure content folders does not exist
+  file:
+    path: "{{ wikifundi_root }}/{{ item }}.africapack.kiwix.org"
+    state: absent
+  with_items: "{{ wikifundi_languages | default(omit) }}"
+  tags: move-content
+
 - name: Move downloaded content to proper location
   command: mv {{ wikifundi_langpack_prefix }}{{ item }}/ {{ wikifundi_root }}/{{ item }}.africapack.kiwix.org
   with_items: "{{ wikifundi_languages | default(omit) }}"
@@ -39,7 +46,7 @@
 # parsoid
 - name: Make sure parsoid directory does not exist
   file:
-    dest: "{{ wikifundi_root }}/parsoid"
+    dest: "{{ wikifundi_parsoid }}"
     state: absent
   tags: move-content
 
@@ -55,7 +62,7 @@
     replace: "{{ item }}.{{ wikifundi_fqdn }}"
   with_items: "{{ wikifundi_languages | default(omit) }}"
   notify: restart nginx
-  tags: configure
+  tags: reconfigure
 
 - name: Enable and Start Parsoid
   systemd:
@@ -63,7 +70,4 @@
     state: started
     daemon_reload: yes
     enabled: yes
-  tags: configure
-
-- include: mark_role.yml role=wikifundi_content
-  tags: move-content
+  tags: reconfigure

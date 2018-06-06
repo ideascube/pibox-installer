@@ -5,7 +5,7 @@
     state: latest
     force: yes
     autoremove: yes
-  tags: ['master']
+  tags: master
 
 - name: install 502.html
   template:
@@ -18,9 +18,12 @@
     path: /etc/nginx/sites-enabled/default
     state: absent
   notify: restart nginx
-  tags: ['master']
+  tags: master
 
 - name: Upload nginx.conf
-  copy: src=nginx.conf dest=/etc/nginx/nginx.conf backup=yes
+  copy:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+    backup: yes
   notify: restart nginx
-  tags: ['master']
+  tags: master

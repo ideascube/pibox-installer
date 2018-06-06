@@ -31,6 +31,3 @@
   with_items: "{{ kalite_languages | default(omit) }}"
   notify: restart kalite
   tags: move-content
-
-- include: mark_role.yml role=kalite_content
-  tags: move-content

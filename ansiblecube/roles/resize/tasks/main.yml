@@ -135,6 +135,3 @@
   ignore_errors: True
   when: fstab_install.changed
   tags: resize
-
-- include: mark_role.yml role=resize
-  tags: resize

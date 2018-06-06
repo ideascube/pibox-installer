@@ -7,11 +7,12 @@
 - name: update timezone
   command: dpkg-reconfigure --frontend noninteractive tzdata
 
-- name: Update grub
+- name: update grub
   command: update-grub
 
-- name: reboot device
-  command: reboot
+- name: reload systemd
+  systemd:
+    daemon-reload: yes
 
 - name: restart hostapd
   service:
@@ -28,29 +29,14 @@
     name: uwsgi
     state: restarted
 
-- name: restart edupi
-  service:
-    name: edupi
-    state: restarted
-
-- name: restart aflatoun
-  service:
-    name: aflatoun
-    state: restarted
-
-- name: restart kalite
-  service:
-    name: kalite
-    state: restarted
+- name: collectstatic edupi
+  become: yes
+  become_user: ideascube
+  command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py collectstatic --noinput"
 
 - name: restart kiwix
   service:
     name: kiwix-server
-    state: restarted
-
-- name: restart dnsmasq
-  service:
-    name: dnsmasq
     state: restarted
 
 - name: restart network manager

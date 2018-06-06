@@ -39,7 +39,8 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
                    ' --tags {tags}'
                    ' --extra-vars="@{ev_path}"'
                    ' main.yml'
-                   .format(tags=",".join(tags), ev_path=extra_vars_path))
+                   .format(tags=",".join(['common'] + tags),
+                           ev_path=extra_vars_path))
 
     ansible_pull_cmd = ("sudo sh -c 'cd {path} && {cmd}'"
                         .format(path=ansiblecube_path, cmd=ansible_cmd))
@@ -54,7 +55,7 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
 
 
 def run_for_image(machine, root_partition_size, disk_size):
-    tags = ['master', 'rename']
+    tags = ['master', 'rename', 'setup']
 
     machine.exec_cmd("sudo apt-get update")
     machine.exec_cmd("sudo apt-get install -y "
@@ -76,6 +77,11 @@ def run_for_image(machine, root_partition_size, disk_size):
         'timezone': "UTC",
         'root_partition_size': root_partition_size // ONE_GB,
         'disk_size': disk_size // ONE_GB,
+
+        'kalite_languages': ['en', 'fr', 'es'],
+        'wikifundi_languages': ['en', 'fr'],
+        'aflatoun_languages': ['en', 'fr'],
+        'edupi': True,
     }
 
     run(machine, tags, extra_vars)
@@ -121,7 +127,7 @@ def build_extra_vars(name, timezone, language, language_name, wifi_pwd,
 def run_phase_one(machine, extra_vars, secret_keys,
                   logo=None, favicon=None, css=None,):
 
-    tags = ['resize', 'rename', 'configure']
+    tags = ['resize', 'rename', 'reconfigure']
 
     # copy branding files if set
     branding = {'favicon.png': favicon,
@@ -138,8 +144,6 @@ def run_phase_one(machine, extra_vars, secret_keys,
 
 
 def run_phase_two(machine, extra_vars, secret_keys, seal=False):
-    tags = ['move-content']
-    if seal:
-        tags.append('seal')
+    tags = ['move-content', 'seal']
 
     run(machine, tags, extra_vars, secret_keys)

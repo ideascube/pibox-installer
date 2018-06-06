@@ -17,7 +17,6 @@
     KALITE_PYTHON: "{{ aflatoun_env }}/bin/python"
     KALITE_HOME: "{{ aflatoun_root }}"
   command: "{{ aflatoun_env }}/bin/kalite manage setup --noinput --no-assessment-items"
-  notify: restart aflatoun
   tags: move-content
 
 - name: Install Aflatoun language pack
@@ -28,8 +27,4 @@
     KALITE_HOME: "{{ aflatoun_root }}"
   command: "{{ aflatoun_env }}/bin/kalite manage retrievecontentpack local {{ item }} {{ aflatoun_langpack_prefix }}{{ item }}.zip"
   with_items: "{{ aflatoun_languages }}"
-  notify: restart aflatoun
-  tags: move-content
-
-- include: mark_role.yml role=aflatoun_content
   tags: move-content
