@@ -134,4 +134,4 @@
   command: mount {{ data_path }}
   ignore_errors: True
   when: fstab_install.changed
-  tags: resize
+  tags: ['master', 'resize']
