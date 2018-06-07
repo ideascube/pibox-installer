@@ -31,27 +31,26 @@
   register: ideascube_newversion
   tags: master
 
-- name: Delete ideascube handlers directories
-  file:
-    path: /var/ideascube/{{ item }}
-    state: absent
-  with_items: "{{ ideascube_handlers }}"
-  tags: setup
-
 - name: Create ideascube handlers directories
   file:
-    path: "{{ data_path }}/ideascube/{{ item }}"
+    path: "{{ data_path }}/ideascube"
     state: directory
+  tags: reconfigure
+
+- name: move ideascube handlers directories
+  command: mv /var/ideascube/{{ item }} {{ data_path }}/ideascube/
   with_items: "{{ ideascube_handlers }}"
-  tags: setup
+  ignore_errors: yes
+  tags: reconfigure
 
 - name: Symlink ideascube handlers in idascube folder
   file:
     src: "{{ data_path }}/ideascube/{{ item }}"
     dest: "/var/ideascube/{{ item }}"
     state: link
+    force: yes
   with_items: "{{ ideascube_handlers }}"
-  tags: setup
+  tags: reconfigure
 
 - block:
 
@@ -185,7 +184,7 @@
   become: yes
   become_user: ideascube
   command: ideascube shell -c "from ideascube.serveradmin.catalog import Kiwix ; Kiwix.commit()"
-  tags: ['master', 'setup', 'rename', 'reconfigure']
+  tags: ['master', 'setup', 'reconfigure', 'resize', 'move-content']
 
 - name: Enable the Ideascube Nginx site
   file:
