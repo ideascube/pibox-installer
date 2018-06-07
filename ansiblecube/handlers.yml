@@ -31,7 +31,7 @@
 
 - name: collectstatic edupi
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py collectstatic --noinput"
 
 - name: restart kiwix

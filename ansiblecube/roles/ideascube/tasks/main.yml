@@ -133,7 +133,7 @@
 
 - name: Run Ideascube migrations after the first installation
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   command: ideascube migrate --database={{ item }}
   with_items:
   - default
@@ -143,7 +143,7 @@
 
 - name: Check if ideascube super user is installed
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   command: ideascube shell -c "from ideascube.models import User; print('****{}****'.format(User.objects.filter(serial='{{ admin_account }}').count()))"
   register: ideascube_admin_shell_output
   when: admin_account is defined
@@ -151,7 +151,7 @@
 
 - name: Install Ideascube super user
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   command: ideascube shell -c "from ideascube.models import User; User.objects.create_superuser('{{ admin_account }}', '{{ admin_password }}')"
   when: admin_account is defined and ideascube_admin_shell_output.stdout.split('****')[1]|int == 0
   tags: reconfigure
@@ -176,13 +176,13 @@
 
 - name: Set Ideascube name
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   command: ideascube config set server site-name {{ hostname }}
   tags: ['master', 'rename']
 
 - name: Ensure a kiwix library file is built
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   command: ideascube shell -c "from ideascube.serveradmin.catalog import Kiwix ; Kiwix.commit()"
   tags: ['master', 'setup', 'reconfigure', 'resize', 'move-content']
 

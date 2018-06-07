@@ -28,7 +28,7 @@
 
 - name: Create directories
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   file:
     path: "{{ item }}"
     state: directory
@@ -42,7 +42,7 @@
 
 - name: remove edupi folder if it exists
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   file:
     dest: "{{ edupi_root }}"
     state: absent
@@ -50,7 +50,7 @@
 
 - name: remove edupi env if it exists
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   file:
     dest: "{{ edupi_env }}"
     state: absent
@@ -58,7 +58,7 @@
 
 - name: Download edupi
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   git:
     repo: https://github.com/rgaudin/edupi.git
     dest: "{{ edupi_root }}"
@@ -67,7 +67,7 @@
 
 - name: Replace allowed hosts
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   replace:
     name: "{{ edupi_root }}/edupi/settings.py"
     regexp: '^ALLOWED_HOSTS = \[''edupi.fondationorange.org''\]$'
@@ -77,7 +77,7 @@
 
 - name: Replace EduPi DATA_ROOT
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   replace:
     name: "{{ edupi_root }}/edupi/settings.py"
     regexp: '^DATA_ROOT ='
@@ -89,13 +89,13 @@
 
 - name: Create python{{ python3_version }} environment
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   command: virtualenv --python=python{{ python3_version }} {{ edupi_env }}
   tags: setup
 
 - name: Install requirements
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   pip:
     requirements: "{{ edupi_root }}/requirements.txt"
     executable: "{{ edupi_env }}/bin/pip"
@@ -103,19 +103,19 @@
 
 - name: Manage install bower
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py bower install"
   tags: setup
 
 - name: Manage migrate
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py migrate"
   tags: setup
 
 - name: Check if EduPi super user is installed
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   command: /bin/echo "from django.contrib.auth.models import User; print('****{}****'.format(User.objects.filter(username='{{ admin_account }}').count()))" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py shell --plain
   register: edupi_admin_shell_output
   when: admin_account is defined
@@ -123,7 +123,7 @@
 
 - name: Install EduPi super user
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   command: /bin/echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{ admin_account }}', None, '{{ admin_password }}')" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py shell --plain
   when: admin_account is defined and edupi_admin_shell_output.stdout.split('****')[1]|int == 0
   tags: ['setup', 'reconfigure']

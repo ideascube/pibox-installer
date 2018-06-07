@@ -2,7 +2,7 @@
 # import zipped downloaded language pack (subtitles and all)
 - name: Import Kalite language pack
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   environment:
     KALITE_PYTHON: "{{ kalite_env }}/bin/python"
     KALITE_HOME: "{{ kalite_root }}"
@@ -21,7 +21,7 @@
 # loop over content folder to find and reckon downloaded video files
 - name: Perfom a video scan on the device
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   environment:
     KALITE_PYTHON: "{{ kalite_env }}/bin/python"
     KALITE_HOME: "{{ kalite_root }}"

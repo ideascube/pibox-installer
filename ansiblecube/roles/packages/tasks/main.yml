@@ -1,20 +1,20 @@
 ---
 - name: Install catalogs
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   command: ideascube catalog remotes add "{{ item.name }}" "{{ item.description }}" "{{ item.url }}"
   with_items: "{{ catalogs }}"
   tags: move-content
 
 - name: Update ideascube catalog cache before downloading
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   shell: ideascube catalog cache update
   tags: move-content
 
 - name: Install, upgrade or remove packages
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   shell: "{% if 'present' in item.status %}grep -m 1 -w \"{{ item.name }}\" /var/ideascube/main/catalog/installed.yml || ideascube catalog install --package-cache {{ packages_cache }} --skip-sha256 {{ item.name }}{% else %}echo '[+] nothing to do'{% endif %}"
   with_items: '{{ packages | default(omit) }}'
   when: packages | length
@@ -24,7 +24,7 @@
 
 - name: Add CSS for package icon
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   lineinfile:
     dest: /opt/venvs/ideascube/lib/python{{ python3_version }}/site-packages/ideascube/static/ideascube/cards.css
     line: '.card.{{ item.name|splitext|first|replace(".", "\.") }} { background-image: url("http://{{ kiwix_fqdn }}/{{ item.name }}/-/favicon"); }'
@@ -36,7 +36,7 @@
 
 - name: collect static for ideascube
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   command: ideascube collectstatic --noinput
   notify: restart uwsgi
   tags: move-content

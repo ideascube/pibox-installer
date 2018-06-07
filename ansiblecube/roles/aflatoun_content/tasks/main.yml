@@ -12,7 +12,7 @@
 
 - name: re-launch setup for it annotates the content items
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   environment:
     KALITE_PYTHON: "{{ aflatoun_env }}/bin/python"
     KALITE_HOME: "{{ aflatoun_root }}"
@@ -21,7 +21,7 @@
 
 - name: Install Aflatoun language pack
   become: yes
-  become_user: ideascube
+  become_user: "{{ username }}"
   environment:
     KALITE_PYTHON: "{{ aflatoun_env }}/bin/python"
     KALITE_HOME: "{{ aflatoun_root }}"
