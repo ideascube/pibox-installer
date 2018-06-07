@@ -67,6 +67,20 @@
     - ocaml
   tags: setup
 
+- name: change PHP5 settings to allow file uploads up to 100MiB
+  copy:
+    src: 90-wikifundi.ini
+    dest: /etc/php5/fpm/conf.d/90-wikifundi.ini
+  when: ansible_distribution_release == "jessie"
+  tags: setup
+
+- name: change PHP7settings to allow file uploads up to 100MiB
+  copy:
+    src: 90-wikifundi.ini
+    dest: /etc/php/7.0/fpm/conf.d/90-wikifundi.ini
+  when: ansible_distribution_release == "stretch"
+  tags: setup
+
 - name: Link node to nodejs binary
   file:
     src: /usr/bin/nodejs

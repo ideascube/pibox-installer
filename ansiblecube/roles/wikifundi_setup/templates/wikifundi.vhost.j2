@@ -33,6 +33,8 @@ server {
         fastcgi_param            QUERY_STRING $query_string;
         fastcgi_intercept_errors on;
         fastcgi_param            HTTP_ACCEPT_ENCODING      ""; # Safari has a problem here
+        fastcgi_read_timeout	 180s; # file uploads might take long to process (thumbnail creation)
+        fastcgi_send_timeout	 180s; # file uploads still
     }
 
     # Force caching images
