@@ -59,7 +59,6 @@
     regexp: 'DNSMASQ_OPTS='
     line: 'DNSMASQ_OPTS="--conf-file=/etc/dnsmasq-spoof.conf --local-ttl=600"'
     state: present
-  notify: restart dnsmasq
   tags: master
               
 - name: Create /etc/nginx/ssl folder

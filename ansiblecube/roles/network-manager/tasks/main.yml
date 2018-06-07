@@ -4,5 +4,4 @@
     name: network-manager
     state: latest
     autoremove: yes
-  notify: restart dnsmasq
   tags: master
