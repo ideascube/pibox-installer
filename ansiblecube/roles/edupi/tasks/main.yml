@@ -72,7 +72,6 @@
     name: "{{ edupi_root }}/edupi/settings.py"
     regexp: '^ALLOWED_HOSTS = \[''edupi.fondationorange.org''\]$'
     replace: 'ALLOWED_HOSTS = [''.{{ fqdn }}'', ''{{ fqdn }}'', ''{{ hostname }}'', ''localhost'']'
-  notify: restart edupi
   tags: ['setup', 'rename']
 
 - name: Replace EduPi DATA_ROOT
