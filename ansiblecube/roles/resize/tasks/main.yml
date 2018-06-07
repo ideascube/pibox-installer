@@ -131,7 +131,9 @@
   tags: master
 
 - name: Mounting third partition to {{ data_path }}
-  command: mount {{ data_path }}
+  mount:
+    path: "{{ data_path }}"
+    state: mounted
   ignore_errors: True
   when: fstab_install.changed
   tags: ['master', 'resize']

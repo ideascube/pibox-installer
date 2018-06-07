@@ -31,6 +31,8 @@
 
 - name: Copying downloaded kiwix-tools
   shell: tar -x --strip-components 1 -f /tmp/kiwix-tools.tar.gz && mv /tmp/kiwix-serve /usr/local/bin/kiwix-serve && chmod 755 /usr/local/bin/kiwix-serve chdir=/tmp
+  args:
+    warn: no
   tags: master
 
 - name: Create a kiwix directory in ideascube folder
