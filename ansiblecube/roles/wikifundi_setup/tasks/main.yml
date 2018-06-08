@@ -12,6 +12,7 @@
     name: "{{ item }}"
     state: latest
     autoremove: yes
+    autoclean: yes
   with_items:
     - texlive
     - texlive-latex-extra
@@ -26,6 +27,7 @@
     name: "{{ item }}"
     state: latest
     autoremove: yes
+    autoclean: yes
   with_items:
     - php5-fpm
     - php5-curl
@@ -38,6 +40,7 @@
     name: "{{ item }}"
     state: latest
     autoremove: yes
+    autoclean: yes
   with_items:
     - php-fpm
     - php-curl
@@ -50,6 +53,7 @@
     name: "{{ item }}"
     state: latest
     autoremove: yes
+    autoclean: yes
   with_items:
     - nginx
     - memcached

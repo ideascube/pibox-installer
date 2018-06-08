@@ -4,6 +4,7 @@
     name: iptables
     state: latest
     autoremove: yes
+    autoclean: yes
   tags: master
 
 - name: Authorize routing

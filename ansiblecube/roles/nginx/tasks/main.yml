@@ -5,6 +5,7 @@
     state: latest
     force: yes
     autoremove: yes
+    autoclean: yes
   tags: master
 
 - name: install 502.html

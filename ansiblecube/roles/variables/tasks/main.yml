@@ -1,6 +1,6 @@
 ---
 - debug: msg="Start playbook {{ ansible_date_time["date"] }} - {{ ansible_date_time["time"] }}"
-  tags: common
+  tags: always
 
 - name: ensure custom facts directory exists
   file:
@@ -21,7 +21,7 @@
       python3_version: "3.5"
     when: ansible_distribution_release == "stretch"
 
-  tags: common
+  tags: always
 
 # set hostname and variants
 - block:
@@ -61,7 +61,7 @@
     name: Set hostname using to {{ fqdn }}
     notify: restart systemd-logind
   
-  tags: common
+  tags: always
 
 - name: Create config.fact file
   file:
@@ -77,4 +77,4 @@
   tags: ['master', 'reconfigure']
 
 - debug: msg="My name is {{ ansible_hostname }} -- {{ fqdn }}"
-  tags: common
+  tags: always

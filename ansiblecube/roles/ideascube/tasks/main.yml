@@ -13,6 +13,7 @@
 #     update_cache: yes
 #     dpkg_options: "force-confnew"
 #     autoremove: yes
+#     autoclean: yes
 #   register: has_been_installed
 #   when: ansible_distribution_release == "jessie"
 #   tags: master
@@ -23,6 +24,7 @@
     deb: "{{ mirror }}/dev/ideascube_{{ ideascube_version }}_armhf.deb"
     force: yes
     autoremove: yes
+    autoclean: yes
   register: has_been_installed
   tags: master
 

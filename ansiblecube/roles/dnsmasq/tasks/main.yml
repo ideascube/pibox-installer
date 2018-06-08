@@ -4,6 +4,7 @@
     name: dnsmasq
     state: latest
     autoremove: yes
+    autoclean: yes
   tags: master
 
 - name: stop dnsmasq

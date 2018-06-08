@@ -4,6 +4,7 @@
     name: "{{ item }}"
     state: latest
     autoremove: yes
+    autoclean: yes
   with_items:
     - nginx
     - libmagickwand-dev

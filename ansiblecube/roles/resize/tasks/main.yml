@@ -4,6 +4,7 @@
     name: exfat-utils
     state: present
     autoremove: yes
+    autoclean: yes
   tags: master
 
 - name: disable exfat-fuse as handler for exfat fs
