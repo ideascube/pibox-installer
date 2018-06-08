@@ -13,12 +13,12 @@
 
   roles:
     - role: variables
+
+    # master, setup (timezone, apt-update)
+    - role: system
     
       # master, resize
     - role: resize
-
-      # master, setup (timezone, apt-update)
-    - role: system
 
     - role: nginx
       tags: master
