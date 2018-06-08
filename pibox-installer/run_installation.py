@@ -115,7 +115,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         logger.stage('download')
         logger.step("Starting all content downloads")
         downloads = list(get_all_contents_for(collection))
-        total_size = sum([c['archive_size'] for c in downloads])
+        archives_total_size = sum([c['archive_size'] for c in downloads])
         retrieved = 0
 
         for dl_content in downloads:
@@ -136,7 +136,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                            .format(p=dl_content['name'],
                                    s=human_readable_size(rf.downloaded_size)))
             retrieved += dl_content['archive_size']
-            logger.progress(retrieved / total_size)
+            logger.progress(retrieved / archives_total_size)
 
         # instanciate emulator
         logger.stage('setup')
@@ -200,12 +200,21 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         # copy contents from cache to mount point
         try:
             logger.step("Processing downloaded content onto data partition")
+            expanded_total_size = sum([c['expanded_size'] for c in downloads])
+            processed = 0
+
             cache_folder = get_cache(build_dir)
-            for category, _, content_run_cb, cb_kwargs in collection:
+            for category, content_dl_cb, \
+                    content_run_cb, cb_kwargs in collection:
+
                 logger.step("Processing {cat}".format(cat=category))
                 content_run_cb(cache_folder=cache_folder,
                                mount_point=mount_point,
                                logger=logger, **cb_kwargs)
+                size of expanded files for this category (for progress)
+                processed += sum([c['expanded_size']
+                                  for c in content_dl_cb(**cb_kwargs)])
+                logger.progress(processed / expanded_total_size)
         except Exception as e:
             unmount_data_partition(mount_point, device, logger)
             raise e
