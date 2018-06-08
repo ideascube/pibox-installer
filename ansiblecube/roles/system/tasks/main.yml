@@ -191,23 +191,11 @@
   command: python{{ python3_version }} -m pip install -U pip virtualenv
   tags: master
 
-- name: Allow unauthenticated packages
-  lineinfile:
-    dest: /etc/apt/apt.conf.d/9999IDEASCUBEISABADBADBOY
-    line: 'APT::Get::AllowUnauthenticated "true";'
-    create: yes
-  tags: master
-
 - name: Upgrade packages
   apt:
     upgrade: safe
     autoremove: yes
-  tags: master
-
-- name: Remove the unauthenticated hack
-  file:
-    path: /etc/apt/apt.conf.d/9999IDEASCUBEISABADBADBOY
-    state: absent
+    allow_unauthenticated: yes
   tags: master
 
 - name: Drop hosts file on device
