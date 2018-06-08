@@ -211,7 +211,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                 content_run_cb(cache_folder=cache_folder,
                                mount_point=mount_point,
                                logger=logger, **cb_kwargs)
-                size of expanded files for this category (for progress)
+                # size of expanded files for this category (for progress)
                 processed += sum([c['expanded_size']
                                   for c in content_dl_cb(**cb_kwargs)])
                 logger.progress(processed / expanded_total_size)
