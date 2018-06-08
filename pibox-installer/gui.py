@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
+from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GObject
 from backend.catalog import YAML_CATALOGS
 from backend.content import get_expanded_size, get_collection, get_required_image_size
 from run_installation import run_installation
@@ -12,7 +12,7 @@ import sys
 import json
 import tempfile
 import threading
-from util import CancelEvent
+from util import CancelEvent, ProgressHelper
 import sd_card_info
 from util import human_readable_size, ONE_GB, ONE_MiB
 from util import get_free_space_in_dir
@@ -39,12 +39,15 @@ def hide_on_delete(widget, event):
     widget.hide()
     return True
 
-class Logger:
-    def __init__(self, text_buffer, step_label):
-        self.text_buffer = text_buffer
-        self.step_label = step_label
+class Logger(ProgressHelper):
+    def __init__(self, component):
+        super(Logger, self).__init__()
+        self.component = component
+
+        self.text_buffer = self.component.run_text_view.get_buffer()
         self.step_tag = self.text_buffer.create_tag("step", foreground="blue")
         self.err_tag = self.text_buffer.create_tag("err", foreground="red")
+        self.run_pulse()
 
     def step(self, step):
         GLib.idle_add(self.main_thread_step, step)
@@ -61,7 +64,7 @@ class Logger:
     def main_thread_step(self, text):
         text_iter = self.text_buffer.get_end_iter()
         self.text_buffer.insert_with_tags(text_iter, text + "\n", self.step_tag)
-        self.step_label.set_text(text)
+        self._update_progress_text(text)
 
     def main_thread_err(self, text):
         text_iter = self.text_buffer.get_end_iter()
@@ -75,6 +78,49 @@ class Logger:
         text_iter = self.text_buffer.get_end_iter()
         text += end if end is not None else "\n"
         self.text_buffer.insert(text_iter, text)
+
+    def _update_progress_text(self, text):
+        self.component.run_progressbar.set_text(text)
+
+    def update(self):
+        GLib.idle_add(self.update_gui)
+
+    def update_gui(self):
+        self.component.run_window.set_title(
+            "Pibox installer ({:.0f}%)"
+            .format(self.get_overall_progress() * 100))
+
+        self.component.run_step_label.set_markup(
+            "<b>Stage {nums}</b>: {name}"
+            .format(nums=self.stage_numbers, name=self.stage_name))
+
+        if self.stage_progress is not None:
+            self.component.run_progressbar.set_fraction(self.stage_progress)
+        else:
+            self.run_pulse()
+
+    def complete(self):
+        self.component.run_step_label.set_markup("<b>Done.</b>")
+        self.progress(1)
+
+    def failed(self):
+        self.step("Failed")
+        self.progress(1)
+
+    def run_pulse(self):
+        self._update_progress_text("")
+        self.timeout_id = GObject.timeout_add(50, self.on_timeout)
+
+    def on_timeout(self):
+        if self.stage_progress is None:
+            new_value = self.component.run_progressbar.get_fraction() + 0.035
+            if new_value > 1:
+                new_value = 0
+                self.component.run_progressbar.set_inverted(
+                    not self.component.run_progressbar.get_inverted())
+            self.component.run_progressbar.set_fraction(new_value)
+            return True  # returns True so it continues to get called
+
 
 class Component:
     def __init__(self, builder):
@@ -103,7 +149,7 @@ class Application:
 
         self.component = Component(builder)
         self.cancel_event = CancelEvent()
-        self.logger = Logger(self.component.run_text_view.get_buffer(), self.component.run_step_label)
+        self.logger = Logger(self.component)
 
         # main window
         self.component.window.connect("delete-event", Gtk.main_quit)
@@ -346,7 +392,7 @@ class Application:
             self.component.done_label.set_text("Installation failed")
 
         self.component.done_window.show()
-        self.component.run_spinner.stop()
+        self.logger.complete()
         self.component.run_install_running_buttons_revealer.set_reveal_child(False)
         self.component.run_install_done_buttons_revealer.set_reveal_child(True)
 
@@ -647,7 +693,7 @@ class Application:
         self.component.run_install_done_buttons_revealer.set_reveal_child(False)
         self.component.run_install_running_buttons_revealer.set_reveal_child(True)
         self.component.run_text_view.get_buffer().set_text("")
-        self.component.run_spinner.start()
+        self.logger.update()
 
     def run_copy_log_to_clipboard_button_clicked(self, widget):
         text_buffer = self.component.run_text_view.get_buffer()

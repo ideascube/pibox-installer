@@ -19,6 +19,7 @@ from util import CLILogger, b64decode
 import humanfriendly
 
 CANCEL_TIMEOUT = 5
+logger = CLILogger()
 
 
 def set_config(config, args):
@@ -263,7 +264,7 @@ try:
             edupi=args.edupi == "yes",
             zim_install=args.zim_install,
             size=args.size,
-            logger=CLILogger,
+            logger=logger,
             cancel_event=cancel_event,
             sd_card=None,
             logo=args.logo,
@@ -276,6 +277,6 @@ except:
     cancel_event.cancel()
 else:
     if error:
-        print("Installation failed: " + str(error), file=sys.stderr)
+        logger.failed(str(error))
     else:
-        print("Installation succeded")
+        logger.complete()

@@ -8,6 +8,7 @@ import tempfile
 import ctypes
 import platform
 import data
+import collections
 
 from path import Path
 import humanfriendly
@@ -15,6 +16,75 @@ import humanfriendly
 ONE_MiB = 2 ** 20
 ONE_GiB = 2 ** 30
 ONE_GB = int(1e9)
+
+
+STAGES = collections.OrderedDict([
+    ('master', "Retrieve Master Image"),
+    ('download', "Download contents"),
+    ('setup', "Image configuration (virtualized)"),
+    ('copy', "Copy contents onto image"),
+    ('move', "Post-process contents (virtualized)"),
+    ('write', "SD-card creation"),
+])
+
+
+class ProgressHelper(object):
+
+    def __init__(self):
+        self.stage_id = 'init'
+        self.stage_progress = None
+        self.will_write = False
+
+    def stage(self, stage_id):
+        self.stage_id = stage_id
+        self.update()
+
+    def progress(self, percentage=None):
+        assert percentage is None or (percentage >= 0 and percentage <= 1)
+        self.stage_progress = percentage
+        self.update()
+
+    def mark_will_write(self, will_write=True):
+        self.will_write = will_write
+
+    @property
+    def stage_name(self):
+        return STAGES.get(self.stage_id, "Preparations")
+
+    @property
+    def nb_of_stages(self):
+        n = len(STAGES)
+        return n if self.will_write else n - 1
+
+    @property
+    def stage_number(self):
+        try:
+            return list(STAGES.keys()).index(self.stage_id) + 1
+        except Exception:
+            return 0
+
+    @property
+    def stage_numbers(self):
+        return "{c}/{t}".format(c=self.stage_number, t=self.nb_of_stages)
+
+    def get_overall_progress(self):
+        if not self.stage_number:
+            return 0
+        span = 1 / self.nb_of_stages
+        lbound = span * (self.stage_number - 1)
+        if self.stage_progress is None:
+            return lbound
+        current_progress = self.stage_progress * span
+        return lbound + current_progress
+
+    def complete(self):
+        raise NotImplementedError()
+
+    def failed(self):
+        raise NotImplementedError()
+
+    def update(self):
+        raise NotImplementedError()
 
 
 def get_free_space_in_dir(dirname):
@@ -103,28 +173,44 @@ class ReportHook():
             self._last_line = line
             self._writter(line)
 
-class CLILogger:
-    @classmethod
-    def step(cls, step):
-        if sys.platform == "win32":
-            print("--> {}".format(step))
-        else:
-            print("\033[00;34m--> " + step + "\033[00m")
+class CLILogger(ProgressHelper):
+    def __init__(self):
+        super(CLILogger, self).__init__()
 
-    @classmethod
-    def err(cls, err):
+    def step(self, step):
         if sys.platform == "win32":
-            print(err)
+            self.p("--> {}".format(step))
         else:
-            print("\033[00;31m" + err + "\033[00m")
+            self.p("\033[00;34m--> " + step + "\033[00m")
 
-    @classmethod
-    def raw_std(cls, std):
+    def err(self, err):
+        if sys.platform == "win32":
+            self.p(err)
+        else:
+            self.p("\033[00;31m" + err + "\033[00m")
+
+    def raw_std(self, std):
         sys.stdout.write(std)
 
-    @classmethod
-    def std(cls, std, end=None):
-        print(std, end=end, flush=True)
+    def std(self, std, end=None):
+        self.p(std, end=end, flush=True)
+
+    def p(self, text, end=None, flush=False):
+        print(text, end=end, flush=flush)
+
+    def complete(self):
+        self.p("\033[00;32mInstallation succeded.\033[00m")
+
+    def failed(self, error):
+        self.err("\033[00;31mInstallation failed: {}\033[00m"
+                 .format(error))
+
+    def update(self, step=""):
+        self.p("\033[00;35m[STAGE {nums}: {name} - {pc:.0f}%]\033[00m {step}"
+               .format(nums=self.stage_numbers,
+                       name=self.stage_name,
+                       pc=self.get_overall_progress() * 100,
+                       step=step))
 
 def get_checksum(fpath, func=hashlib.sha256):
     h = func()

@@ -142,7 +142,7 @@ parser.add_argument("--out", help="Base image filename (inside --build)")
 parser.add_argument("--tap", help="TAP network to use (Advanced)")
 args = parser.parse_args()
 
-main(logger=CLILogger,
+main(logger=CLILogger(),
      disk_size=args.size, root_size=args.root,
      build_folder=args.build, image_fname=args.out,
      qemu_ram=args.ram, qemu_tap=args.tap)
