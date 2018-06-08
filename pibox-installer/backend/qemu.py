@@ -152,6 +152,7 @@ class Emulator:
             new_percentage = (100 * current_size) / total_size
             if new_percentage != current_percentage:
                 current_percentage = new_percentage
+                self._logger.progress(current_percentage / 100)
                 self._logger.std(str(current_percentage) + "%\r")
 
             buf = os.read(image, 4096)
@@ -159,6 +160,7 @@ class Emulator:
                 break
             os.write(device, buf)
 
+        self._logger.progress(1)
         os.close(image)
         self._logger.step("Sync")
         os.fsync(device)
