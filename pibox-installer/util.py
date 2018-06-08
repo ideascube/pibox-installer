@@ -178,16 +178,10 @@ class CLILogger(ProgressHelper):
         super(CLILogger, self).__init__()
 
     def step(self, step):
-        if sys.platform == "win32":
-            self.p("--> {}".format(step))
-        else:
-            self.p("\033[00;34m--> " + step + "\033[00m")
+        self.p("--> {}".format(step), color="34")
 
     def err(self, err):
-        if sys.platform == "win32":
-            self.p(err)
-        else:
-            self.p("\033[00;31m" + err + "\033[00m")
+        self.p(err, color="31")
 
     def raw_std(self, std):
         sys.stdout.write(std)
@@ -195,22 +189,23 @@ class CLILogger(ProgressHelper):
     def std(self, std, end=None):
         self.p(std, end=end, flush=True)
 
-    def p(self, text, end=None, flush=False):
+    def p(self, text, color=None, end=None, flush=False):
+        if color is not None and sys.platform != 32:
+            text = "\033[00;{col}m{text}\033[00m".format(col=color, text=text)
         print(text, end=end, flush=flush)
 
     def complete(self):
-        self.p("\033[00;32mInstallation succeded.\033[00m")
+        self.p("Installation succeded.", color="32")
 
-    def failed(self, error):
-        self.err("\033[00;31mInstallation failed: {}\033[00m"
-                 .format(error))
+    def failed(self, error="?"):
+        self.err("Installation failed: {}".format(error))
 
-    def update(self, step=""):
-        self.p("\033[00;35m[STAGE {nums}: {name} - {pc:.0f}%]\033[00m {step}"
+    def update(self):
+        self.p("[STAGE {nums}: {name} - {pc:.0f}%]"
                .format(nums=self.stage_numbers,
                        name=self.stage_name,
-                       pc=self.get_overall_progress() * 100,
-                       step=step))
+                       pc=self.get_overall_progress() * 100),
+               color="35")
 
 def get_checksum(fpath, func=hashlib.sha256):
     h = func()
