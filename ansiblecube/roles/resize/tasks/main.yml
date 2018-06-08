@@ -110,7 +110,6 @@
   template:
     src: fstab.j2
     dest: /etc/fstab
-  register: fstab_install
   tags: ['master', 'resize']
 
 - name: create systemd-service to mount /boot
@@ -131,9 +130,18 @@
   tags: master
 
 - name: Mounting third partition to {{ data_path }}
-  mount:
-    path: "{{ data_path }}"
-    state: mounted
-  ignore_errors: True
-  when: fstab_install.changed
+  command: mount "{{ data_path }}"
+  args:
+    warn: no
   tags: ['master', 'resize']
+
+- name: Create test directory
+  become: yes
+  become_user: "{{ username }}"
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ data_path }}/test"
+  tags: ['setup', 'reconfigure']
+
