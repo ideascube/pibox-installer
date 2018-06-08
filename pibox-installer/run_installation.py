@@ -96,22 +96,6 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
             raise IOError("image path does not exists: {}"
                           .format(image_building_path))
 
-        # instanciate emulator
-        logger.step("Preparing qemu VM")
-        emulator = qemu.Emulator(data.vexpress_boot_kernel,
-                                 data.vexpress_boot_dtb,
-                                 image_building_path, logger,
-                                 ram="2G", tap=tap)
-
-        # Resize image
-        logger.step("Resizing image file to {s}"
-                    .format(s=human_readable_size(emulator.get_image_size())))
-        if size < emulator.get_image_size():
-            logger.err("cannot decrease image size")
-            raise ValueError("cannot decrease image size")
-
-        emulator.resize_image(size)
-
         # harmonize options
         packages = [] if zim_install is None else zim_install
         kalite_languages = [] if kalite is None else kalite
@@ -130,7 +114,9 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         # download contents into cache
         logger.stage('download')
         logger.step("Starting all content downloads")
-        downloads = get_all_contents_for(collection)
+        downloads = list(get_all_contents_for(collection))
+        total_size = sum([c['archive_size'] for c in downloads])
+        retrieved = 0
 
         for dl_content in downloads:
             logger.step("Retrieving {name} ({size})".format(
@@ -142,14 +128,32 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                 logger.err("Error downloading {u} to {p}\n{e}"
                            .format(u=dl_content['url'],
                                    p=rf.fpath, e=rf.exception))
-                if rf.exception:
-                    raise rf.exception
+                raise rf.exception if rf.exception else IOError
             elif rf.found:
                 logger.std("Reusing already downloaded {p}".format(p=rf.fpath))
             else:
                 logger.std("Saved `{p}` successfuly: {s}"
                            .format(p=dl_content['name'],
                                    s=human_readable_size(rf.downloaded_size)))
+            retrieved += dl_content['archive_size']
+            logger.progress(retrieved / total_size)
+
+        # instanciate emulator
+        logger.stage('setup')
+        logger.step("Preparing qemu VM")
+        emulator = qemu.Emulator(data.vexpress_boot_kernel,
+                                 data.vexpress_boot_dtb,
+                                 image_building_path, logger,
+                                 ram="2G", tap=tap)
+
+        # Resize image
+        logger.step("Resizing image file to {s}"
+                    .format(s=human_readable_size(emulator.get_image_size())))
+        if size < emulator.get_image_size():
+            logger.err("cannot decrease image size")
+            raise ValueError("cannot decrease image size")
+
+        emulator.resize_image(size)
 
         # prepare ansible options
         ansible_options = {
@@ -174,7 +178,6 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
             **ansible_options)
 
         # Run emulation
-        logger.stage('setup')
         logger.step("Starting-up VM")
         with emulator.run(cancel_event) as emulation:
             # copying ansiblecube again into the VM
@@ -226,8 +229,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
             emulator.copy_image(sd_card)
 
     except Exception as e:
-        logger.failed()
-        logger.err(str(e))
+        logger.failed(str(e))
         log_duration(logger, started_on)
 
         # Set final image filename
