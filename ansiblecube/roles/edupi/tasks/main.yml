@@ -81,9 +81,7 @@
     name: "{{ edupi_root }}/edupi/settings.py"
     regexp: '^DATA_ROOT ='
     replace: 'DATA_ROOT = "{{ edupi_data_root }}"'
-  notify:
-    - restart edupi
-    - collectstatic edupi
+  notify: collectstatic edupi
   tags: ['setup', 'reconfigure']
 
 - name: Create python{{ python3_version }} environment
