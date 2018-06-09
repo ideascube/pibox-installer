@@ -3,9 +3,7 @@
   file:
     path: "{{ aflatoun_root }}"
     state: directory
-  tags: 
-    - setup
-    - reconfigure
+  tags: ['setup', 'reconfigure']
 
 - name: Download Aflatoun
   get_url:
@@ -32,31 +30,19 @@
   become_user: "{{ username }}"
   shell: KALITE_PYTHON={{ aflatoun_env }}/bin/python KALITE_HOME={{ aflatoun_root }} {{ aflatoun_env }}/bin/kalite manage setup --username={{ admin_account }} --password={{ admin_password }} --noinput --no-assessment-items
   when: admin_account is defined
-  tags: 
-    - setup
-    - reconfigure
+  tags: ['setup', 'reconfigure']
 
 - name: Initialize Aflatoun without creating an admin user
   become: yes
   become_user: "{{ username }}"
   shell: KALITE_PYTHON={{ aflatoun_env }}/bin/python KALITE_HOME={{ aflatoun_root }} {{ aflatoun_env }}/bin/kalite manage setup --noinput --no-assessment-items
   when: admin_account is not defined
-  tags: 
-    - setup
-    - reconfigure
+  tags: ['setup', 'reconfigure']
 
 - name: Copy nginx vhost
   template:
     src: aflatoun.vhost.j2
     dest: /etc/nginx/sites-available/aflatoun
-  notify: restart nginx
-  tags: ['setup', 'rename']
-
-- name: Nginx enable Virtual host
-  file:
-    src: /etc/nginx/sites-available/aflatoun
-    dest: /etc/nginx/sites-enabled/aflatoun
-    state: link
   notify: restart nginx
   tags: ['setup', 'rename']
 

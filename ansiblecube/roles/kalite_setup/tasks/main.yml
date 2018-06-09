@@ -62,14 +62,6 @@
   notify: restart nginx
   tags: ['setup', 'rename']
 
-- name: Enable nginx vhost
-  file:
-    src: /etc/nginx/sites-available/kalite
-    dest: /etc/nginx/sites-enabled/kalite
-    state: link
-  notify: restart nginx
-  tags: setup
-
 - name: Setup startup file
   template:
     src: kalite.service.j2

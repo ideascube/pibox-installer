@@ -2,10 +2,19 @@
 - include: enable_service.yml service=edupi
   when: ansible_local.config.edupi|bool
 
+- include: enable_vhost.yml name=edupi
+  when: ansible_local.config.edupi|bool
+
 - include: enable_service.yml service=kalite
   when: ansible_local.config.kalite_languages | length
 
+- include: enable_vhost.yml name=kalite
+  when: ansible_local.config.kalite_languages | length
+
 - include: enable_service.yml service=aflatoun
+  when: ansible_local.config.aflatoun_languages | length
+
+- include: enable_vhost.yml name=aflatoun
   when: ansible_local.config.aflatoun_languages | length
 
 - include: enable_service.yml service=parsoid
@@ -16,6 +25,10 @@
 
 - include: enable_service.yml service=php-fpm
   when: ansible_local.config.wikifundi_languages | length and ansible_distribution_release == "stretch"
+
+- include: enable_vhost.yml name={{ item }}.wikifundi
+  with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
+  when: ansible_local.config.wikifundi_languages | length
 
 - include: enable_service.yml service=dnsmsaq
 

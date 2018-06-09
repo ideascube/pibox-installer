@@ -133,14 +133,6 @@
   notify: restart nginx
   tags: ['setup', 'rename']
 
-- name: Nginx enable Virtual host
-  file:
-    src: /etc/nginx/sites-available/edupi
-    dest: /etc/nginx/sites-enabled/edupi
-    state: link
-  notify: restart nginx
-  tags: ['setup', 'rename']
-
 - name: Setup edupi service
   template:
     src: edupi.service.j2

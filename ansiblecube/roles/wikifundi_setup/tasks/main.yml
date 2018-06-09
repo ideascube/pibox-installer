@@ -3,9 +3,16 @@
   file:
     dest: "{{ wikifundi_root }}"
     state: directory
-  tags: 
-    - setup
-    - reconfigure
+  tags: ['setup', 'reconfigure']
+
+- name: Symlink wikifundi folders
+  file:
+    src: "{{ wikifundi_root }}/{{ item }}.africapack.kiwix.org"
+    dest: "/var/www/{{ item }}.africapack.kiwix.org"
+    state: link
+    force: yes
+  with_items: "{{ wikifundi_languages | default(omit) }}"
+  tags: ['setup', 'reconfigure']
 
 - name: Install dependencies (tex)
   apt:
@@ -78,7 +85,7 @@
   when: ansible_distribution_release == "jessie"
   tags: setup
 
-- name: change PHP7settings to allow file uploads up to 100MiB
+- name: change PHP7 settings to allow file uploads up to 100MiB
   copy:
     src: 90-wikifundi.ini
     dest: /etc/php/7.0/fpm/conf.d/90-wikifundi.ini
@@ -103,15 +110,6 @@
   template:
     src: wikifundi.vhost.j2
     dest: /etc/nginx/sites-available/{{ item }}.wikifundi
-  with_items: "{{ wikifundi_languages | default(omit) }}"
-  notify: restart nginx
-  tags: ['setup', 'rename']
-
-- name: Enable nginx vhosts
-  file:
-    src: /etc/nginx/sites-available/{{ item }}.wikifundi
-    dest: /etc/nginx/sites-enabled/{{ item }}.wikifundi
-    state: link
   with_items: "{{ wikifundi_languages | default(omit) }}"
   notify: restart nginx
   tags: ['setup', 'rename']

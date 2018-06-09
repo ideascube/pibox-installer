@@ -1,5 +1,6 @@
 upstream php {
-	server unix:/var/run/php5-fpm.sock;
+    {% if ansible_distribution_release == "jessie" %}server unix:/var/run/php5-fpm.sock;{% endif %}
+    {% if ansible_distribution_release == "stretch" %}server unix:/var/run/php/php7.0-fpm.sock;{% endif %}
 }
 
 server {
@@ -14,7 +15,7 @@ server {
 
     # Mediawiki redirections
     location / {
-        index index.html index.php index.php5;
+        index index.html index.php index.php5 index.php7;
         rewrite ^/wiki/(.*)$ /w/index.php?title=$1&$args;
         rewrite ^/([^/\.]*)$ /wiki/$1 redirect;
     }
