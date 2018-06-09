@@ -37,6 +37,9 @@
       when: captive_portal|bool
 
       # content setup (install, dependencies)
+    - role: wikifundi_setup
+      when: wikifundi_languages | length
+
     - role: edupi
       when: edupi|bool
 
@@ -45,9 +48,6 @@
 
     - role: aflatoun_setup
       when: aflatoun_languages | length
-
-    - role: wikifundi_setup
-      when: wikifundi_languages | length
 
       # move content
     - role: packages
