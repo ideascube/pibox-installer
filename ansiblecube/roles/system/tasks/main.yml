@@ -96,74 +96,19 @@
 
 - name: Remove unwanted packages before upgrading
   apt:
-    name: "{{ item }}"
+    name: apache2,apache2-mpm-worker,apache2-utils,apache2.2-bin,apache2.2-common,btrfs-tools,figlet,toilet,bluez,fping,stress,iperf,iotop,lirc,apt-listchanges,clipit,sslh,python-pip,python-setuptools,python-virtualenv,virtualenv
     state: absent
     purge: yes
     autoremove: yes
     autoclean: yes
-  with_items:
-   - apache2
-   - apache2-mpm-worker
-   - apache2-utils
-   - apache2.2-bin
-   - apache2.2-common
-   - btrfs-tools
-   - figlet
-   - toilet
-   - bluez
-   - fping
-   - stress
-   - iperf
-   - iotop
-   - lirc
-   - apt-listchanges
-   - clipit
-   - sslh
-   - python-pip
-   - python-setuptools
-   - python-virtualenv
-   - virtualenv
   tags: master
 
 - name: Install all required package
   apt:
-    name: "{{ item }}"
+    name: python-dev,git,sudo,lsb-release,vim,locate,git,unzip,bash-completion,aptitude,ntpdate,fake-hwclock,hdparm,ncurses-term,libffi-dev,libssl-dev,tree,screen,iftop,tmux,mtr-tiny,libwww-perl,httpie,lshw,hwinfo,sqlite3,elinks,mosh,curl,apt-transport-https,tar,exfat-utils
     state: latest
     autoremove: yes
     autoclean: yes
-  with_items:
-   - python-dev
-   - git
-   - sudo
-   - lsb-release
-   - vim
-   - locate
-   - git
-   - unzip
-   - bash-completion
-   - aptitude
-   - ntpdate
-   - fake-hwclock
-   - hdparm
-   - ncurses-term
-   - libffi-dev
-   - libssl-dev
-   - tree
-   - screen
-   - iftop
-   - tmux
-   - mtr-tiny
-   - libwww-perl
-   - httpie
-   - lshw
-   - hwinfo
-   - sqlite3
-   - elinks
-   - mosh
-   - curl
-   - apt-transport-https
-   - tar
-   - exfat-utils
   tags: master
 
 - name: Install avahi packages
