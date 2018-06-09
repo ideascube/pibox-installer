@@ -14,6 +14,12 @@
     dest: /var/www/502.html
   tags: master
 
+- name: install 404.html
+  template:
+    src: 404.html.j2
+    dest: /var/www/404.html
+  tags: master
+
 - name: Remove default nginx vhost config file (if configured).
   file:
     path: /etc/nginx/sites-enabled/default
@@ -27,4 +33,16 @@
     dest: /etc/nginx/nginx.conf
     backup: yes
   notify: restart nginx
+  tags: master
+
+- name: install default placeholder vhost for services
+  template:
+    src: placeholder.j2
+    dest: /etc/nginx/sites-enabled/{{ item.name }}
+  with_items:
+    - { name: 'edupi', fqdn: "{{ edupi_fqdn }}" }
+    - { name: 'kalite', fqdn: "{{ kalite_fqdn }}" }
+    - { name: 'aflatoun', fqdn: "{{ aflatoun_fqdn }}" }
+    - { name: 'fr.wikifundi', fqdn: "fr.{{ wikifundi_fqdn }}" }
+    - { name: 'en.wikifundi', fqdn: "en.{{ wikifundi_fqdn }}" }
   tags: master
