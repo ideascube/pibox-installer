@@ -1,4 +1,7 @@
 ---
+- include: clean_apt.yml
+  tags: setup
+
 # kalite content folder is placed on data part
 - name: Ensure kalite folder exists on data part
   file:
@@ -9,7 +12,7 @@
 - name: Setup kalite virtualenv
   become: yes
   become_user: "{{ username }}"
-  command: /usr/bin/virtualenv --no-site-packages {{ kalite_env }}
+  command: virtualenv -p python2.7 --no-site-packages {{ kalite_env }}
   tags: setup
 
 - name: show free space

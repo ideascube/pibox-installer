@@ -1,4 +1,7 @@
 ---
+- include: clean_apt.yml
+  tags: setup
+
 - name: Create working directory
   file:
     path: "{{ aflatoun_root }}"
@@ -19,11 +22,16 @@
   command: df -h /
   tags: setup
 
+- name: Create aflatoun environment
+  become: yes
+  become_user: "{{ username }}"
+  command: virtualenv -p python2.7 {{ aflatoun_env }}
+  tags: setup
+
 - name: downgrade setuptools for KA-lite 0.16 (aflatoun)
   pip:
     name: setuptools
     version: 28.8.0
-    virtualenv_command: /usr/bin/virtualenv
     virtualenv: "{{ aflatoun_env }}"
   tags: setup
 

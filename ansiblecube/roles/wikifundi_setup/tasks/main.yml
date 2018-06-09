@@ -1,4 +1,7 @@
 ---
+- include: clean_apt.yml
+  tags: setup
+
 - name: make sur wikifundi_root exists
   file:
     dest: "{{ wikifundi_root }}"
@@ -24,6 +27,9 @@
     state: latest
     autoremove: yes
     autoclean: yes
+  tags: setup
+
+- include: clean_apt.yml
   tags: setup
 
 - name: show free space
@@ -52,6 +58,9 @@
   when: ansible_distribution_release == "stretch"
   tags: setup
 
+- include: clean_apt.yml
+  tags: setup
+
 - name: show free space
   command: df -h /
   tags: setup
@@ -62,6 +71,9 @@
     state: latest
     autoremove: yes
     autoclean: yes
+  tags: setup
+
+- include: clean_apt.yml
   tags: setup
 
 - name: show free space

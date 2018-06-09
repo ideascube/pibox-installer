@@ -111,6 +111,9 @@
     autoclean: yes
   tags: master
 
+- include: clean_apt.yml
+  tags: master
+
 - name: Install avahi packages
   apt:
     name: "{{ item }}"
