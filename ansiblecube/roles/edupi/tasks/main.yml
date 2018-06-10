@@ -8,7 +8,7 @@
   
 - name: Install dependencies
   apt:
-    name: nginx,libmagickwand-dev,npm,nodejs
+    name: nginx,libmagickwand-dev,npm,nodejs,python3-dev
     state: latest
     autoremove: yes
     autoclean: yes
