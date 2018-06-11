@@ -53,11 +53,12 @@ class ProgressHelper(object):
         self.durations[self.stage_id] = (started_on, ended_on,
                                          ended_on - started_on)
         self.stage_started_on = None
+        self.stage_progress = None
+        self.tasks = None
 
     def stage(self, stage_id):
         self.clean_up_stage()  # record duration of previous stage
 
-        self.tasks = None
         self.stage_id = stage_id
         self.stage_started_on = datetime.datetime.now()
         self.update()
