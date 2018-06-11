@@ -40,10 +40,11 @@
   tags: reconfigure
 
 - name: change ownership of ideascube handlers directories
-  file: /var/ideascube/{{ item }}
-  owner: "{{ username }}"
-  group: www-data
-  mode: 0775
+  file:
+    path: /var/ideascube/{{ item }}
+    owner: "{{ username }}"
+    group: www-data
+    mode: 0775
   with_items: "{{ ideascube_handlers }}"
   tags: reconfigure
 
