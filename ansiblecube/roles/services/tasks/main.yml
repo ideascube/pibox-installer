@@ -23,7 +23,7 @@
 - include: enable_service.yml service=php5-fpm
   when: ansible_local.config.wikifundi_languages | length and ansible_distribution_release == "jessie"
 
-- include: enable_service.yml service=php-fpm
+- include: enable_service.yml service=php7.0-fpm
   when: ansible_local.config.wikifundi_languages | length and ansible_distribution_release == "stretch"
 
 - include: enable_vhost.yml name={{ item }}.wikifundi

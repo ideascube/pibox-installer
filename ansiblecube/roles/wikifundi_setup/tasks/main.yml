@@ -45,6 +45,10 @@
   when: ansible_distribution_release == "jessie"
   tags: setup
 
+- include: disable_service.yml service=php5-fpm
+  when: ansible_distribution_release == "jessie"
+  tags: setup
+
 - name: show free space
   command: df -h /
   tags: setup
@@ -55,6 +59,10 @@
     state: latest
     autoremove: yes
     autoclean: yes
+  when: ansible_distribution_release == "stretch"
+  tags: setup
+
+- include: disable_service.yml service=php7.0-fpm
   when: ansible_distribution_release == "stretch"
   tags: setup
 
@@ -80,14 +88,14 @@
   command: df -h /
   tags: setup
 
-- name: change PHP5 settings to allow file uploads up to 100MiB
+- name: change PHP5 settings to allow file uploads up to 5MiB
   copy:
     src: 90-wikifundi.ini
     dest: /etc/php5/fpm/conf.d/90-wikifundi.ini
   when: ansible_distribution_release == "jessie"
   tags: setup
 
-- name: change PHP7 settings to allow file uploads up to 100MiB
+- name: change PHP7 settings to allow file uploads up to 5MiB
   copy:
     src: 90-wikifundi.ini
     dest: /etc/php/7.0/fpm/conf.d/90-wikifundi.ini
