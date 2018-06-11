@@ -39,6 +39,11 @@ def main(root_size=5, disk_size=8):
 def get_partitions_boundaries(lines, root_size, disk_size=None):
 
     sector_size = 512
+    round_bound = 128
+
+    def rounddown(sector):
+        return sector - (sector % round_bound) \
+            if sector % round_bound != 0 else sector
 
     # parse all lines
     number_of_sector_match = []
@@ -72,11 +77,12 @@ def get_partitions_boundaries(lines, root_size, disk_size=None):
     size_up_to_root_b = root_size * ONE_GB
     nb_clusters_endofroot = size_up_to_root_b // sector_size
 
-    root_start = second_partition_start
-    root_end = nb_clusters_endofroot
+    # align partitions
+    root_start = rounddown(second_partition_start)
+    root_end = rounddown(nb_clusters_endofroot)
 
-    data_start = root_end + sector_size
-    data_end = number_of_sector - 1
+    data_start = rounddown(root_end + sector_size)
+    data_end = rounddown(number_of_sector - 1)
 
     return root_start, root_end, data_start, data_end
 
