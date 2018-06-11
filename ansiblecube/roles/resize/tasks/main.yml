@@ -105,6 +105,9 @@
   file:
     dest: "{{ data_path }}"
     state: directory
+    owner: "{{ username }}"
+    group: www-data
+    mode: 0775
   tags: ['master', 'resize']
 
 - name: installing a new fstab with longer device timeouts and {{ data_path }} mout point
@@ -134,6 +137,7 @@
   command: mount "{{ data_path }}"
   args:
     warn: no
+  ignore_errors: True
   tags: ['master', 'resize']
 
 - name: Create test directory
