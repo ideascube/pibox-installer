@@ -23,8 +23,6 @@
   tags: move-content
 
 - name: Add CSS for package icon
-  become: yes
-  become_user: "{{ username }}"
   lineinfile:
     dest: /opt/venvs/ideascube/lib/python{{ python3_version }}/site-packages/ideascube/static/ideascube/cards.css
     line: '.card.{{ item.name|splitext|first|replace(".", "\.") }} { background-image: url("http://{{ kiwix_fqdn }}/{{ item.name }}/-/favicon"); }'
