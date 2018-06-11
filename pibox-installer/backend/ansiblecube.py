@@ -34,16 +34,11 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
         os.unlink(fp.name)
 
     # prepare ansible command
-    ansible_cmd = ('/usr/local/bin/ansible-playbook -vvv'
-                   ' --inventory hosts'
-                   ' --tags {tags}'
-                   ' --extra-vars="@{ev_path}"'
-                   ' main.yml'
-                   .format(tags=",".join(['common'] + tags),
-                           ev_path=extra_vars_path))
-
-    ansible_pull_cmd = ("sudo sh -c 'cd {path} && {cmd}'"
-                        .format(path=ansiblecube_path, cmd=ansible_cmd))
+    ansible_cmd = ['/usr/local/bin/ansible-playbook',
+                   '--inventory hosts',
+                   '--tags {}'.format(",".join(tags)),
+                   '--extra-vars="@{}"'.format(extra_vars_path),
+                   'main.yml']
 
     # display sent configuration to logger
     machine._logger.std("ansiblecube extra_vars")
@@ -51,7 +46,18 @@ def run(machine, tags, extra_vars={}, secret_keys=[]):
         json.dumps({k: '****' if k in secret_keys else v
                     for k, v in ansible_vars.items()}, indent=4))
 
-    machine.exec_cmd(ansible_pull_cmd)
+    # review the list of tasks to inform logger about nb of those
+    tasks_cmd = ansible_cmd[0:1] + ['--list-tasks'] + ansible_cmd[1:]
+    machine.exec_cmd("sh -c 'cd {path} && tasks=$({cmd} | paste -sd \"^\" -) "
+                     "&& echo \"### TASKS ### $tasks\"'"
+                     .format(path=ansiblecube_path,
+                             cmd=" ".join(tasks_cmd)))
+
+    # run ansible-playbook
+    ansible_cmd = ansible_cmd[0:1] + ['-vvv'] + ansible_cmd[1:]  # verbose
+    machine.exec_cmd("sudo sh -c 'cd {path} && {cmd}'"
+                     .format(path=ansiblecube_path,
+                             cmd=" ".join(ansible_cmd)))
 
 
 def run_for_image(machine, root_partition_size, disk_size):

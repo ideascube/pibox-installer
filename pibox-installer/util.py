@@ -1,4 +1,5 @@
 import os
+import re
 import threading
 import signal
 import sys
@@ -7,7 +8,7 @@ import hashlib
 import tempfile
 import ctypes
 import platform
-import data
+import datetime
 import collections
 
 from path import Path
@@ -31,12 +32,34 @@ STAGES = collections.OrderedDict([
 class ProgressHelper(object):
 
     def __init__(self):
-        self.stage_id = 'init'
-        self.stage_progress = None
-        self.will_write = False
+        self.stage_id = 'init'  # id of current stage
+        self.stage_progress = None  # percentage of current stage progress
+        self.will_write = False  # wether the process will run write stage
+
+        self.started_on = datetime.datetime.now()  # when the process started
+        self.ended_on = None  # when it ended
+        self.durations = {}  # records timedeltas for every ran stages
+
+    def start(self, will_write):
+        self.started_on = datetime.datetime.now()
+        self.will_write = will_write
+
+    def stop(self):
+        self.ended_on = datetime.datetime.now()
+
+    def clean_up_stage(self):
+        started_on = getattr(self, 'stage_started_on', self.started_on)
+        ended_on = datetime.datetime.now()
+        self.durations[self.stage_id] = (started_on, ended_on,
+                                         ended_on - started_on)
+        self.stage_started_on = None
 
     def stage(self, stage_id):
+        self.clean_up_stage()  # record duration of previous stage
+
+        self.tasks = None
         self.stage_id = stage_id
+        self.stage_started_on = datetime.datetime.now()
         self.update()
 
     def progress(self, percentage=None):
@@ -44,12 +67,42 @@ class ProgressHelper(object):
         self.stage_progress = percentage
         self.update()
 
-    def mark_will_write(self, will_write=True):
-        self.will_write = will_write
+    def ansible(self, line):
+        # display output anyway
+        self.std(line)
+
+        if self.stage_id not in ['setup', 'move']:
+            return
+
+        # detect number of task for ansiblecube phase
+        if self.tasks is None and line.startswith("### TASKS ###"):
+            try:
+                self.tasks = [
+                    re.search(r'^\s{6}(.*)\tTAGS\:.*$', l).groups()[0]
+                    for l in line.split("^")[5:]]
+            except Exception as exp:
+                print(str(exp))
+                pass
+
+        if self.tasks is not None:
+            # detect current task
+            if line.startswith("TASK ["):
+                try:
+                    task = re.search(r'^TASK \[(.*)\] \*+$', line).groups()[0]
+                except Exception:
+                    return
+                else:
+                    self.step(task)
+                    try:
+                        task_index = self.tasks.index(task)
+                    except ValueError:
+                        pass
+                    else:
+                        self.progress(task_index / len(self.tasks))
 
     @property
     def stage_name(self):
-        return STAGES.get(self.stage_id, "Preparations")
+        return self.get_stage_name(self.stage_id)
 
     @property
     def nb_of_stages(self):
@@ -58,14 +111,27 @@ class ProgressHelper(object):
 
     @property
     def stage_number(self):
-        try:
-            return list(STAGES.keys()).index(self.stage_id) + 1
-        except Exception:
-            return 0
+        return self.get_stage_number(self.stage_id)
 
     @property
     def stage_numbers(self):
         return "{c}/{t}".format(c=self.stage_number, t=self.nb_of_stages)
+
+    def stage_string(self, stage_id):
+        return "[{c}/{t}] {n}".format(c=self.get_stage_number(stage_id),
+                                      t=self.nb_of_stages,
+                                      n=self.get_stage_name(stage_id))
+
+    @classmethod
+    def get_stage_number(cls, stage_id):
+        try:
+            return list(STAGES.keys()).index(stage_id) + 1
+        except Exception:
+            return 0
+
+    @classmethod
+    def get_stage_name(cls, stage_id):
+        return STAGES.get(stage_id, "Preparations")
 
     def get_overall_progress(self):
         if not self.stage_number:
@@ -78,14 +144,35 @@ class ProgressHelper(object):
         return lbound + current_progress
 
     def complete(self):
-        raise NotImplementedError()
+        self.clean_up_stage()
+        self.stop()
 
     def failed(self):
-        raise NotImplementedError()
+        self.clean_up_stage()
+        self.stop()
 
     def update(self):
         raise NotImplementedError()
 
+    def summary(self):
+        # make sure we have an end datetime
+        if self.ended_on is None:
+            self.stop()
+
+        self.std("*** DURATIONS SUMMARY ***")
+        for stage_id, data in self.durations.items():
+            self.std("{stage}: {duration} ({start} to {end})"
+                     .format(stage=self.stage_string(stage_id),
+                             duration=humanfriendly.format_timespan(
+                                 data[2].total_seconds()),
+                             start=data[0].strftime('%c'),
+                             end=data[1].strftime('%c')))
+        duration = self.ended_on - self.started_on
+        self.std("TOTAL: {duration} ({start} to {end})"
+                 .format(duration=humanfriendly.format_timespan(
+                         duration.total_seconds()),
+                         start=self.started_on.strftime('%c'),
+                         end=self.ended_on.strftime('%c')))
 
 def get_free_space_in_dir(dirname):
     """Return folder/drive free space."""
@@ -195,9 +282,11 @@ class CLILogger(ProgressHelper):
         print(text, end=end, flush=flush)
 
     def complete(self):
+        super(CLILogger, self).complete()
         self.p("Installation succeded.", color="32")
 
     def failed(self, error="?"):
+        super(CLILogger, self).failed()
         self.err("Installation failed: {}".format(error))
 
     def update(self):

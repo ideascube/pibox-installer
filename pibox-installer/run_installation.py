@@ -15,20 +15,11 @@ import humanfriendly
 if sys.platform == "linux":
     from backend.mount import loop_device
 
-def log_duration(logger, started_on, ended_on=None):
-    ended_on = datetime.now() if ended_on is None else ended_on
-    duration = ended_on - started_on
-    logger.std("Duration: {duration}. ({start} to {end}).".format(
-        start=started_on.strftime('%c'), end=ended_on.strftime('%c'),
-        duration=humanfriendly.format_timespan(duration.total_seconds())))
 
 def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, aflatoun, wikifundi, edupi, zim_install, size, logger, cancel_event, sd_card, favicon, logo, css, done_callback=None, build_dir=".", tap=None):
 
-    started_on = datetime.now()
-    logger.std("started on {}".format(started_on))
+    logger.start(bool(sd_card))
 
-    if sd_card:
-        logger.mark_will_write()
     logger.stage('init')
     logger.step("Prepare Image file")
 
@@ -239,7 +230,6 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
 
     except Exception as e:
         logger.failed(str(e))
-        log_duration(logger, started_on)
 
         # Set final image filename
         if os.path.isfile(image_building_path):
@@ -251,10 +241,10 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         # Set final image filename
         os.rename(image_building_path, image_final_path)
 
-        logger.step("Done")
-        log_duration(logger, started_on)
+        logger.complete()
         error = None
     finally:
+
         if sys.platform == "linux":
             subprocess_pretty_call(
                 ["chmod", "-c", "o-rwx", loop_device], logger, as_admin=True)
@@ -265,6 +255,9 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
             elif sys.platform == "darwin":
                 subprocess_pretty_call(
                     ["chmod", "-v", "o-w", sd_card], logger, as_admin=True)
+
+        # display durations summary
+        logger.summary()
 
     if done_callback:
         done_callback(error)

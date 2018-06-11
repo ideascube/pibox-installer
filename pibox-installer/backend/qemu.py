@@ -339,7 +339,7 @@ class _RunningInstance:
 
     def _shutdown(self):
         self.exec_cmd("sudo sync")
-        self.exec_cmd("sudo shutdown -P 0")
+        self.exec_cmd("sudo shutdown -P 0", check=False)
         self._client.close()
         try:
             self._qemu.wait(timeout)
@@ -411,7 +411,7 @@ class _RunningInstance:
                 break
             if capture_stdout:
                 stdout_buffer += line
-            self._logger.std(line.replace("\n", ""))
+            self._logger.ansible(line.replace("\n", ""))
 
         for line in stderr.readlines():
             self._logger.err("STDERR: " + line.replace("\n", ""))
