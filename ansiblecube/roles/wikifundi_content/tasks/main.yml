@@ -62,4 +62,4 @@
     replace: "{{ item }}.{{ wikifundi_fqdn }}"
   with_items: "{{ wikifundi_languages | default(omit) }}"
   notify: restart nginx
-  tags: reconfigure
+  tags: move-content
