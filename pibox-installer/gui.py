@@ -100,10 +100,12 @@ class Logger(ProgressHelper):
             self.run_pulse()
 
     def complete(self):
+        super(Logger, self).complete()
         self.component.run_step_label.set_markup("<b>Done.</b>")
         self.progress(1)
 
     def failed(self):
+        super(Logger, self).failed()
         self.step("Failed")
         self.progress(1)
 
