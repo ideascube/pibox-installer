@@ -31,6 +31,15 @@
   notify: restart nginx
   tags: move-content
 
+- name: Set max upload size to 5M
+  lineinfile:
+    path: "{{ wikifundi_root }}/{{ item }}.africapack.kiwix.org/w/LocalSettings.custom.php"
+    line: '$wgMaxUploadSize = 1024*1024*5;'
+    insertafter: EOF
+    state: present
+  with_items: "{{ wikifundi_languages | default(omit) }}"
+  tags: move-content
+
 # fix extensions in the content
 - name: Get the Math renderer correctly
   become: yes
