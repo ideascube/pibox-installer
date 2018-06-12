@@ -193,7 +193,8 @@ def mount_data_partition(image_fpath, logger=None):
             ], logger, check=True, decode=True)[0].strip()
         target_part = "{dev}p3".format(dev=target_dev)
         mount_point = tempfile.mkdtemp()
-        subprocess_pretty_check_call(mount_exfat + [target_part, mount_point])
+        subprocess_pretty_check_call(
+            mount_exfat + [target_part, mount_point], logger)
         return mount_point, target_dev
 
     elif sys.platform == "darwin":
@@ -215,9 +216,9 @@ def mount_data_partition(image_fpath, logger=None):
         # get an available letter
         target_dev = get_avail_drive_letter(logger)
         mount_point = "{}\\".format(target_dev)
-        subprocess_pretty_check_call([
-            imdisk_exe, '-a', '-f', image_fpath,
-            '-o', 'rw', '-t', 'file', '-v', '3', '-m', target_dev], logger)
+        subprocess_pretty_check_call(
+            [imdisk_exe, '-a', '-f', image_fpath,
+             '-o', 'rw', '-t', 'file', '-v', '3', '-m', target_dev], logger)
         return mount_point, target_dev
 
 
