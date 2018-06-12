@@ -83,7 +83,7 @@
   become_user: "{{ username }}"
   replace:
     name: "{{ edupi_root }}/edupi/settings.py"
-    regexp: '^ALLOWED_HOSTS = \[''edupi.fondationorange.org''\]$'
+    regexp: '^ALLOWED_HOSTS =.*$'
     replace: 'ALLOWED_HOSTS = [''.{{ fqdn }}'', ''{{ fqdn }}'', ''{{ hostname }}'', ''localhost'']'
   tags: ['setup', 'rename']
 
@@ -94,7 +94,12 @@
     name: "{{ edupi_root }}/edupi/settings.py"
     regexp: '^DATA_ROOT =.*$'
     replace: 'DATA_ROOT = "{{ edupi_data_root }}"'
-  notify: collectstatic edupi
+  tags: ['setup', 'reconfigure']
+
+- name: collectstatic edupi
+  become: yes
+  become_user: "{{ username }}"
+  command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py collectstatic --noinput"
   tags: ['setup', 'reconfigure']
 
 - name: Create python{{ python3_version }} environment
@@ -119,7 +124,7 @@
   become: yes
   become_user: "{{ username }}"
   command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py bower install"
-  tags: setup
+  tags: ['setup', 'reconfigure']
 
 - name: show free space
   command: df -h /
@@ -129,7 +134,7 @@
   become: yes
   become_user: "{{ username }}"
   command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py migrate"
-  tags: setup
+  tags: ['setup', 'reconfigure']
 
 - name: Check if EduPi super user is installed
   become: yes
