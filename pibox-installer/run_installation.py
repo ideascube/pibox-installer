@@ -219,8 +219,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         logger.step("Starting-up VM again for content-discovery")
         with emulator.run(cancel_event) as emulation:
             logger.step("Re-run ansiblecube for move-content")
-            ansiblecube.run_phase_two(emulation, extra_vars, secret_keys,
-                                      seal=False)
+            ansiblecube.run_phase_two(emulation, extra_vars, secret_keys)
 
         # Write image to SD Card
         if sd_card:

@@ -149,7 +149,7 @@ def run_phase_one(machine, extra_vars, secret_keys,
     run(machine, tags, extra_vars, secret_keys)
 
 
-def run_phase_two(machine, extra_vars, secret_keys, seal=False):
+def run_phase_two(machine, extra_vars, secret_keys):
     tags = ['move-content', 'seal']
 
     run(machine, tags, extra_vars, secret_keys)
