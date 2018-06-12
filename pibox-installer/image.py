@@ -25,7 +25,7 @@ from util import CLILogger, CancelEvent, ONE_GB
 
 
 def run_in_qemu(image_fpath, disk_size, root_size,
-                logger, cancel_event, qemu_ram, qemu_tap=None):
+                logger, cancel_event, qemu_ram):
 
     logger.step("starting QEMU")
     try:
@@ -34,7 +34,7 @@ def run_in_qemu(image_fpath, disk_size, root_size,
                                  data.vexpress_boot_dtb,
                                  image_fpath,
                                  logger,
-                                 ram=qemu_ram, tap=qemu_tap)
+                                 ram=qemu_ram)
 
         logger.step("resizing QEMU image to {}GB".format(disk_size // ONE_GB))
         emulator.resize_image(disk_size)
@@ -70,8 +70,7 @@ def run_in_qemu(image_fpath, disk_size, root_size,
 
 
 def main(logger,
-         disk_size, root_size, build_folder, qemu_ram,
-         qemu_tap=None, image_fname=None):
+         disk_size, root_size, build_folder, qemu_ram, image_fname=None):
 
     try:
         root_size = int(root_size) * ONE_GB
@@ -122,7 +121,7 @@ def main(logger,
         disk_size,
         root_size,
         logger, cancel_event,
-        qemu_ram, qemu_tap)
+        qemu_ram)
 
     if error:
         print("ERROR: unable to properly create image")
@@ -139,10 +138,9 @@ parser.add_argument("--build", help="Folder to create files in",
                     default=os.path.abspath('.'))
 parser.add_argument("--ram", help="Max RAM for QEMU", default="2G")
 parser.add_argument("--out", help="Base image filename (inside --build)")
-parser.add_argument("--tap", help="TAP network to use (Advanced)")
 args = parser.parse_args()
 
 main(logger=CLILogger(),
      disk_size=args.size, root_size=args.root,
      build_folder=args.build, image_fname=args.out,
-     qemu_ram=args.ram, qemu_tap=args.tap)
+     qemu_ram=args.ram)

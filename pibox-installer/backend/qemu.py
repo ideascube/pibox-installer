@@ -67,20 +67,13 @@ class Emulator:
     # password=raspberry
     # prompt end by ":~$ "
     # sudo doesn't require password
-    def __init__(self, kernel, dtb, image, logger, ram, tap=None):
+    def __init__(self, kernel, dtb, image, logger, ram):
         self._kernel = kernel
         self._dtb = dtb
         self._image = image
         self._logger = logger
         self._binary = qemu_system_arm_exe_path
         self._set_ram(ram.lower())
-        self._tap = None
-        if tap:
-            try:
-                self._tap, self._tap_net, \
-                    self._tap_ip, self._tap_gw = tap.split(",")
-            except Exception:
-                pass
 
     def _set_ram(self, requested_ram):
         ''' applies requested RAM to qemu if it's available otherwise less '''
@@ -258,15 +251,6 @@ class _RunningInstance:
                 "-netdev", "user,id=eth1,hostfwd=tcp::{}-:22".format(ssh_port),
                 "-device", "virtio-net-device,netdev=eth1",
             ]
-            # add parameters to qemu if tap device is available
-            if self._emulation._tap:
-                command += [
-                    "-netdev",
-                    "tap,id=eth0,ifname={},script=no,downscript=no"
-                    .format(self._emulation._tap),
-                    "-device",
-                    "virtio-net-device,netdev=eth0"
-                ]
             if qemu_cpu > 1:
                 command += ["-smp", str(qemu_cpu),
                             "--accel", "tcg,thread=multi"]
@@ -312,30 +296,6 @@ class _RunningInstance:
         self._client.connect("localhost", port=ssh_port,
                              username="pi", password="raspberry",
                              allow_agent=False, look_for_keys=False)
-
-        # configure network for tap (to speed-up networking inside qemu)
-        # - disable parasite service (DHCP, DNS)
-        # - remove default routes (using qemu network)
-        # - Set static IP and route to the host
-        if self._emulation._tap:
-            # kill dhclient so we can use a static IP
-            self.exec_cmd("sudo systemctl stop NetworkManager dnsmasq")
-            self.exec_cmd("sudo killall dhclient")
-            # remove default gateway (only one can be active at a time)
-            self.exec_cmd("sudo ip route del 0/0")
-            # set requested static IP on tap
-            self.exec_cmd("sudo ip addr add {ip}dev eth0"
-                          .format(ip=self._emulation._tap_ip))
-            # bring the interface up
-            self.exec_cmd("sudo ip link set dev eth0 up")
-            # add route to the tap network
-            self.exec_cmd("sudo ip route add {} dev eth0"
-                          .format(self._tap_net))
-            # add gateway using tap
-            self.exec_cmd("sudo ip route add default via {} dev eth0"
-                          .format(self._emulation._tap_gw))
-            # display network config after changes
-            self.exec_cmd("ip addr show eth0 && ip route route show")
 
     def _shutdown(self):
         self.exec_cmd("sudo sync")

@@ -16,7 +16,7 @@ if sys.platform == "linux":
     from backend.mount import loop_device
 
 
-def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, aflatoun, wikifundi, edupi, zim_install, size, logger, cancel_event, sd_card, favicon, logo, css, done_callback=None, build_dir=".", tap=None):
+def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, aflatoun, wikifundi, edupi, zim_install, size, logger, cancel_event, sd_card, favicon, logo, css, done_callback=None, build_dir="."):
 
     logger.start(bool(sd_card))
 
@@ -135,7 +135,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         emulator = qemu.Emulator(data.vexpress_boot_kernel,
                                  data.vexpress_boot_dtb,
                                  image_building_path, logger,
-                                 ram="2G", tap=tap)
+                                 ram="2G")
 
         # Resize image
         logger.step("Resizing image file to {s}"

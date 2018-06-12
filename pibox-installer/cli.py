@@ -158,7 +158,6 @@ parser.add_argument("--catalog",
 parser.add_argument("--admin-account",
                     help="create admin account [LOGIN, PWD]", nargs=2)
 parser.add_argument("--config", help="use a JSON config file to set parameters (superseeds cli parameters)")
-parser.add_argument("--tap", help="Specify a TAP network interface to use: `ifname,net,vm-ip,gw-ip` (tap0,192.168.1.0/24,192.168.1.3,192.168.1.1)")
 
 args = parser.parse_args()
 
@@ -271,8 +270,7 @@ try:
             favicon=args.favicon,
             css=args.css,
             admin_account=admin_account,
-            build_dir=args.build_dir,
-            tap=args.tap)
+            build_dir=args.build_dir)
 except:
     cancel_event.cancel()
 else:
