@@ -52,7 +52,7 @@
 
 # downloaded content was placed in a different location on data part
 - name: Move downloaded parsoid to proper location
-  command: mv {{ aflatoun_parsoid_path }} {{ wikifundi_parsoid }}
+  command: mv {{ wikifundi_parsoid_path }} {{ wikifundi_parsoid }}
   tags: move-content
 
 - name: Change hostnames in localsettings.js
