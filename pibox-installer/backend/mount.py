@@ -194,7 +194,8 @@ def mount_data_partition(image_fpath, logger=None):
         target_part = "{dev}p3".format(dev=target_dev)
         mount_point = tempfile.mkdtemp()
         subprocess_pretty_check_call(
-            mount_exfat + [target_part, mount_point], logger)
+            mount_exfat + [target_part, mount_point], logger,
+            as_admin=system_has_exfat())
         return mount_point, target_dev
 
     elif sys.platform == "darwin":
@@ -226,7 +227,8 @@ def unmount_data_partition(mount_point, device, logger=None):
     ''' unmount data partition and free virtual resources '''
 
     if sys.platform == "linux":
-        subprocess_pretty_call([umount_exe, mount_point], logger)
+        subprocess_pretty_call([umount_exe, mount_point], logger,
+                               as_admin=system_has_exfat())
         os.rmdir(mount_point)
         subprocess_pretty_call([losetup_exe, '-d', device], logger)
 
