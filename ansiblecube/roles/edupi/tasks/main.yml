@@ -47,7 +47,7 @@
   file:
     dest: "{{ edupi_root }}"
     state: absent
-  tags: ['setup']
+  tags: setup
 
 - name: remove edupi env if it exists
   become: yes
@@ -88,7 +88,7 @@
   become: yes
   become_user: "{{ username }}"
   command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py collectstatic --noinput"
-  tags: ['setup', 'reconfigure']
+  tags: reconfigure
 
 - name: Create python{{ python3_version }} environment
   become: yes
@@ -108,13 +108,13 @@
   become: yes
   become_user: "{{ username }}"
   command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py bower install"
-  tags: ['setup', 'reconfigure']
+  tags: setup
 
 - name: Manage migrate
   become: yes
   become_user: "{{ username }}"
   command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py migrate"
-  tags: ['setup', 'reconfigure']
+  tags: reconfigure
 
 - name: Check if EduPi super user is installed
   become: yes
@@ -122,14 +122,14 @@
   command: /bin/echo "from django.contrib.auth.models import User; print('****{}****'.format(User.objects.filter(username='{{ admin_account }}').count()))" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py shell --plain
   register: edupi_admin_shell_output
   when: admin_account is defined
-  tags: ['setup', 'reconfigure']
+  tags: reconfigure
 
 - name: Install EduPi super user
   become: yes
   become_user: "{{ username }}"
   command: /bin/echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{ admin_account }}', None, '{{ admin_password }}')" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py shell --plain
   when: admin_account is defined and edupi_admin_shell_output.stdout.split('****')[1]|int == 0
-  tags: ['setup', 'reconfigure']
+  tags: reconfigure
 
 - name: Copy nginx vhost
   template:
