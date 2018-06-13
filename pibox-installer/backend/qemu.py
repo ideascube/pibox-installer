@@ -249,7 +249,9 @@ class _RunningInstance:
                 "-display", "none",
                 "-no-reboot",
                 "-netdev", "user,id=eth1,hostfwd=tcp::{}-:22".format(ssh_port),
-                "-device", "virtio-net-device,netdev=eth1",
+                "-device",
+                # mac address is random. fixed so windows reckon it
+                "virtio-net-device,netdev=eth1,mac=77:FB:CD:7E:56:5B",
             ]
             if qemu_cpu > 1:
                 command += ["-smp", str(qemu_cpu),
