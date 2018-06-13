@@ -193,9 +193,13 @@ def mount_data_partition(image_fpath, logger=None):
             ], logger, check=True, decode=True)[0].strip()
         target_part = "{dev}p3".format(dev=target_dev)
         mount_point = tempfile.mkdtemp()
-        subprocess_pretty_check_call(
-            mount_exfat + [target_part, mount_point], logger,
-            as_admin=system_has_exfat())
+        try:
+            subprocess_pretty_check_call(
+                mount_exfat + [target_part, mount_point], logger,
+                as_admin=system_has_exfat())
+        except Exception:
+            # ensure we release the loop device on mount failure
+            unmount_data_partition(mount_point, target_dev)
         return mount_point, target_dev
 
     elif sys.platform == "darwin":
@@ -206,8 +210,12 @@ def mount_data_partition(image_fpath, logger=None):
         target_dev = str(hdiutil_out.splitlines()[0].split()[0])
         target_part = "{dev}s3".format(dev=target_dev)
         mount_point = tempfile.mkdtemp()
-        subprocess.check_call([mount_exe, '-t', 'exfat',
-                              target_part, mount_point])
+        try:
+            subprocess.check_call([mount_exe, '-t', 'exfat',
+                                  target_part, mount_point])
+        except Exception:
+            # ensure we release the loop device on mount failure
+            unmount_data_partition(mount_point, target_dev)
         return mount_point, target_dev
 
     elif sys.platform == "win32":
