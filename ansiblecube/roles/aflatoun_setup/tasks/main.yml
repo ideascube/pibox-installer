@@ -8,18 +8,10 @@
     state: directory
   tags: ['setup', 'reconfigure']
 
-- name: show free space
-  command: df -h /
-  tags: setup
-
 - name: Download Aflatoun
   get_url:
     url: "{{ mirror }}/other/aflatoun/ka-lite-static-0.16.7b3.tar.gz"
     dest: /tmp/ka-lite-static-0.16.7b3.tar.gz
-  tags: setup
-
-- name: show free space
-  command: df -h /
   tags: setup
 
 - name: Create aflatoun environment
@@ -39,10 +31,6 @@
   pip:
     name: /tmp/ka-lite-static-0.16.7b3.tar.gz
     virtualenv: "{{ aflatoun_env }}"
-  tags: setup
-
-- name: show free space
-  command: df -h /
   tags: setup
 
 - name: Initialize aflatoun and Create an admin user

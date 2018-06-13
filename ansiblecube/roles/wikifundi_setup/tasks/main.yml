@@ -17,10 +17,6 @@
   with_items: "{{ wikifundi_languages | default(omit) }}"
   tags: ['setup', 'reconfigure']
 
-- name: show free space
-  command: df -h /
-  tags: setup
-
 - name: Install dependencies (tex)
   apt:
     name: texlive,texlive-latex-extra,cjk-latex,texlive-fonts-recommended,texlive-lang-greek,texlive-latex-recommended
@@ -30,10 +26,6 @@
   tags: setup
 
 - include: clean_apt.yml
-  tags: setup
-
-- name: show free space
-  command: df -h /
   tags: setup
 
 - name: Install dependencies (PHP, jessie)
@@ -47,10 +39,6 @@
 
 - include: disable_service.yml service=php5-fpm
   when: ansible_distribution_release == "jessie"
-  tags: setup
-
-- name: show free space
-  command: df -h /
   tags: setup
 
 - name: Install dependencies (PHP, stretch)
@@ -69,10 +57,6 @@
 - include: clean_apt.yml
   tags: setup
 
-- name: show free space
-  command: df -h /
-  tags: setup
-
 - name: Install dependencies (others)
   apt:
     name: nginx,memcached,nodejs,imagemagick,php-pear,libav-tools,librsvg2-bin,poppler-utils,npm,redis-server,dvipng,lua5.1,build-essential,ocaml
@@ -82,10 +66,6 @@
   tags: setup
 
 - include: clean_apt.yml
-  tags: setup
-
-- name: show free space
-  command: df -h /
   tags: setup
 
 - name: change PHP5 settings to allow file uploads up to 5MiB

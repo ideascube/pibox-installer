@@ -14,10 +14,6 @@
   become_user: "{{ username }}"
   command: virtualenv -p python2.7 --no-site-packages {{ kalite_env }}
   tags: setup
-
-- name: show free space
-  command: df -h /
-  tags: setup
   
 - name: Install Ka-lite
   become: yes
@@ -27,10 +23,6 @@
     version: "{{ kalite_version }}"
     virtualenv: "{{ kalite_env }}"
   register: kalite_installation 
-  tags: setup
-
-- name: show free space
-  command: df -h /
   tags: setup
 
 - name: Install cherrypy 6.1.0 to fix an issue

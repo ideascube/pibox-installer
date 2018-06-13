@@ -2,10 +2,6 @@
 - include: clean_apt.yml
   tags: setup
 
-- name: show free space
-  command: df -h /
-  tags: setup
-  
 - name: Install dependencies
   apt:
     name: nginx,libmagickwand-dev,npm,nodejs,python3-dev
@@ -15,10 +11,6 @@
   tags: setup
 
 - include: clean_apt.yml
-  tags: setup
-
-- name: show free space
-  command: df -h /
   tags: setup
 
 - name: Link node to nodejs binary
@@ -63,10 +55,6 @@
   file:
     dest: "{{ edupi_env }}"
     state: absent
-  tags: setup
-
-- name: show free space
-  command: df -h /
   tags: setup
 
 - name: Download edupi
@@ -116,19 +104,11 @@
     executable: "{{ edupi_env }}/bin/pip"
   tags: setup
 
-- name: show free space
-  command: df -h /
-  tags: setup
-
 - name: Manage install bower
   become: yes
   become_user: "{{ username }}"
   command: "{{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py bower install"
   tags: ['setup', 'reconfigure']
-
-- name: show free space
-  command: df -h /
-  tags: setup
 
 - name: Manage migrate
   become: yes
