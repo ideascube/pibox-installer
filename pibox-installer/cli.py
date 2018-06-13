@@ -273,8 +273,3 @@ try:
             build_dir=args.build_dir)
 except:
     cancel_event.cancel()
-else:
-    if error:
-        logger.failed(str(error))
-    else:
-        logger.complete()
