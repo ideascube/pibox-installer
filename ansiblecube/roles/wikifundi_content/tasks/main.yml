@@ -35,7 +35,7 @@
   lineinfile:
     path: "{{ wikifundi_root }}/{{ item }}.africapack.kiwix.org/w/LocalSettings.custom.php"
     line: '$wgMaxUploadSize = 1024*1024*5;'
-    insertafter: EOF
+    insertbefore: '^\?>$'
     state: present
   with_items: "{{ wikifundi_languages | default(omit) }}"
   tags: move-content
