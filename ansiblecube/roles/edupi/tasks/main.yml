@@ -119,7 +119,7 @@
 - name: Check if EduPi super user is installed
   become: yes
   become_user: "{{ username }}"
-  command: /bin/echo "from django.contrib.auth.models import User; print('****{}****'.format(User.objects.filter(username='{{ admin_account }}').count()))" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py shell --plain
+  shell: /bin/echo "from django.contrib.auth.models import User; print('****{}****'.format(User.objects.filter(username='{{ admin_account }}').count()))" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py shell --plain
   register: edupi_admin_shell_output
   when: admin_account is defined
   tags: reconfigure
@@ -127,7 +127,7 @@
 - name: Install EduPi super user
   become: yes
   become_user: "{{ username }}"
-  command: /bin/echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{ admin_account }}', None, '{{ admin_password }}')" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py shell --plain
+  shell: /bin/echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{ admin_account }}', None, '{{ admin_password }}')" | {{ edupi_env }}/bin/python3 {{ edupi_root }}/manage.py shell --plain
   when: admin_account is defined and edupi_admin_shell_output.stdout.split('****')[1]|int == 0
   tags: reconfigure
 
