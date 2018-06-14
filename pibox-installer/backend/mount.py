@@ -200,6 +200,7 @@ def mount_data_partition(image_fpath, logger=None):
         except Exception:
             # ensure we release the loop device on mount failure
             unmount_data_partition(mount_point, target_dev)
+            raise
         return mount_point, target_dev
 
     elif sys.platform == "darwin":
@@ -216,6 +217,7 @@ def mount_data_partition(image_fpath, logger=None):
         except Exception:
             # ensure we release the loop device on mount failure
             unmount_data_partition(mount_point, target_dev)
+            raise
         return mount_point, target_dev
 
     elif sys.platform == "win32":
