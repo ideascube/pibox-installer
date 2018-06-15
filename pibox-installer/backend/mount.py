@@ -238,21 +238,24 @@ def mount_data_partition(image_fpath, logger=None):
             logger, check=True, decode=True)[0].strip()
 
         target_dev = re.search(r"(\/dev\/loop[0-9]+)\.$",
-                               udisks_loop).groups()[0]
+                               udisks_loop[0].strip()).groups()[0]
 
         # udisksctl always mounts under /media/
-        udisks_mount = subprocess_pretty_call(
+        udisks_mount_ret, udisks_mount = subprocess_pretty_call(
             [udisksctl_exe, 'mount',
              '--block-device', target_dev, udisks_nou],
-            logger, check=False, decode=True)[0].strip()
+            logger, check=False, decode=True)
+        udisks_mount = udisks_mount[0].strip()
 
         # was automatically mounted (gnome default)
-        if "AlreadyMounted" in udisks_mount:
+        if udisks_mount_ret != 0 and "AlreadyMounted" in udisks_mount:
             mount_point = re.search(r"at `(\/media\/.*)'\.$",
-                                    udisks_loop).groups()[0]
-        else:
+                                    udisks_mount).groups()[0]
+        elif udisks_mount_ret == 0:
             mount_point = re.search(r"at (\/media\/.+)\.$",
                                     udisks_mount).groups()[0]
+        else:
+            raise OSError("failed to mount {}".format(target_dev))
         # target_dev = subprocess_pretty_call([
         #     losetup_exe, '--offset', offset, '--show', loop_device, image_fpath
         #     ], logger, check=True, decode=True)[0].strip()

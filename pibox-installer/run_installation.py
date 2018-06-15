@@ -191,10 +191,11 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         # mount image's 3rd partition on host
         logger.stage('copy')
         logger.step("Mounting data partition on host")
-        mount_point, device = mount_data_partition(image_building_path, logger)
 
         # copy contents from cache to mount point
         try:
+            mount_point, device = mount_data_partition(
+                image_building_path, logger)
             logger.step("Processing downloaded content onto data partition")
             expanded_total_size = sum([c['expanded_size'] for c in downloads])
             processed = 0
@@ -212,7 +213,10 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                                   for c in content_dl_cb(**cb_kwargs)])
                 logger.progress(processed / expanded_total_size)
         except Exception as e:
-            unmount_data_partition(mount_point, device, logger)
+            try:
+                unmount_data_partition(mount_point, device, logger)
+            except NameError:
+                pass  # if mount_point or device are not defined
             raise e
 
         # unmount partition
