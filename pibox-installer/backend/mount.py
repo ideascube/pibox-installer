@@ -59,6 +59,18 @@ def get_loop_device_for(image_fpath, logger=None):
     return lo
 
 
+def set_fuse_allow_other(logger):
+    fuse_conf = '/etc/fuse.conf'
+    option = 'user_allow_other'
+    with open(fuse_conf, 'r') as f:
+        for line in f.readlines():
+            if line.startswith(option):
+                return
+    subprocess_pretty_check_call(
+        ['/bin/sed', "$ a {}".format(option), fuse_conf],
+        logger, check=True, as_admin=True)
+
+
 def get_start_offset(root_size):
     sector_size = 512
     round_bound = 128

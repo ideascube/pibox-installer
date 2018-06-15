@@ -2,7 +2,8 @@ from backend import ansiblecube
 from backend import qemu
 from backend.content import get_collection, get_content, get_all_contents_for
 from backend.download import download_content, unzip_file
-from backend.mount import mount_data_partition, unmount_data_partition
+from backend.mount import (mount_data_partition, unmount_data_partition,
+                           set_fuse_allow_other)
 from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
 import data
 from util import human_readable_size, get_cache
@@ -36,6 +37,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
             logger.step("Change {} ownership".format(loop_device))
             subprocess_pretty_check_call(
                 ["chmod", "-c", "o+rwx", loop_device], logger, as_admin=True)
+            set_fuse_allow_other(logger)
 
         # Prepare SD Card
         if sd_card:
