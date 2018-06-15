@@ -26,10 +26,6 @@ build-pibox-image:
     - wget http://download.kiwix.org/dev/qemu-2.12.0-linux-x86_64.tar.gz
     - tar xf qemu-2.12.0-linux-x86_64.tar.gz
 
-    # exfat-fuse
-    - wget http://download.kiwix.org/dev/exfat-fuse-1.2.8-linux_x86_64.tar
-    - tar xf exfat-fuse-1.2.8-linux_x86_64.tar
-
     # Install python dependancies
     - pip3 install -r requirements-linux.txt
 

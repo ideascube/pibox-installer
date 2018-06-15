@@ -26,59 +26,18 @@ def system_has_exfat():
     return False
 
 
-def get_free_loop_device(logger=None):
-    ''' the first available loop device '''
-    lo = subprocess_pretty_call(['losetup', '--find'],
-                                logger, check=True, decode=True)[0].strip()
-    assert re.match(r"/dev/loop[0-9]", lo)
-    return lo
-
-
 if sys.platform == "win32":
     imdiskinst = os.path.join(data_dir, 'imdiskinst')
     # imdisk installs in System32 on all platforms
     system32 = os.path.join(os.environ['SystemRoot'], 'System32')
     imdisk_exe = os.path.join(system32, 'imdisk.exe')
 elif sys.platform == "linux":
-    loop_device = get_free_loop_device()
-    losetup_exe = '/sbin/losetup'
-    mount_exfat = ['/bin/mount', '-t', 'exfat'] if system_has_exfat() \
-        else [os.path.join(data_dir, 'mount.exfat-fuse')]
-    umount_exe = '/bin/umount'
-    fuse_conf = '/etc/fuse.conf'
     udisksctl_exe = '/usr/bin/udisksctl'
     udisks_nou = '--no-user-interaction'
 elif sys.platform == "darwin":
     hdiutil_exe = '/usr/bin/hdiutil'
     mount_exe = '/sbin/mount'
     umount_exe = '/sbin/umount'
-
-
-def get_loop_device_for(image_fpath, logger=None):
-    ''' the loop device (/dev/loopX) for an attached image path '''
-    losetup_out = subprocess_pretty_call([losetup_exe, '-a'],
-                                         logger, check=True, decode=True)
-    lo = [l.strip().split(':')[0] for l in losetup_out if image_fpath in l][0]
-    assert re.match(r"/dev/loop[0-9]", lo)
-    return lo
-
-
-def set_fuse_allow_other(logger):
-    option = 'user_allow_other'
-    with open(fuse_conf, 'r') as f:
-        for line in f.readlines():
-            if line.startswith(option):
-                return False
-    subprocess_pretty_check_call(
-        ['/bin/sed', '-i.bak', '$ a {}'.format(option), fuse_conf],
-        logger, as_admin=True)
-    return True
-
-
-def unset_fuse_allow_other(logger):
-    subprocess_pretty_check_call(
-        ['/bin/mv', '-f', "{}.bak".format(fuse_conf), fuse_conf],
-        logger, as_admin=True)
 
 
 def get_start_offset(root_size):
@@ -257,18 +216,7 @@ def mount_data_partition(image_fpath, logger=None):
                                     udisks_mount).groups()[0]
         else:
             raise OSError("failed to mount {}".format(target_dev))
-        # target_dev = subprocess_pretty_call([
-        #     losetup_exe, '--offset', offset, '--show', loop_device, image_fpath
-        #     ], logger, check=True, decode=True)[0].strip()
-        # mount_point = tempfile.mkdtemp()
-        # try:
-        #     subprocess_pretty_check_call(
-        #         mount_exfat + [target_dev, mount_point], logger,
-        #         as_admin=system_has_exfat())
-        # except Exception:
-        #     # ensure we release the loop device on mount failure
-        #     unmount_data_partition(mount_point, target_dev)
-        #     raise
+
         return mount_point, target_dev
 
     elif sys.platform == "darwin":
@@ -305,8 +253,6 @@ def unmount_data_partition(mount_point, device, logger=None):
     ''' unmount data partition and free virtual resources '''
 
     if sys.platform == "linux":
-        # subprocess_pretty_call([umount_exe, mount_point], logger,
-        #                        as_admin=system_has_exfat())
         # sleep to prevent unmount failures
         time.sleep(5)
         subprocess_pretty_check_call(
@@ -316,10 +262,6 @@ def unmount_data_partition(mount_point, device, logger=None):
             os.rmdir(mount_point)
         except FileNotFoundError:
             pass
-        # subprocess_pretty_call([losetup_exe, '-d', device], logger)
-        # subprocess_pretty_check_call(
-        #     [udisksctl_exe, 'loop-delete',
-        #      '--block-device', device, udisks_nou], logger)
 
     elif sys.platform == "darwin":
         subprocess_pretty_call([umount_exe, mount_point], logger)

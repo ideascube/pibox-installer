@@ -2,9 +2,9 @@ from backend import ansiblecube
 from backend import qemu
 from backend.content import get_collection, get_content, get_all_contents_for
 from backend.download import download_content, unzip_file
-from backend.mount import (mount_data_partition, unmount_data_partition,
-                           set_fuse_allow_other, unset_fuse_allow_other)
+from backend.mount import mount_data_partition, unmount_data_partition
 from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
+from backend.sysreq import host_matches_requirements
 import data
 from util import human_readable_size, get_cache
 from datetime import datetime
@@ -13,32 +13,29 @@ import sys
 import re
 import humanfriendly
 
-if sys.platform == "linux":
-    from backend.mount import loop_device
-
 
 def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, aflatoun, wikifundi, edupi, zim_install, size, logger, cancel_event, sd_card, favicon, logo, css, done_callback=None, build_dir="."):
 
     logger.start(bool(sd_card))
 
     logger.stage('init')
-    logger.step("Prepare Image file")
 
     try:
+        logger.step("Check System Requirements")
+        sysreq_ok, sysreq_error = host_matches_requirements(build_dir)
+        if not sysreq_ok:
+            raise SystemError(
+                "Your system does not matches system requirements: {}"
+                .format(sysreq_error))
+
+        logger.step("Prepare Image file")
+
         # set image names
         today = datetime.today().strftime('%Y_%m_%d-%H_%M_%S')
 
         image_final_path = os.path.join(build_dir, "pibox-{}.img".format(today))
         image_building_path = os.path.join(build_dir, "pibox-{}.BUILDING.img".format(today))
         image_error_path = os.path.join(build_dir, "pibox-{}.ERROR.img".format(today))
-
-        # linux needs root to use loop devices
-        if sys.platform == "linux":
-            # logger.step("Change {} ownership".format(loop_device))
-            # subprocess_pretty_check_call(
-            #     ["chmod", "-c", "o+rwx", loop_device], logger, as_admin=True)
-            # fuse_conf_changed = set_fuse_allow_other(logger)
-            pass
 
         # Prepare SD Card
         if sd_card:
@@ -252,16 +249,6 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         logger.complete()
         error = None
     finally:
-
-        if sys.platform == "linux":
-            # subprocess_pretty_call(
-            #     ["chmod", "-c", "o-rwx", loop_device], logger, as_admin=True)
-            # try:
-            #     if fuse_conf_changed:
-            #         unset_fuse_allow_other(logger)
-            # except NameError:
-            #     pass
-            pass
 
         if sd_card:
             if sys.platform == "linux":

@@ -102,10 +102,6 @@ matrix:
     - wget http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
     - unzip pibox-installer-vexpress-boot.zip
 
-    # exfat-fuse
-    - wget http://download.kiwix.org/dev/exfat-fuse-1.2.8-linux_x86_64.tar
-    - tar xf exfat-fuse-1.2.8-linux_x86_64.tar
-
     # Compile QEMU statically
     - wget http://download.qemu-project.org/$QEMU_ARCHIVE
     - tar -xf $QEMU_ARCHIVE
