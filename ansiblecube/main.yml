@@ -2,7 +2,7 @@
 - hosts: localhost
 
   handlers:
-    - include: handlers.yml
+    - import_tasks: handlers.yml
 
   pre_tasks:
     - name: Set the LED steady before upgrading !!!

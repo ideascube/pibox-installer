@@ -1,5 +1,5 @@
 ---
-- include: clean_apt.yml
+- import_tasks: clean_apt.yml
   tags: setup
 
 - name: make sur wikifundi_root exists
@@ -25,7 +25,7 @@
     autoclean: yes
   tags: setup
 
-- include: clean_apt.yml
+- import_tasks: clean_apt.yml
   tags: setup
 
 - name: Install dependencies (PHP, jessie)
@@ -37,7 +37,7 @@
   when: ansible_distribution_release == "jessie"
   tags: setup
 
-- include: disable_service.yml service=php5-fpm
+- import_tasks: disable_service.yml service=php5-fpm
   when: ansible_distribution_release == "jessie"
   tags: setup
 
@@ -50,11 +50,11 @@
   when: ansible_distribution_release == "stretch"
   tags: setup
 
-- include: disable_service.yml service=php7.0-fpm
+- import_tasks: disable_service.yml service=php7.0-fpm
   when: ansible_distribution_release == "stretch"
   tags: setup
 
-- include: clean_apt.yml
+- import_tasks: clean_apt.yml
   tags: setup
 
 - name: Install dependencies (others)
@@ -65,7 +65,7 @@
     autoclean: yes
   tags: setup
 
-- include: clean_apt.yml
+- import_tasks: clean_apt.yml
   tags: setup
 
 - name: change PHP5 settings to allow file uploads up to 5MiB
