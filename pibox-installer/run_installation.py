@@ -4,7 +4,7 @@ from backend.content import get_collection, get_content, get_all_contents_for
 from backend.download import download_content, unzip_file
 from backend.mount import mount_data_partition, unmount_data_partition
 from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
-from backend.sysreq import host_matches_requirements
+from backend.sysreq import host_matches_requirements, requirements_url
 import data
 from util import human_readable_size, get_cache
 from datetime import datetime
@@ -22,6 +22,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
 
     try:
         logger.step("Check System Requirements")
+        logger.std("Please read {} for details".format(requirements_url))
         sysreq_ok, sysreq_error = host_matches_requirements(build_dir)
         if not sysreq_ok:
             raise SystemError(
