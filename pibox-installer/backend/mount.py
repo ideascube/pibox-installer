@@ -238,7 +238,7 @@ def mount_data_partition(image_fpath, logger=None):
             logger, check=True, decode=True)[0].strip()
 
         target_dev = re.search(r"(\/dev\/loop[0-9]+)\.$",
-                               udisks_loop[0].strip()).groups()[0]
+                               udisks_loop).groups()[0]
 
         # udisksctl always mounts under /media/
         udisks_mount_ret, udisks_mount = subprocess_pretty_call(
