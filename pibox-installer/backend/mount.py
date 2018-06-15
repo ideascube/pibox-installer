@@ -11,6 +11,7 @@ import tempfile
 import subprocess
 
 from data import data_dir
+from backend.content import get_content
 from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
 
 
@@ -58,11 +59,23 @@ def get_loop_device_for(image_fpath, logger=None):
     return lo
 
 
-def attach_loop_device(logger, image_fpath):
-    ''' attach loop device on linux (requires sudo) '''
-    subprocess_pretty_check_call([
-        losetup_exe, '--partscan', '--show', loop_device, image_fpath
-        ], logger, check=True, decode=True, as_admin=True)
+def get_start_offset(root_size):
+    sector_size = 512
+    round_bound = 128
+
+    def roundup(sector):
+        return rounddown(sector) + round_bound \
+            if sector % round_bound != 0 else sector
+
+    def rounddown(sector):
+        return sector - (sector % round_bound) \
+            if sector % round_bound != 0 else sector
+
+    nb_clusters_endofroot = root_size // sector_size
+    root_end = roundup(nb_clusters_endofroot)
+    data_start = roundup(root_end + sector_size)
+
+    return data_start * sector_size
 
 
 def install_imdisk(logger=None, force=False):
@@ -195,16 +208,15 @@ def mount_data_partition(image_fpath, logger=None):
     ''' mount the QEMU image and return its mount point/drive '''
 
     if sys.platform == "linux":
-        # reattach (already attached)
+        base_image = get_content('pibox_base_image')
+        offset = get_start_offset(base_image.get('root_partition_size'))
         target_dev = subprocess_pretty_call([
-            losetup_exe, '--set-capacity', '--partscan', '--show',
-            loop_device, image_fpath
+            losetup_exe, '--offset', offset, '--show', loop_device, image_fpath
             ], logger, check=True, decode=True)[0].strip()
-        target_part = "{dev}p3".format(dev=target_dev)
         mount_point = tempfile.mkdtemp()
         try:
             subprocess_pretty_check_call(
-                mount_exfat + [target_part, mount_point], logger,
+                mount_exfat + [target_dev, mount_point], logger,
                 as_admin=system_has_exfat())
         except Exception:
             # ensure we release the loop device on mount failure
