@@ -260,14 +260,14 @@ def mount_data_partition(image_fpath, logger=None):
         #     losetup_exe, '--offset', offset, '--show', loop_device, image_fpath
         #     ], logger, check=True, decode=True)[0].strip()
         # mount_point = tempfile.mkdtemp()
-        try:
-            subprocess_pretty_check_call(
-                mount_exfat + [target_dev, mount_point], logger,
-                as_admin=system_has_exfat())
-        except Exception:
-            # ensure we release the loop device on mount failure
-            unmount_data_partition(mount_point, target_dev)
-            raise
+        # try:
+        #     subprocess_pretty_check_call(
+        #         mount_exfat + [target_dev, mount_point], logger,
+        #         as_admin=system_has_exfat())
+        # except Exception:
+        #     # ensure we release the loop device on mount failure
+        #     unmount_data_partition(mount_point, target_dev)
+        #     raise
         return mount_point, target_dev
 
     elif sys.platform == "darwin":
