@@ -68,7 +68,7 @@ def set_fuse_allow_other(logger):
                 return
     subprocess_pretty_check_call(
         ['/bin/sed', "$ a {}".format(option), fuse_conf],
-        logger, check=True, as_admin=True)
+        logger, as_admin=True)
 
 
 def get_start_offset(root_size):
