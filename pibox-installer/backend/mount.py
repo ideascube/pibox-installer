@@ -44,6 +44,7 @@ elif sys.platform == "linux":
     mount_exfat = ['/bin/mount', '-t', 'exfat'] if system_has_exfat() \
         else [os.path.join(data_dir, 'mount.exfat-fuse')]
     umount_exe = '/bin/umount'
+    fuse_conf = '/etc/fuse.conf'
 elif sys.platform == "darwin":
     hdiutil_exe = '/usr/bin/hdiutil'
     mount_exe = '/sbin/mount'
@@ -60,14 +61,20 @@ def get_loop_device_for(image_fpath, logger=None):
 
 
 def set_fuse_allow_other(logger):
-    fuse_conf = '/etc/fuse.conf'
     option = 'user_allow_other'
     with open(fuse_conf, 'r') as f:
         for line in f.readlines():
             if line.startswith(option):
-                return
+                return False
     subprocess_pretty_check_call(
-        ['/bin/sed', "$ a {}".format(option), fuse_conf],
+        ['/bin/sed', '-i.bak', "'$ a {}'".format(option), fuse_conf],
+        logger, as_admin=True)
+    return True
+
+
+def unset_fuse_allow_other(logger):
+    subprocess_pretty_check_call(
+        ['/bin/mv', '-f', "{}.bak".format(fuse_conf), fuse_conf],
         logger, as_admin=True)
 
 
