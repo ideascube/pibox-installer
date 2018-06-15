@@ -11,7 +11,6 @@ from datetime import datetime
 import os
 import sys
 import re
-import humanfriendly
 
 
 def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, aflatoun, wikifundi, edupi, zim_install, size, logger, cancel_event, sd_card, favicon, logo, css, done_callback=None, build_dir="."):
@@ -66,25 +65,23 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         logger.stage('master')
         logger.step("Retrieving pibox base image file")
         base_image = get_content('pibox_base_image')
-        # rf = download_content(base_image, logger, build_dir)
-        # if not rf.successful:
-        #     logger.err("Failed to download pibox base image.\n{e}"
-        #                .format(e=rf.exception))
-        #     sys.exit(1)
-        # elif rf.found:
-        #     logger.std("Reusing already downloaded base image ZIP file")
-        # logger.progress(.5)
+        rf = download_content(base_image, logger, build_dir)
+        if not rf.successful:
+            logger.err("Failed to download pibox base image.\n{e}"
+                       .format(e=rf.exception))
+            sys.exit(1)
+        elif rf.found:
+            logger.std("Reusing already downloaded base image ZIP file")
+        logger.progress(.5)
 
-        # # extract base image and rename
-        # logger.step("Extracting base image from ZIP file")
-        # unzip_file(archive_fpath=rf.fpath,
-        #            src_fname=base_image['name'].replace('.zip', ''),
-        #            build_folder=build_dir,
-        #            dest_fpath=image_building_path)
-        # logger.std("Extraction complete: {p}".format(p=image_building_path))
-        # logger.progress(.9)
-        import shutil
-        shutil.move(os.path.join(build_dir, 'test.img'), image_building_path)
+        # extract base image and rename
+        logger.step("Extracting base image from ZIP file")
+        unzip_file(archive_fpath=rf.fpath,
+                   src_fname=base_image['name'].replace('.zip', ''),
+                   build_folder=build_dir,
+                   dest_fpath=image_building_path)
+        logger.std("Extraction complete: {p}".format(p=image_building_path))
+        logger.progress(.9)
 
         if not os.path.exists(image_building_path):
             raise IOError("image path does not exists: {}"
@@ -173,18 +170,18 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
 
         # Run emulation
         logger.step("Starting-up VM")
-        # with emulator.run(cancel_event) as emulation:
-        #     # copying ansiblecube again into the VM
-        #     # should the master-version been updated
-        #     logger.step("Copy ansiblecube")
-        #     emulation.exec_cmd("sudo /bin/rm -rf {}".format(
-        #         ansiblecube.ansiblecube_path))
-        #     emulation.put_dir(data.ansiblecube_path,
-        #                       ansiblecube.ansiblecube_path)
+        with emulator.run(cancel_event) as emulation:
+            # copying ansiblecube again into the VM
+            # should the master-version been updated
+            logger.step("Copy ansiblecube")
+            emulation.exec_cmd("sudo /bin/rm -rf {}".format(
+                ansiblecube.ansiblecube_path))
+            emulation.put_dir(data.ansiblecube_path,
+                              ansiblecube.ansiblecube_path)
 
-        #     logger.step("Run ansiblecube")
-        #     ansiblecube.run_phase_one(emulation, extra_vars, secret_keys,
-        #                               logo=logo, favicon=favicon, css=css)
+            logger.step("Run ansiblecube")
+            ansiblecube.run_phase_one(emulation, extra_vars, secret_keys,
+                                      logo=logo, favicon=favicon, css=css)
 
         # mount image's 3rd partition on host
         logger.stage('copy')
