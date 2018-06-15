@@ -29,7 +29,7 @@ else:
 if getattr(sys, "frozen", False):
     bin_path = sys._MEIPASS
 else:
-    bin_path = ""
+    bin_path = "."
 
 qemu_system_arm_exe_path = os.path.join(bin_path, qemu_system_arm_exe)
 qemu_img_exe_path = os.path.join(bin_path, qemu_img_exe)
