@@ -58,6 +58,13 @@ def get_loop_device_for(image_fpath, logger=None):
     return lo
 
 
+def attach_loop_device(logger, image_fpath):
+    ''' attach loop device on linux (requires sudo) '''
+    subprocess_pretty_check_call([
+        losetup_exe, '--partscan', '--show', loop_device, image_fpath
+        ], logger, check=True, decode=True, as_admin=True)
+
+
 def install_imdisk(logger=None, force=False):
     ''' install imdisk manually (replacating steps from install.cmd) '''
 
@@ -188,8 +195,10 @@ def mount_data_partition(image_fpath, logger=None):
     ''' mount the QEMU image and return its mount point/drive '''
 
     if sys.platform == "linux":
+        # reattach (already attached)
         target_dev = subprocess_pretty_call([
-            losetup_exe, '--partscan', '--show', loop_device, image_fpath
+            losetup_exe, '--set-capacity', '--partscan', '--show',
+            loop_device, image_fpath
             ], logger, check=True, decode=True)[0].strip()
         target_part = "{dev}p3".format(dev=target_dev)
         mount_point = tempfile.mkdtemp()

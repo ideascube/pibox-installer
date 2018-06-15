@@ -2,7 +2,8 @@ from backend import ansiblecube
 from backend import qemu
 from backend.content import get_collection, get_content, get_all_contents_for
 from backend.download import download_content, unzip_file
-from backend.mount import mount_data_partition, unmount_data_partition
+from backend.mount import (mount_data_partition, unmount_data_partition,
+                           attach_loop_device)
 from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
 import data
 from util import human_readable_size, get_cache
@@ -33,9 +34,13 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
 
         # linux needs root to use loop devices
         if sys.platform == "linux":
-            logger.step("Change {} ownership".format(loop_device))
-            subprocess_pretty_check_call(
-                ["chmod", "-c", "o+rwx", loop_device], logger, as_admin=True)
+            logger.step("Attach loop and change {}/* ownership"
+                        .format(loop_device))
+            attach_loop_device()
+            for device in [loop_device] + ["{}/p{}".format(loop_device, num)
+                                           for num in (1, 2, 3)]:
+                subprocess_pretty_check_call(
+                    ["chmod", "-c", "o+rwx", device], logger, as_admin=True)
 
         # Prepare SD Card
         if sd_card:
@@ -65,23 +70,25 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         logger.stage('master')
         logger.step("Retrieving pibox base image file")
         base_image = get_content('pibox_base_image')
-        rf = download_content(base_image, logger, build_dir)
-        if not rf.successful:
-            logger.err("Failed to download pibox base image.\n{e}"
-                       .format(e=rf.exception))
-            sys.exit(1)
-        elif rf.found:
-            logger.std("Reusing already downloaded base image ZIP file")
-        logger.progress(.5)
+        # rf = download_content(base_image, logger, build_dir)
+        # if not rf.successful:
+        #     logger.err("Failed to download pibox base image.\n{e}"
+        #                .format(e=rf.exception))
+        #     sys.exit(1)
+        # elif rf.found:
+        #     logger.std("Reusing already downloaded base image ZIP file")
+        # logger.progress(.5)
 
-        # extract base image and rename
-        logger.step("Extracting base image from ZIP file")
-        unzip_file(archive_fpath=rf.fpath,
-                   src_fname=base_image['name'].replace('.zip', ''),
-                   build_folder=build_dir,
-                   dest_fpath=image_building_path)
-        logger.std("Extraction complete: {p}".format(p=image_building_path))
-        logger.progress(.9)
+        # # extract base image and rename
+        # logger.step("Extracting base image from ZIP file")
+        # unzip_file(archive_fpath=rf.fpath,
+        #            src_fname=base_image['name'].replace('.zip', ''),
+        #            build_folder=build_dir,
+        #            dest_fpath=image_building_path)
+        # logger.std("Extraction complete: {p}".format(p=image_building_path))
+        # logger.progress(.9)
+        import shutil
+        shutil.move(os.path.join(build_dir, 'test.img'), image_building_path)
 
         if not os.path.exists(image_building_path):
             raise IOError("image path does not exists: {}"

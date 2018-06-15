@@ -133,7 +133,7 @@ def build_extra_vars(name, timezone, language, language_name, wifi_pwd,
 def run_phase_one(machine, extra_vars, secret_keys,
                   logo=None, favicon=None, css=None,):
 
-    tags = ['resize', 'rename', 'reconfigure']
+    tags = ['resize']  # , 'rename', 'reconfigure']
 
     # copy branding files if set
     branding = {'favicon.png': favicon,
