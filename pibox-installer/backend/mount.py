@@ -67,7 +67,7 @@ def set_fuse_allow_other(logger):
             if line.startswith(option):
                 return False
     subprocess_pretty_check_call(
-        ['/bin/sed', '-i.bak', "'$ a {}'".format(option), fuse_conf],
+        ['/bin/sed', '-i.bak', '$ a {}'.format(option), fuse_conf],
         logger, as_admin=True)
     return True
 
