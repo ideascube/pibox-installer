@@ -235,7 +235,7 @@ def mount_data_partition(image_fpath, logger=None):
         udisks_loop = subprocess_pretty_call(
             [udisksctl_exe, 'loop-setup',
              '--offset', offset, '--file', image_fpath, udisks_nou],
-            logger, check=True, decode=True)
+            logger, check=True, decode=True)[0].strip()
 
         # was automatically mounted (gnome default)
         if "AlreadyMounted" in udisks_loop:
@@ -250,7 +250,7 @@ def mount_data_partition(image_fpath, logger=None):
             udisks_mount = subprocess_pretty_call(
                 [udisksctl_exe, 'mount',
                  '--block-device', target_dev, udisks_nou],
-                logger, check=True, decode=True)
+                logger, check=True, decode=True)[0].strip()
             # udisksctl always mounts under /media/
             mount_point = re.search(r"at (\/media\/.+)\.$",
                                     udisks_mount).groups()[0]

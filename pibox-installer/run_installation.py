@@ -175,18 +175,18 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
 
         # Run emulation
         logger.step("Starting-up VM")
-        with emulator.run(cancel_event) as emulation:
-            # copying ansiblecube again into the VM
-            # should the master-version been updated
-            logger.step("Copy ansiblecube")
-            emulation.exec_cmd("sudo /bin/rm -rf {}".format(
-                ansiblecube.ansiblecube_path))
-            emulation.put_dir(data.ansiblecube_path,
-                              ansiblecube.ansiblecube_path)
+        # with emulator.run(cancel_event) as emulation:
+        #     # copying ansiblecube again into the VM
+        #     # should the master-version been updated
+        #     logger.step("Copy ansiblecube")
+        #     emulation.exec_cmd("sudo /bin/rm -rf {}".format(
+        #         ansiblecube.ansiblecube_path))
+        #     emulation.put_dir(data.ansiblecube_path,
+        #                       ansiblecube.ansiblecube_path)
 
-            logger.step("Run ansiblecube")
-            ansiblecube.run_phase_one(emulation, extra_vars, secret_keys,
-                                      logo=logo, favicon=favicon, css=css)
+        #     logger.step("Run ansiblecube")
+        #     ansiblecube.run_phase_one(emulation, extra_vars, secret_keys,
+        #                               logo=logo, favicon=favicon, css=css)
 
         # mount image's 3rd partition on host
         logger.stage('copy')
