@@ -5,12 +5,14 @@
 import os
 import re
 import sys
+import time
 import string
 import random
 import tempfile
 import subprocess
 
 from data import data_dir
+from backend.content import get_content
 from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
 
 
@@ -24,38 +26,37 @@ def system_has_exfat():
     return False
 
 
-def get_free_loop_device(logger=None):
-    ''' the first available loop device '''
-    lo = subprocess_pretty_call(['losetup', '--find'],
-                                logger, check=True, decode=True)[0].strip()
-    assert re.match(r'/dev/loop[0-9]', lo)
-    return lo
-
-
 if sys.platform == "win32":
     imdiskinst = os.path.join(data_dir, 'imdiskinst')
     # imdisk installs in System32 on all platforms
     system32 = os.path.join(os.environ['SystemRoot'], 'System32')
     imdisk_exe = os.path.join(system32, 'imdisk.exe')
 elif sys.platform == "linux":
-    loop_device = get_free_loop_device()
-    losetup_exe = '/sbin/losetup'
-    mount_exfat = ['/bin/mount', '-t', 'exfat'] if system_has_exfat() \
-        else [os.path.join(data_dir, 'mount.exfat-fuse')]
-    umount_exe = '/bin/umount'
+    udisksctl_exe = '/usr/bin/udisksctl'
+    udisks_nou = '--no-user-interaction'
 elif sys.platform == "darwin":
     hdiutil_exe = '/usr/bin/hdiutil'
     mount_exe = '/sbin/mount'
     umount_exe = '/sbin/umount'
 
 
-def get_loop_device_for(image_fpath, logger=None):
-    ''' the loop device (/dev/loopX) for an attached image path '''
-    losetup_out = subprocess_pretty_call([losetup_exe, '-a'],
-                                         logger, check=True, decode=True)
-    lo = [l.strip().split(':')[0] for l in losetup_out if image_fpath in l][0]
-    assert re.match(r'/dev/loop[0-9]', lo)
-    return lo
+def get_start_offset(root_size):
+    sector_size = 512
+    round_bound = 128
+
+    def roundup(sector):
+        return rounddown(sector) + round_bound \
+            if sector % round_bound != 0 else sector
+
+    def rounddown(sector):
+        return sector - (sector % round_bound) \
+            if sector % round_bound != 0 else sector
+
+    nb_clusters_endofroot = root_size // sector_size
+    root_end = roundup(nb_clusters_endofroot)
+    data_start = roundup(root_end + sector_size)
+
+    return data_start * sector_size
 
 
 def install_imdisk(logger=None, force=False):
@@ -135,7 +136,7 @@ def get_avail_drive_letter(logger=None):
     # get list of network mappings
     net_out = subprocess_pretty_call(['net', 'use'],
                                      logger, check=True, decode=True)
-    reg = r'\s+([A-Z])\:\s+\\'
+    reg = r"\s+([A-Z])\:\s+\\"
     net_maps = [re.match(reg, line).groups()[0]
                 for line in net_out if re.match(reg, line)]
 
@@ -188,19 +189,34 @@ def mount_data_partition(image_fpath, logger=None):
     ''' mount the QEMU image and return its mount point/drive '''
 
     if sys.platform == "linux":
-        target_dev = subprocess_pretty_call([
-            losetup_exe, '--partscan', '--show', loop_device, image_fpath
-            ], logger, check=True, decode=True)[0].strip()
-        target_part = "{dev}p3".format(dev=target_dev)
-        mount_point = tempfile.mkdtemp()
-        try:
-            subprocess_pretty_check_call(
-                mount_exfat + [target_part, mount_point], logger,
-                as_admin=system_has_exfat())
-        except Exception:
-            # ensure we release the loop device on mount failure
-            unmount_data_partition(mount_point, target_dev)
-            raise
+        base_image = get_content('pibox_base_image')
+        offset = str(get_start_offset(base_image.get('root_partition_size')))
+
+        udisks_loop = subprocess_pretty_call(
+            [udisksctl_exe, 'loop-setup',
+             '--offset', offset, '--file', image_fpath, udisks_nou],
+            logger, check=True, decode=True)[0].strip()
+
+        target_dev = re.search(r"(\/dev\/loop[0-9]+)\.$",
+                               udisks_loop).groups()[0]
+
+        # udisksctl always mounts under /media/
+        udisks_mount_ret, udisks_mount = subprocess_pretty_call(
+            [udisksctl_exe, 'mount',
+             '--block-device', target_dev, udisks_nou],
+            logger, check=False, decode=True)
+        udisks_mount = udisks_mount[0].strip()
+
+        # was automatically mounted (gnome default)
+        if udisks_mount_ret != 0 and "AlreadyMounted" in udisks_mount:
+            mount_point = re.search(r"at `(\/media\/.*)'\.$",
+                                    udisks_mount).groups()[0]
+        elif udisks_mount_ret == 0:
+            mount_point = re.search(r"at (\/media\/.+)\.$",
+                                    udisks_mount).groups()[0]
+        else:
+            raise OSError("failed to mount {}".format(target_dev))
+
         return mount_point, target_dev
 
     elif sys.platform == "darwin":
@@ -237,14 +253,22 @@ def unmount_data_partition(mount_point, device, logger=None):
     ''' unmount data partition and free virtual resources '''
 
     if sys.platform == "linux":
-        subprocess_pretty_call([umount_exe, mount_point], logger,
-                               as_admin=system_has_exfat())
-        os.rmdir(mount_point)
-        subprocess_pretty_call([losetup_exe, '-d', device], logger)
+        # sleep to prevent unmount failures
+        time.sleep(5)
+        subprocess_pretty_check_call(
+            [udisksctl_exe, 'unmount',
+             '--block-device', device, udisks_nou], logger)
+        try:
+            os.rmdir(mount_point)
+        except FileNotFoundError:
+            pass
 
     elif sys.platform == "darwin":
         subprocess_pretty_call([umount_exe, mount_point], logger)
-        os.rmdir(mount_point)
+        try:
+            os.rmdir(mount_point)
+        except FileNotFoundError:
+            pass
         subprocess_pretty_call([hdiutil_exe, 'detach', device], logger)
     elif sys.platform == "win32":
         subprocess_pretty_call([imdisk_exe, '-D', '-m', device], logger)
