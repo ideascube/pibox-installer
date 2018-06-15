@@ -5,6 +5,7 @@
 import os
 import re
 import sys
+import time
 import string
 import random
 import tempfile
@@ -306,6 +307,8 @@ def unmount_data_partition(mount_point, device, logger=None):
     if sys.platform == "linux":
         # subprocess_pretty_call([umount_exe, mount_point], logger,
         #                        as_admin=system_has_exfat())
+        # sleep to prevent unmount failures
+        time.sleep(5)
         subprocess_pretty_check_call(
             [udisksctl_exe, 'unmount',
              '--block-device', device, udisks_nou], logger)
