@@ -209,7 +209,7 @@ def mount_data_partition(image_fpath, logger=None):
 
     if sys.platform == "linux":
         base_image = get_content('pibox_base_image')
-        offset = get_start_offset(base_image.get('root_partition_size'))
+        offset = str(get_start_offset(base_image.get('root_partition_size')))
         target_dev = subprocess_pretty_call([
             losetup_exe, '--offset', offset, '--show', loop_device, image_fpath
             ], logger, check=True, decode=True)[0].strip()
