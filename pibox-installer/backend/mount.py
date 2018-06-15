@@ -237,21 +237,20 @@ def mount_data_partition(image_fpath, logger=None):
              '--offset', offset, '--file', image_fpath, udisks_nou],
             logger, check=True, decode=True)[0].strip()
 
+        target_dev = re.search(r"(\/dev\/loop[0-9]+)\.$",
+                               udisks_loop).groups()[0]
+
+        # udisksctl always mounts under /media/
+        udisks_mount = subprocess_pretty_call(
+            [udisksctl_exe, 'mount',
+             '--block-device', target_dev, udisks_nou],
+            logger, check=False, decode=True)[0].strip()
+
         # was automatically mounted (gnome default)
-        if "AlreadyMounted" in udisks_loop:
-            target_dev = re.search(r"Device (\/dev\/loop[0-9]+) is already",
-                                   udisks_loop).groups()[0]
+        if "AlreadyMounted" in udisks_mount:
             mount_point = re.search(r"at `(\/media\/.*)'\.$",
                                     udisks_loop).groups()[0]
         else:
-            target_dev = re.search(r"(\/dev\/loop[0-9]+)\.$",
-                                   udisks_loop).groups()[0]
-            # mount properly and parse output
-            udisks_mount = subprocess_pretty_call(
-                [udisksctl_exe, 'mount',
-                 '--block-device', target_dev, udisks_nou],
-                logger, check=True, decode=True)[0].strip()
-            # udisksctl always mounts under /media/
             mount_point = re.search(r"at (\/media\/.+)\.$",
                                     udisks_mount).groups()[0]
         # target_dev = subprocess_pretty_call([
@@ -312,9 +311,9 @@ def unmount_data_partition(mount_point, device, logger=None):
         except FileNotFoundError:
             pass
         # subprocess_pretty_call([losetup_exe, '-d', device], logger)
-        subprocess_pretty_check_call(
-            [udisksctl_exe, 'loop-delete',
-             '--block-device', device, udisks_nou], logger)
+        # subprocess_pretty_check_call(
+        #     [udisksctl_exe, 'loop-delete',
+        #      '--block-device', device, udisks_nou], logger)
 
     elif sys.platform == "darwin":
         subprocess_pretty_call([umount_exe, mount_point], logger)
