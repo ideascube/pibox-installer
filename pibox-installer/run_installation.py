@@ -34,10 +34,11 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
 
         # linux needs root to use loop devices
         if sys.platform == "linux":
-            logger.step("Change {} ownership".format(loop_device))
-            subprocess_pretty_check_call(
-                ["chmod", "-c", "o+rwx", loop_device], logger, as_admin=True)
-            fuse_conf_changed = set_fuse_allow_other(logger)
+            # logger.step("Change {} ownership".format(loop_device))
+            # subprocess_pretty_check_call(
+            #     ["chmod", "-c", "o+rwx", loop_device], logger, as_admin=True)
+            # fuse_conf_changed = set_fuse_allow_other(logger)
+            pass
 
         # Prepare SD Card
         if sd_card:
@@ -249,13 +250,14 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
     finally:
 
         if sys.platform == "linux":
-            subprocess_pretty_call(
-                ["chmod", "-c", "o-rwx", loop_device], logger, as_admin=True)
-            try:
-                if fuse_conf_changed:
-                    unset_fuse_allow_other(logger)
-            except NameError:
-                pass
+            # subprocess_pretty_call(
+            #     ["chmod", "-c", "o-rwx", loop_device], logger, as_admin=True)
+            # try:
+            #     if fuse_conf_changed:
+            #         unset_fuse_allow_other(logger)
+            # except NameError:
+            #     pass
+            pass
 
         if sd_card:
             if sys.platform == "linux":

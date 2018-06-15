@@ -29,7 +29,7 @@ def get_free_loop_device(logger=None):
     ''' the first available loop device '''
     lo = subprocess_pretty_call(['losetup', '--find'],
                                 logger, check=True, decode=True)[0].strip()
-    assert re.match(r'/dev/loop[0-9]', lo)
+    assert re.match(r"/dev/loop[0-9]", lo)
     return lo
 
 
@@ -45,6 +45,8 @@ elif sys.platform == "linux":
         else [os.path.join(data_dir, 'mount.exfat-fuse')]
     umount_exe = '/bin/umount'
     fuse_conf = '/etc/fuse.conf'
+    udisksctl_exe = '/usr/bin/udisksctl'
+    udisks_nou = '--no-user-interaction'
 elif sys.platform == "darwin":
     hdiutil_exe = '/usr/bin/hdiutil'
     mount_exe = '/sbin/mount'
@@ -56,7 +58,7 @@ def get_loop_device_for(image_fpath, logger=None):
     losetup_out = subprocess_pretty_call([losetup_exe, '-a'],
                                          logger, check=True, decode=True)
     lo = [l.strip().split(':')[0] for l in losetup_out if image_fpath in l][0]
-    assert re.match(r'/dev/loop[0-9]', lo)
+    assert re.match(r"/dev/loop[0-9]", lo)
     return lo
 
 
@@ -174,7 +176,7 @@ def get_avail_drive_letter(logger=None):
     # get list of network mappings
     net_out = subprocess_pretty_call(['net', 'use'],
                                      logger, check=True, decode=True)
-    reg = r'\s+([A-Z])\:\s+\\'
+    reg = r"\s+([A-Z])\:\s+\\"
     net_maps = [re.match(reg, line).groups()[0]
                 for line in net_out if re.match(reg, line)]
 
@@ -229,10 +231,33 @@ def mount_data_partition(image_fpath, logger=None):
     if sys.platform == "linux":
         base_image = get_content('pibox_base_image')
         offset = str(get_start_offset(base_image.get('root_partition_size')))
-        target_dev = subprocess_pretty_call([
-            losetup_exe, '--offset', offset, '--show', loop_device, image_fpath
-            ], logger, check=True, decode=True)[0].strip()
-        mount_point = tempfile.mkdtemp()
+
+        udisks_loop = subprocess_pretty_call(
+            [udisksctl_exe, 'loop-setup',
+             '--offset', offset, '--file', image_fpath, udisks_nou],
+            logger, check=True, decode=True)
+
+        # was automatically mounted (gnome default)
+        if "AlreadyMounted" in udisks_loop:
+            target_dev = re.search(r"Device (\/dev\/loop[0-9]+) is already",
+                                   udisks_loop).groups()[0]
+            mount_point = re.search(r"at `(\/media\/.*)'\.$",
+                                    udisks_loop).groups()[0]
+        else:
+            target_dev = re.search(r"(\/dev\/loop[0-9]+)\.$",
+                                   udisks_loop).groups()[0]
+            # mount properly and parse output
+            udisks_mount = subprocess_pretty_call(
+                [udisksctl_exe, 'mount',
+                 '--block-device', target_dev, udisks_nou],
+                logger, check=True, decode=True)
+            # udisksctl always mounts under /media/
+            mount_point = re.search(r"at (\/media\/.+)\.$",
+                                    udisks_mount).groups()[0]
+        # target_dev = subprocess_pretty_call([
+        #     losetup_exe, '--offset', offset, '--show', loop_device, image_fpath
+        #     ], logger, check=True, decode=True)[0].strip()
+        # mount_point = tempfile.mkdtemp()
         try:
             subprocess_pretty_check_call(
                 mount_exfat + [target_dev, mount_point], logger,
@@ -277,14 +302,26 @@ def unmount_data_partition(mount_point, device, logger=None):
     ''' unmount data partition and free virtual resources '''
 
     if sys.platform == "linux":
-        subprocess_pretty_call([umount_exe, mount_point], logger,
-                               as_admin=system_has_exfat())
-        os.rmdir(mount_point)
-        subprocess_pretty_call([losetup_exe, '-d', device], logger)
+        # subprocess_pretty_call([umount_exe, mount_point], logger,
+        #                        as_admin=system_has_exfat())
+        subprocess_pretty_check_call(
+            [udisksctl_exe, 'unmount',
+             '--block-device', device, udisks_nou], logger)
+        try:
+            os.rmdir(mount_point)
+        except FileNotFoundError:
+            pass
+        # subprocess_pretty_call([losetup_exe, '-d', device], logger)
+        subprocess_pretty_check_call(
+            [udisksctl_exe, 'loop-delete',
+             '--block-device', device, udisks_nou], logger)
 
     elif sys.platform == "darwin":
         subprocess_pretty_call([umount_exe, mount_point], logger)
-        os.rmdir(mount_point)
+        try:
+            os.rmdir(mount_point)
+        except FileNotFoundError:
+            pass
         subprocess_pretty_call([hdiutil_exe, 'detach', device], logger)
     elif sys.platform == "win32":
         subprocess_pretty_call([imdisk_exe, '-D', '-m', device], logger)
