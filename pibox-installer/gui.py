@@ -3,7 +3,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GObject
 from backend.catalog import YAML_CATALOGS
-from backend.content import get_expanded_size, get_collection, get_required_image_size
+from backend.content import get_expanded_size, get_collection, get_required_image_size, get_content
 from run_installation import run_installation
 import pytz
 import tzlocal
@@ -928,6 +928,13 @@ class Application:
         condition = free_space >= 0
         validate_label(self.component.free_space_label1, condition)
         validate_label(self.component.free_space_label2, condition)
+
+        # size_entry should be at least base_image size
+        size = self.get_output_size()
+        validate_label(
+            self.component.size_entry,
+            size >= get_content('pibox_base_image')['expanded_size'])
+
         for row in self.component.zim_list_store:
             if free_space - int(row[9]) >= 0:
                 row[11] = VALID_RGBA

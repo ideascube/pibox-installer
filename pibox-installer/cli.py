@@ -8,7 +8,7 @@ import tempfile
 import data
 from backend.catalog import YAML_CATALOGS
 from backend.content import (get_collection, get_required_building_space,
-                             get_required_image_size)
+                             get_required_image_size, get_content)
 from run_installation import run_installation
 from util import CancelEvent
 from util import get_free_space_in_dir
@@ -227,6 +227,13 @@ space_required_to_build = get_required_building_space(
     collection, cache_folder, args.size)
 # how large should the image be?
 required_image_size = get_required_image_size(collection)
+base_image_size = get_content('pibox_base_image')['expanded_size']
+
+if args.size < base_image_size:
+    print("image size can not be under {size}"
+          .format(size=human_readable_size(base_image_size, False)),
+          file=sys.stderr)
+    exit(3)
 
 if args.size < required_image_size:
     print("image size ({img}) is not large enough for the content ({req})"
