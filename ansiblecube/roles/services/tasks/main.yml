@@ -1,29 +1,29 @@
 ---
-- import_tasks: enable_service.yml service=edupi
+- include_tasks: enable_service.yml service=edupi
   when: ansible_local.config.edupi|bool
 
-- import_tasks: enable_vhost.yml name=edupi
+- include_tasks: enable_vhost.yml name=edupi
   when: ansible_local.config.edupi|bool
 
-- import_tasks: enable_service.yml service=kalite
+- include_tasks: enable_service.yml service=kalite
   when: ansible_local.config.kalite_languages | length
 
-- import_tasks: enable_vhost.yml name=kalite
+- include_tasks: enable_vhost.yml name=kalite
   when: ansible_local.config.kalite_languages | length
 
-- import_tasks: enable_service.yml service=aflatoun
+- include_tasks: enable_service.yml service=aflatoun
   when: ansible_local.config.aflatoun_languages | length
 
-- import_tasks: enable_vhost.yml name=aflatoun
+- include_tasks: enable_vhost.yml name=aflatoun
   when: ansible_local.config.aflatoun_languages | length
 
-- import_tasks: enable_service.yml service=parsoid
+- include_tasks: enable_service.yml service=parsoid
   when: ansible_local.config.wikifundi_languages | length
 
-- import_tasks: enable_service.yml service=php5-fpm
+- include_tasks: enable_service.yml service=php5-fpm
   when: ansible_local.config.wikifundi_languages | length and ansible_distribution_release == "jessie"
 
-- import_tasks: enable_service.yml service=php7.0-fpm
+- include_tasks: enable_service.yml service=php7.0-fpm
   when: ansible_local.config.wikifundi_languages | length and ansible_distribution_release == "stretch"
 
 - include_tasks: enable_vhost.yml name={{ item }}.wikifundi
