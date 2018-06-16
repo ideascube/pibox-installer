@@ -262,6 +262,9 @@ def unmount_data_partition(mount_point, device, logger=None):
             os.rmdir(mount_point)
         except FileNotFoundError:
             pass
+        subprocess_pretty_call(
+            [udisksctl_exe, 'loop-delete',
+             '--block-device', device, udisks_nou], logger)
 
     elif sys.platform == "darwin":
         subprocess_pretty_call([umount_exe, mount_point], logger)
