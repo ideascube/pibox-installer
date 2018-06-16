@@ -34,3 +34,5 @@ ideascube_languages = [
         ('so', u'Af-soomaali'),
         ('sw', u'Kiswahili')
         ]
+
+help_url = "https://framagit.org/ideascube/pibox-installer/wikis/faq"
