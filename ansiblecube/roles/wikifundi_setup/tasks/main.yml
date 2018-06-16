@@ -37,7 +37,7 @@
   when: ansible_distribution_release == "jessie"
   tags: setup
 
-- import_tasks: disable_service.yml service=php5-fpm
+- include_tasks: disable_service.yml service=php5-fpm
   when: ansible_distribution_release == "jessie"
   tags: setup
 
@@ -50,7 +50,7 @@
   when: ansible_distribution_release == "stretch"
   tags: setup
 
-- import_tasks: disable_service.yml service=php7.0-fpm
+- include_tasks: disable_service.yml service=php7.0-fpm
   when: ansible_distribution_release == "stretch"
   tags: setup
 

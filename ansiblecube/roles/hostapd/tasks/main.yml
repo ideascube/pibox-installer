@@ -38,5 +38,5 @@
     mode: 0664
   tags: master
 
-- import_tasks: enable_service.yml service=hostapd
+- include_tasks: enable_service.yml service=hostapd
   tags: master

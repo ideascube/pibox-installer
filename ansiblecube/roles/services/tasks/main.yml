@@ -30,7 +30,7 @@
   with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
   when: ansible_local.config.wikifundi_languages | length
 
-- import_tasks: enable_service.yml service=dnsmasq
+- include_tasks: enable_service.yml service=dnsmasq
 
 # TODO: set to no
 - name: Disable SSH

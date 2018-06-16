@@ -289,5 +289,5 @@
     dest: /etc/systemd/system/remove_staticfiles_json.service
   tags: master
 
-- import_tasks: enable_service.yml service=remove_staticfiles_json
+- include_tasks: enable_service.yml service=remove_staticfiles_json
   tags: master
