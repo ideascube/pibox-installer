@@ -161,7 +161,10 @@ class ProgressHelper(object):
             self.stop()
 
         self.std("*** DURATIONS SUMMARY ***")
-        for stage_id, data in self.durations.items():
+        for stage_id in STAGES.keys():
+            data = self.durations.get(stage_id)
+            if data is None:
+                continue
             self.std("{stage}: {duration} ({start} to {end})"
                      .format(stage=self.stage_string(stage_id),
                              duration=humanfriendly.format_timespan(
