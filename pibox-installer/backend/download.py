@@ -177,6 +177,7 @@ def unarchive(archive_fpath, dest_folder):
         szip_exe = os.path.join(bin_path, '7za.exe')
         command = [szip_exe, 'x', '-o', dest_folder, archive_fpath]
     else:
-        command = ['tar', '-C', dest_folder, '-x', '-f', archive_fpath]
+        tar_exe = '/usr/bin/tar' if sys.platform == "darwin" else '/bin/tar'
+        command = [tar_exe, '-C', dest_folder, '-x', '-f', archive_fpath]
 
     subprocess.check_call(command)
