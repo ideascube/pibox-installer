@@ -313,6 +313,7 @@ def get_cache(build_folder):
     return fpath
 
 def get_temp_folder(in_path):
+    Path(in_path).mkdir_p()
     return tempfile.mkdtemp(dir=in_path)
 
 def relpathto(dest):
