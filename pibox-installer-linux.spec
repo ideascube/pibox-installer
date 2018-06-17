@@ -5,7 +5,7 @@ block_cipher = None
 
 a = Analysis(['pibox-installer/__main__.py'],
              pathex=['.'],
-             binaries=[('qemu-system-arm', '.'), ('qemu-img', '.')],
+             binaries=[('qemu-system-arm', '.'), ('qemu-img', '.'), ('/lib/x86_64-linux-gnu/liblzma.so.5', '.')],
              datas=[('ui.glade', '.'),
                     ('contents.json', '.'),
                     ('pibox-installer-logo.png', '.'),
