@@ -79,35 +79,14 @@ matrix:
           python-dev
           python3-dev
           libgdk-pixbuf2.0-dev
-    env:
-    - QEMU_VERSION=2.12.0
-    - QEMU_DIR=qemu-$QEMU_VERSION
-    - QEMU_ARCHIVE=$QEMU_DIR.tar.xz
     script:
     # Download pibox-installer-vexpress-boot
     - wget http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
     - unzip pibox-installer-vexpress-boot.zip
 
-    # Compile QEMU statically
-    - wget http://download.qemu-project.org/$QEMU_ARCHIVE
-    - tar -xf $QEMU_ARCHIVE
-    - rm $QEMU_ARCHIVE
-
-    - cd $QEMU_DIR
-    - ./configure
-        --target-list=arm-softmmu
-        --static
-        --disable-gtk
-        --disable-cocoa
-        --disable-libusb
-        --disable-glusterfs
-        --disable-smartcard
-        --disable-usb-redir
-        --python=python2
-    - make
-    - cp arm-softmmu/qemu-system-arm ..
-    - cp qemu-img ..
-    - cd ..
+    # get static QEMU
+    - wget http://download.kiwix.org/dev/qemu-2.12.0-linux-x86_64.tar.gz
+    - tar xf qemu-2.12.0-linux-x86_64.tar.gz
 
     # Install python dependancies
     - pip3 install -r requirements-linux.txt
