@@ -76,6 +76,12 @@ class Logger(ProgressHelper):
     def std(self, std, end=None):
         GLib.idle_add(self.main_thread_std, std, end)
 
+    def complete(self, std):
+        GLib.idle_add(self.main_thread_complete)
+
+    def failed(self, std):
+        GLib.idle_add(self.main_thread_failed)
+
     def main_thread_step(self, text):
         text_iter = self.text_buffer.get_end_iter()
         self.text_buffer.insert_with_tags(text_iter, text + "\n", self.step_tag)
@@ -115,12 +121,12 @@ class Logger(ProgressHelper):
         else:
             self.run_pulse()
 
-    def complete(self):
+    def main_thread_complete(self):
         super(Logger, self).complete()
         self.component.run_step_label.set_markup("<b>Done.</b>")
         self.progress(1)
 
-    def failed(self):
+    def main_thread_failed(self):
         super(Logger, self).failed()
         self.step("Failed")
         self.progress(1)
