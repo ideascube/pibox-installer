@@ -15,6 +15,12 @@ install:
   - nuget install secure-file -ExcludeVersion
   - secure-file\tools\secure-file -decrypt pibox_installer_ci_rsa.appveyor_enc -secret %certificate_secret% -out pibox_installer_ci_rsa
 
+  # bundle 7zip
+  - mkdir "C:\Program Files\7zextra"
+  - cd "C:\Program Files\7zextra"
+  - appveyor DownloadFile "https://www.7-zip.org/a/7z1805-extra.7z"
+  - 7z.exe x 7z1805-extra.7z
+
   # Download pibox-installer-vexpress-boot
   - appveyor DownloadFile "http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip"
   - 7z.exe x pibox-installer-vexpress-boot.zip
