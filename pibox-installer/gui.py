@@ -110,6 +110,7 @@ class Logger(ProgressHelper):
             .format(nums=self.stage_numbers, name=self.stage_name))
 
         if self.stage_progress is not None:
+            self.component.run_progressbar.set_inverted(False)
             self.component.run_progressbar.set_fraction(self.stage_progress)
         else:
             self.run_pulse()
