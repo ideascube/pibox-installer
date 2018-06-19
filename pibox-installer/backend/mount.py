@@ -73,7 +73,7 @@ def install_imdisk(logger=None, force=False):
         ret, _ = subprocess_pretty_call([
             os.path.join(system32, 'rundll32.exe'),
             'setupapi.dll,InstallHinfSection',
-            'DefaultInstall', '132',  '.\\imdisk.inf'])
+            'DefaultInstall', '132',  '.\\imdisk.inf'], logger)
     except Exception:
         ret = 1
     finally:
@@ -86,7 +86,7 @@ def install_imdisk(logger=None, force=False):
     # start services
     failed = []
     for service in ('imdsksvc', 'awealloc', 'imdisk'):
-        if subprocess_pretty_call(['net', 'start', service])[0] != 0:
+        if subprocess_pretty_call(['net', 'start', service], logger)[0] != 0:
             failed.append(service)
     if failed:
         raise OSError("ImDisk installed but some "

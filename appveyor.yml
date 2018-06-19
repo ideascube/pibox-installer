@@ -65,12 +65,12 @@ install:
   - dir "C:\Program Files\qemu"
 
   # Copy Imdisk Installer
-  - mkdir "C:\Program Files\imdisk"
-  - cd "C:\Program Files\imdisk"
+  - mkdir "C:\Program Files\imdiskinst"
+  - cd "C:\Program Files\imdiskinst"
   - appveyor DownloadFile "http://download.kiwix.org/dev/imdiskinst.exe" -FileName "imdiskinst.exe"
   - 7z x imdiskinst.exe
   - del imdiskinst.exe
-  - dir "C:\Program Files\imdisk"
+  - dir "C:\Program Files\imdiskinst"
 
   # Run pyinstaller and show warning
   - cd C:\projects\pibox-installer
