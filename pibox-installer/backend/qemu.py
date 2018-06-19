@@ -252,9 +252,9 @@ class _RunningInstance:
                 "-device",
                 "virtio-net-device,netdev=eth1",
             ]
-            if qemu_cpu > 1:
-                command += ["-smp", str(qemu_cpu),
-                            "--accel", "tcg,thread=multi"]
+            # if qemu_cpu > 1:
+            #     command += ["-smp", str(qemu_cpu),
+            #                 "--accel", "tcg,thread=multi"]
             self._logger.std("--\n{}\n--".format(" ".join(command)))
             self._qemu = subprocess.Popen(
                 command,
