@@ -2,7 +2,7 @@ from backend import ansiblecube
 from backend import qemu
 from backend.content import get_collection, get_content, get_all_contents_for
 from backend.download import download_content, unzip_file
-from backend.mount import mount_data_partition, unmount_data_partition
+from backend.mount import mount_data_partition, unmount_data_partition, test_mount_procedure
 from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
 from backend.sysreq import host_matches_requirements, requirements_url
 import data
@@ -86,6 +86,9 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         if not os.path.exists(image_building_path):
             raise IOError("image path does not exists: {}"
                           .format(image_building_path))
+
+        logger.step("Checking mount procedure")
+        test_mount_procedure(image_building_path, logger)
 
         # harmonize options
         packages = [] if zim_install is None else zim_install
