@@ -243,7 +243,8 @@ class _RunningInstance:
                 "-kernel", self._emulation._kernel,
                 "-dtb", self._emulation._dtb,
                 "-append", "root=/dev/mmcblk0p2 console=ttyAMA0 console=tty",
-                "-nographic",
+                "-serial", "stdio",
+                "-no-acpi",
                 "-drive", "format=raw,if=sd,file={}"
                 .format(self._emulation._image),
                 "-display", "none",
@@ -252,9 +253,9 @@ class _RunningInstance:
                 "-device",
                 "virtio-net-device,netdev=eth1",
             ]
-            # if qemu_cpu > 1:
-            #     command += ["-smp", str(qemu_cpu),
-            #                 "--accel", "tcg,thread=multi"]
+            if qemu_cpu > 1:
+                command += ["-smp", str(qemu_cpu),
+                            "--accel", "tcg,thread=multi"]
             self._logger.std("--\n{}\n--".format(" ".join(command)))
             self._qemu = subprocess.Popen(
                 command,
