@@ -66,6 +66,10 @@ def install_imdisk(logger=None, force=False):
     if os.path.exists(imdisk_exe) and not force:
         return
 
+    # disable integrity checks (allow install of unsigned driver)
+    subprocess_pretty_call(['bcdedit.exe', '/set', 'nointegritychecks', 'on'],
+                           logger)
+
     # install the driver and files
     cwd = os.getcwd()
     try:
