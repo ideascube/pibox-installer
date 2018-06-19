@@ -45,8 +45,8 @@
         "url": "{mirror}/other/wikifundi/parsoid_2016-08.tar.bz2",
         "name": "parsoid_2016-08.tar.bz2",
         "folder_name": "parsoid",
-        "checksum": "46e4a5f48c633c621f33bdbcd436dc27959e6fd2f6469260e51c74ae7a8cae12",
-        "archive_size": 40469264,
+        "checksum": "46c00adcf018a3541050d0035c6490862472ae2aa2f9887c192277d8c1e2e4d4",
+        "archive_size": 49546282,
         "expanded_size": 1434910720
     },
     "wikifundi_langpack_fr": {
