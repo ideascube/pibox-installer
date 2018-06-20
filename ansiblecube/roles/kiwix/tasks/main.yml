@@ -20,11 +20,9 @@
   when: ansible_architecture not in ("x86_64", "i586", "armhf", "armv7l")
   tags: master
 
-# url: "{{ mirror }}/release/kiwix-tools/kiwix-tools_linux-armhf-{{ kiwix_version }}.tar.gz"
-
 - name: Downloading kiwix binaries {{ kiwix_version }}
   get_url:
-    url: "{{ mirror }}/nightly/2018-05-18/kiwix-tools_linux-armhf-2018-05-18.tar.gz"
+    url: "{{ mirror }}/release/kiwix-tools/kiwix-tools_linux-armhf-{{ kiwix_version }}.tar.gz"
     dest: /tmp/kiwix-tools.tar.gz
     timeout: 30
     force: yes
