@@ -129,6 +129,9 @@ def extract_and_move(content, cache_folder, root_path, final_path, logger):
     # retrieve archive path
     archive_fpath = get_content_cache(content, cache_folder, True)
 
+    logger.std("Extracting {src} to {dst}"
+               .format(src=archive_fpath, dst=final_path))
+
     # extract to a temp folder on root_path
     extract_folder = get_temp_folder(root_path)
     unarchive(archive_fpath, extract_folder, logger)
@@ -142,9 +145,12 @@ def extract_and_move(content, cache_folder, root_path, final_path, logger):
     shutil.rmtree(extract_folder, ignore_errors=True)
 
 
-def copy(content, cache_folder, final_path):
+def copy(content, cache_folder, final_path, logger):
     # retrieve archive path
     archive_fpath = get_content_cache(content, cache_folder, True)
+
+    logger.std("Copying {src} to {dst}"
+               .format(src=archive_fpath, dst=final_path))
 
     # move useful content to final path
     shutil.copy(archive_fpath, final_path)
@@ -166,7 +172,8 @@ def run_kalite_actions(cache_folder, mount_point, logger, languages=[]):
         lang_pack = get_content(lang_key)
         copy(content=lang_pack,
              cache_folder=cache_folder,
-             final_path=os.path.join(mount_point, lang_pack['name']))
+             final_path=os.path.join(mount_point, lang_pack['name']),
+             logger=logger)
 
         # videos
         videos = get_content('kalite_videos_{lang}'.format(lang=lang))
@@ -219,7 +226,8 @@ def run_aflatoun_actions(cache_folder, mount_point, logger, languages=[]):
         lang_pack = get_content(lang_key)
         copy(content=lang_pack,
              cache_folder=cache_folder,
-             final_path=os.path.join(mount_point, lang_pack['name']))
+             final_path=os.path.join(mount_point, lang_pack['name']),
+             logger=logger)
 
 
 def run_packages_actions(cache_folder, mount_point, logger, packages=[]):

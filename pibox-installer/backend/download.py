@@ -176,9 +176,6 @@ def unarchive(archive_fpath, dest_folder, logger):
         return
 
     if sys.platform == 'win32':
-        bin_path = sys._MEIPASS if getattr(sys, "frozen", False) else "."
-        szip_exe = os.path.join(bin_path, '7za.exe')
-
         # 7z does not natively support uncompressing tar.xx in one step
         if archive_fpath.endswith('.tar.gz') or \
                 archive_fpath.endswith('.tar.bz2'):
