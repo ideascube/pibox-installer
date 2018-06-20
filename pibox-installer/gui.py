@@ -76,7 +76,7 @@ class Logger(ProgressHelper):
     def std(self, std, end=None):
         GLib.idle_add(self.main_thread_std, std, end)
 
-    def complete(self, std):
+    def complete(self):
         GLib.idle_add(self.main_thread_complete)
 
     def failed(self, error):
