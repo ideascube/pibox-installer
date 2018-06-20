@@ -7,9 +7,12 @@ import subprocess
 
 import requests
 
+from data import data_dir
 from util import (ReportHook, get_checksum, get_cache)
+from backend.util import subprocess_pretty_check_call, startup_info_args
 
 FAILURE_RETRIES = 3
+szip_exe = os.path.join(data_dir, '7za.exe')
 
 
 class RequestedFile(object):
@@ -160,7 +163,7 @@ def unzip_archive(archive_fpath, dest_folder):
         zip_archive.extractall(dest_folder)
 
 
-def unarchive(archive_fpath, dest_folder):
+def unarchive(archive_fpath, dest_folder, logger):
     ''' single poe for extracting our content archives '''
     supported_extensions = ('.tar', '.tar.bz2', '.tar.gz', '.zip')
     if sum([1 for ext in supported_extensions
@@ -175,9 +178,61 @@ def unarchive(archive_fpath, dest_folder):
     if sys.platform == 'win32':
         bin_path = sys._MEIPASS if getattr(sys, "frozen", False) else "."
         szip_exe = os.path.join(bin_path, '7za.exe')
-        command = [szip_exe, 'x', '-o', dest_folder, archive_fpath]
+
+        # 7z does not natively support uncompressing tar.xx in one step
+        if archive_fpath.endswith('.tar.gz') or \
+                archive_fpath.endswith('.tar.bz2'):
+            win_unarchive_compressed_tar_pipe(archive_fpath, dest_folder,
+                                              logger)
+            return
+
+        command = [szip_exe, 'x', '-o{}'.format(dest_folder), archive_fpath]
     else:
         tar_exe = '/usr/bin/tar' if sys.platform == "darwin" else '/bin/tar'
         command = [tar_exe, '-C', dest_folder, '-x', '-f', archive_fpath]
 
-    subprocess.check_call(command)
+    subprocess_pretty_check_call(command, logger)
+
+
+def win_unarchive_compressed_tar_pipe(archive_fpath, dest_folder, logger):
+    ''' uncompress tar.[bz2|gz] on windows in a single pass '''
+    uncompress = subprocess.Popen([szip_exe, 'x', '-so', archive_fpath],
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT,
+                                  **startup_info_args())
+    logger.std("Call: " + str(uncompress.args))
+
+    untar = subprocess.Popen([szip_exe, 'x', '-si',
+                              '-ttar', '-o{}'.format(dest_folder)],
+                             stdin=uncompress.stdout,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT, **startup_info_args())
+    logger.std("Call: " + str(untar.args))
+
+    uncompress.wait()
+    untar.wait()
+
+    for line in untar.stdout.readlines():
+        logger.raw_std(line.decode("utf-8", "ignore"))
+
+    assert untar.returncode == 0
+
+
+def win_unarchive_compressed_tar(archive_fpath, dest_folder, logger):
+    ''' uncompress tar.[bz2|gz] on windows using two passes '''
+    # uncompress first
+    subprocess_pretty_check_call([szip_exe, 'x',
+                                  '-o{}'.format(dest_folder), archive_fpath],
+                                 logger)
+
+    # retrieve extracted tar fpath
+    tar_fname = [fname for fname in os.listdir(dest_folder)
+                 if fname.endswith('.tar')][-1]
+    tar_fpath = os.path.join(dest_folder, tar_fname)
+
+    # untar
+    subprocess_pretty_check_call([szip_exe, 'x', '-ttar',
+                                  '-o{}'.format(dest_folder), tar_fpath],
+                                 logger)
+    # remove tar
+    os.remove(tar_fpath)

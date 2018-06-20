@@ -125,13 +125,13 @@ def get_packages_contents(packages=[]):
     return [get_package_content(package) for package in packages]
 
 
-def extract_and_move(content, cache_folder, root_path, final_path):
+def extract_and_move(content, cache_folder, root_path, final_path, logger):
     # retrieve archive path
     archive_fpath = get_content_cache(content, cache_folder, True)
 
     # extract to a temp folder on root_path
     extract_folder = get_temp_folder(root_path)
-    unarchive(archive_fpath, extract_folder)
+    unarchive(archive_fpath, extract_folder, logger)
 
     # move useful content to final path
     useful_path = os.path.join(extract_folder, content['folder_name']) \
@@ -142,12 +142,12 @@ def extract_and_move(content, cache_folder, root_path, final_path):
     shutil.rmtree(extract_folder, ignore_errors=True)
 
 
-def move(content, cache_folder, final_path):
+def copy(content, cache_folder, final_path):
     # retrieve archive path
     archive_fpath = get_content_cache(content, cache_folder, True)
 
     # move useful content to final path
-    shutil.move(archive_fpath, final_path)
+    shutil.copy(archive_fpath, final_path)
 
 
 def run_edupi_actions(cache_folder, mount_point, logger, enable=False):
@@ -164,7 +164,7 @@ def run_kalite_actions(cache_folder, mount_point, logger, languages=[]):
         # language pack
         lang_key = 'kalite_langpack_{lang}'.format(lang=lang)
         lang_pack = get_content(lang_key)
-        move(content=lang_pack,
+        copy(content=lang_pack,
              cache_folder=cache_folder,
              final_path=os.path.join(mount_point, lang_pack['name']))
 
@@ -174,7 +174,8 @@ def run_kalite_actions(cache_folder, mount_point, logger, languages=[]):
             content=videos,
             cache_folder=cache_folder,
             root_path=mount_point,
-            final_path=os.path.join(mount_point, videos['folder_name']))
+            final_path=os.path.join(mount_point, videos['folder_name']),
+            logger=logger)
 
 
 def run_wikifundi_actions(cache_folder, mount_point, logger, languages=[]):
@@ -186,7 +187,8 @@ def run_wikifundi_actions(cache_folder, mount_point, logger, languages=[]):
     extract_and_move(content=get_content('wikifundi_parsoid'),
                      cache_folder=cache_folder,
                      root_path=mount_point,
-                     final_path=os.path.join(mount_point, 'wikifundi_parsoid'))
+                     final_path=os.path.join(mount_point, 'wikifundi_parsoid'),
+                     logger=logger)
 
     for lang in languages:
         lang_key = 'wikifundi_langpack_{lang}'.format(lang=lang)
@@ -195,7 +197,8 @@ def run_wikifundi_actions(cache_folder, mount_point, logger, languages=[]):
             content=content,
             cache_folder=cache_folder,
             root_path=mount_point,
-            final_path=os.path.join(mount_point, lang_key))
+            final_path=os.path.join(mount_point, lang_key),
+            logger=logger)
 
 
 def run_aflatoun_actions(cache_folder, mount_point, logger, languages=[]):
@@ -207,13 +210,14 @@ def run_aflatoun_actions(cache_folder, mount_point, logger, languages=[]):
     extract_and_move(content=get_content('aflatoun_content'),
                      cache_folder=cache_folder,
                      root_path=mount_point,
-                     final_path=os.path.join(mount_point, 'aflatoun_content'))
+                     final_path=os.path.join(mount_point, 'aflatoun_content'),
+                     logger=logger)
 
     for lang in languages:
         # language pack
         lang_key = 'aflatoun_langpack_{lang}'.format(lang=lang)
         lang_pack = get_content(lang_key)
-        move(content=lang_pack,
+        copy(content=lang_pack,
              cache_folder=cache_folder,
              final_path=os.path.join(mount_point, lang_pack['name']))
 
