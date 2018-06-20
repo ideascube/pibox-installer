@@ -80,6 +80,16 @@ matrix:
           python3-dev
           libgdk-pixbuf2.0-dev
     script:
+    # update XZ (trusty version -5.0.5 is too old)
+    - wget https://tukaani.org/xz/xz-5.2.4.tar.gz
+    - tar xf xz-5.2.4.tar.gz
+    - cd xz-5.2.4
+    - ./configure --enable-shared
+    - make
+    - make install
+    - ldconfig
+    - cd ..
+
     # Download pibox-installer-vexpress-boot
     - wget http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
     - unzip pibox-installer-vexpress-boot.zip
