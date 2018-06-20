@@ -86,8 +86,8 @@ matrix:
     - cd xz-5.2.4
     - ./configure --enable-shared
     - make
-    - make install
-    - ldconfig
+    - sudo make install
+    - sudo ldconfig
     - cd ..
 
     # Download pibox-installer-vexpress-boot
