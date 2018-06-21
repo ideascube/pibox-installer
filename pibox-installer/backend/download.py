@@ -1,5 +1,6 @@
 import os
 import io
+import re
 import sys
 import shutil
 import zipfile
@@ -165,7 +166,7 @@ def unzip_archive(archive_fpath, dest_folder):
 
 def unarchive(archive_fpath, dest_folder, logger):
     ''' single poe for extracting our content archives '''
-    supported_extensions = ('.tar', '.tar.bz2', '.tar.gz', '.zip')
+    supported_extensions = ('.tar', '.tar.bz2', '.tar.gz', '.zip', '.tar.xz')
     if sum([1 for ext in supported_extensions
             if archive_fpath.endswith(ext)]) == 0:
         raise NotImplementedError("Archive format extraction not supported: {}"
@@ -177,8 +178,7 @@ def unarchive(archive_fpath, dest_folder, logger):
 
     if sys.platform == 'win32':
         # 7z does not natively support uncompressing tar.xx in one step
-        if archive_fpath.endswith('.tar.gz') or \
-                archive_fpath.endswith('.tar.bz2'):
+        if re.match(r'.*\.tar\.(bz2|gz|xz)$', archive_fpath):
             win_unarchive_compressed_tar_pipe(archive_fpath, dest_folder,
                                               logger)
             return
