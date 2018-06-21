@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
 
-''' prepares a base raspbian image into a pibox-kiwix one via QEMU
-    - changes sources.list
+''' prepares a base raspbian image into a pibox-master one via QEMU
     - enables SSH
     - copies ansiblecube into the guest
     - run ansiblecube with default values
@@ -16,12 +15,16 @@ import argparse
 import datetime
 
 import data
+from util import human_readable_size
 from backend import qemu
 from backend.content import get_content
 from backend.download import download_content, unzip_file
 from backend.ansiblecube import (
     run_for_image, ansiblecube_path as ansiblecube_emulation_path)
 from util import CLILogger, CancelEvent, ONE_GB
+
+
+MIN_ROOT_SIZE = 7 * ONE_GB
 
 
 def run_in_qemu(image_fpath, disk_size, root_size,
@@ -46,10 +49,13 @@ def run_in_qemu(image_fpath, disk_size, root_size,
             emulation.exec_cmd("sudo /bin/systemctl enable ssh")
 
             logger.step("Copy ansiblecube")
-            emulation.exec_cmd("sudo mkdir --mode 0755 -p /var/lib/ansible/")
+            ansible_root_path = os.path.dirname(ansiblecube_emulation_path)
+            emulation.exec_cmd("sudo mkdir --mode 0755 -p {}"
+                               .format(ansible_root_path))
             emulation.put_dir(data.ansiblecube_path,
                               ansiblecube_emulation_path)
-            emulation.exec_cmd("sudo chown pi:pi -R /var/lib/ansible/")
+            emulation.exec_cmd("sudo chown pi:pi -R {}"
+                               .format(ansible_root_path))
 
             # Run ansiblecube
             logger.step("Run ansiblecube")
@@ -58,47 +64,43 @@ def run_in_qemu(image_fpath, disk_size, root_size,
                           disk_size=disk_size)
 
     except Exception as e:
-        logger.step("Failed")
-        logger.err(str(e))
-        error = e
-        raise
-    else:
-        logger.step("Done")
-        error = None
+        return e
 
-    return error
+    return None
 
 
 def main(logger,
          disk_size, root_size, build_folder, qemu_ram, image_fname=None):
 
+    # convert sizes to bytes and make sure check if usable
     try:
         root_size = int(root_size) * ONE_GB
         disk_size = int(disk_size) * ONE_GB
 
-        if root_size <= 5:
-            raise ValueError("root partition must be greater than 5GB")
+        if root_size < MIN_ROOT_SIZE:
+            raise ValueError(
+                "root partition must be at least {}"
+                .format(human_readable_size(MIN_ROOT_SIZE, False)))
 
-        if root_size > disk_size:
-            raise ValueError("root partition can't exceed disk size")
+        if root_size >= disk_size:
+            raise ValueError("root partition must be bellow disk size")
     except Exception as exp:
-        logger.err("Erroneous size option: {}".format(repr(exp)))
+        logger.err("Erroneous size option: {}".format(exp))
         sys.exit(1)
 
     if image_fname is None:
-        image_fname = "pibox-kiwix_{date}.img".format(
+        image_fname = "pibox-master_{date}.img".format(
             date=datetime.datetime.now().strftime("%Y-%m-%d"))
     image_fpath = os.path.join(build_folder, image_fname)
 
-    print("starting with target:", image_fpath)
+    logger.step("starting with target: {}".format(image_fpath))
 
     # download raspbian
     logger.step("Retrieving raspbian image file")
     raspbian_image = get_content('raspbian_image')
     rf = download_content(raspbian_image, logger, build_folder)
     if not rf.successful:
-        logger.err("Failed to download raspbian.\n{e}"
-                   .format(e=rf.exception))
+        logger.err("Failed to download raspbian.\n{e}".format(e=rf.exception))
         sys.exit(1)
     elif rf.found:
         logger.std("Reusing already downloaded raspbian ZIP file")
@@ -115,24 +117,18 @@ def main(logger,
         raise IOError("image path does not exists: {}"
                       .format(image_fpath))
 
-    cancel_event = CancelEvent()
-    error = run_in_qemu(
-        image_fpath,
-        disk_size,
-        root_size,
-        logger, cancel_event,
-        qemu_ram)
+    error = run_in_qemu(image_fpath, disk_size, root_size,
+                        logger, CancelEvent(), qemu_ram)
 
     if error:
-        print("ERROR: unable to properly create image")
-        print(error)
+        logger.err("ERROR: unable to properly create image: {}".format(error))
         sys.exit(1)
 
-    print("SUCCESS!", image_fpath, "was built successfuly")
+    logger.std("SUCCESS! {} was built successfuly".format(image_fpath))
 
 
 parser = argparse.ArgumentParser(description="pibox base image creator")
-parser.add_argument("--root", help="root partition size (GB)", default=5)
+parser.add_argument("--root", help="root partition size (GB)", default=7)
 parser.add_argument("--size", help="SD card size (GB)", default=8)
 parser.add_argument("--build", help="Folder to create files in",
                     default=os.path.abspath('.'))
