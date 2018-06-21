@@ -1,4 +1,8 @@
 2.0a
+* Added Online FAQ
+* Fixed Ctrl^C handling
+* Kiwix-serve 0.6.0
+* System requirements check at start of process
 * Overall and per-stage Progress Indicator
 * Ideascube home now displays ZIM icons
 * Default placeholders for failed services (HTTP 502)
