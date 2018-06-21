@@ -2,6 +2,23 @@
 # -*- coding: utf-8 -*-
 # vim: ai ts=4 sts=4 et sw=4 nu
 
+''' compute and print new partition boundaries for / dans /data
+
+    Used by providing an image's fdisk output and requested size for partitions
+    fdisk -l <disk> | partition_boundaries.py <root_size> <disk_size>
+
+    Note: since root partition will be resized online (no unmount),
+    we reuse its start (found in fdisk) and only expand it (no shrink)
+
+    prints out 4 numbers to be fed into fdisk for recreation
+        - root partition start
+        - root partition end
+        - data partition start
+        - data partition end
+
+    output format: <root_start> <root_end> <data_start> <data_end>
+    '''
+
 from __future__ import (unicode_literals, absolute_import,
                         division, print_function)
 import re
@@ -15,7 +32,9 @@ except NameError:
 ONE_GB = int(1e9)
 
 
-def main(root_size=5, disk_size=8):
+def main(root_size=7, disk_size=8):
+
+    # sanitize input
     if disk_size == '-':
         disk_size = None
     elif not isinstance(disk_size, int):
@@ -81,7 +100,7 @@ def get_partitions_boundaries(lines, root_size, disk_size=None):
     size_up_to_root_b = root_size * ONE_GB
     nb_clusters_endofroot = size_up_to_root_b // sector_size
 
-    # align partitions
+    # align partitions (otherwise exfat-fuse gets often corrupt)
     root_start = roundup(second_partition_start)
     root_end = roundup(nb_clusters_endofroot)
 

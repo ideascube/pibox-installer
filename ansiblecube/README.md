@@ -18,7 +18,8 @@ This is achieved using a two steps scenario:
 * `rename`: reconfigure all software according to `project_name`.
 * `setup`: install and prepare all softwares without enabling them.
 * `reconfigure`: sets all configuration and software according to configuration.
-* `move-content`: move expected content from `/data/xxx` to proper locations, according to configuration
+* `move-content`: move expected content from `/data/xxx` to proper locations, according to configuration.
+* `seal`: enables requested software and mark system as ready.
 
 **Notes**:
 
