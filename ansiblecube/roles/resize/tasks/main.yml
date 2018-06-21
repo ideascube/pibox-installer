@@ -98,7 +98,7 @@
 
 - name: Formatting third partition (exfat)
   become: yes
-  command: mkfs.exfat -n data -p {{ disk_partition_infos.stdout.split()[2] }} -s 128 {{ data_partition }}
+  command: mkfs.exfat -n data {{ data_partition }}
   tags: ['master', 'resize']
 
 - name: create {{ data_path }} placeholder
