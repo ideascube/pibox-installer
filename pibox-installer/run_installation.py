@@ -87,9 +87,6 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
             raise IOError("image path does not exists: {}"
                           .format(image_building_path))
 
-        logger.step("Checking mount procedure")
-        test_mount_procedure(image_building_path, logger)
-
         # harmonize options
         packages = [] if zim_install is None else zim_install
         kalite_languages = [] if kalite is None else kalite
