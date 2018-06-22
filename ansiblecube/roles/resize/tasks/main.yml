@@ -94,9 +94,10 @@
 #   register: cluster_size_cmd
 #   tags: ['master', 'resize']
 
+# 256 * 512 = 128KiB
 - name: Formatting third partition (exfat)
   become: yes
-  command: mkfs.exfat -n data -p 128 -s 32 {{ data_partition }}
+  command: mkfs.exfat -n data -p 0 -s 256 {{ data_partition }}
   # command: mkfs.exfat -n data -p 0 -s {{ cluster_size_cmd.stdout.strip() }} {{ data_partition }}
   # command: mkfs.exfat -n data {{ data_partition }}
   tags: ['master', 'resize']
