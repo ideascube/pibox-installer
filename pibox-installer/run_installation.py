@@ -11,6 +11,7 @@ from datetime import datetime
 import os
 import sys
 import re
+import time
 
 
 def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, aflatoun, wikifundi, edupi, zim_install, size, logger, cancel_event, sd_card, favicon, logo, css, done_callback=None, build_dir=".", qemu_ram="2G"):
@@ -186,6 +187,8 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         # mount image's 3rd partition on host
         logger.stage('copy')
         logger.step("Mounting data partition on host")
+
+        time.sleep(5)
 
         # copy contents from cache to mount point
         try:
