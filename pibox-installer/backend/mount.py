@@ -17,6 +17,7 @@ from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
 
 
 def system_has_exfat():
+    ''' whether system supports native exfat (not fuse based) '''
     try:
         with open('/proc/filesystems', 'r') as f:
             return 'exfat' in [line.rstrip().split('\t')[1]
@@ -41,6 +42,9 @@ elif sys.platform == "darwin":
 
 
 def get_start_offset(root_size):
+    ''' bytes offset to the start of the third partition
+
+        third partition directly follows root partition '''
     sector_size = 512
     round_bound = 128
 
@@ -60,7 +64,7 @@ def get_start_offset(root_size):
 
 
 def install_imdisk(logger=None, force=False):
-    ''' install imdisk manually (replacating steps from install.cmd) '''
+    ''' install imdisk manually (replicating steps from install.cmd) '''
 
     # assume already installed
     if os.path.exists(imdisk_exe) and not force:
@@ -103,6 +107,8 @@ def install_imdisk_via_cmd(logger=None):
     ''' install imdisk via its .cmd file (silent mode)
 
         doesn't provide much feedback '''
+
+    # set silent variable to prevent popup
     os.environ['IMDISK_SILENT_SETUP'] = "1"
     cwd = os.getcwd()
     try:
@@ -115,6 +121,9 @@ def install_imdisk_via_cmd(logger=None):
 
 
 def uninstall_imdisk(logger=None):
+    ''' uninstall imdisk using its uninstaller script '''
+
+    # set silent variable to prevent popup
     os.environ['IMDISK_SILENT_SETUP'] = "1"
     cwd = os.getcwd()
     try:
@@ -129,9 +138,11 @@ def uninstall_imdisk(logger=None):
 
 def get_avail_drive_letter(logger=None):
     ''' returns a free Windows drive letter to mount image in '''
+
     if not sys.platform == "win32":
         raise NotImplementedError("only for windows")
 
+    # get volumes from wmic
     wmic_out = subprocess_pretty_call(['wmic', 'logicaldisk', 'get',
                                        'caption'], logger,
                                       check=True, decode=True)
@@ -144,8 +155,10 @@ def get_avail_drive_letter(logger=None):
     net_maps = [re.match(reg, line).groups()[0]
                 for line in net_out if re.match(reg, line)]
 
+    # merge and sort both volumes and network shares
     used = sorted(list(set(['A', 'B', 'C'] + volumes + net_maps)))
 
+    # find the next available letter in alphabet (should be free)
     for letter in string.ascii_uppercase:
         if letter not in list(used):
             return "{}:".format(letter)
@@ -190,12 +203,14 @@ def test_mount_procedure(image_fpath, logger=None, thorough=False):
 
 
 def mount_data_partition(image_fpath, logger=None):
-    ''' mount the QEMU image and return its mount point/drive '''
+    ''' mount the QEMU image's 3rd part and return its mount point/drive '''
 
     if sys.platform == "linux":
+        # find out offset for third partition from the root part size
         base_image = get_content('pibox_base_image')
         offset = str(get_start_offset(base_image.get('root_partition_size')))
 
+        # prepare loop device
         udisks_loop = subprocess_pretty_call(
             [udisksctl_exe, 'loop-setup',
              '--offset', offset, '--file', image_fpath, udisks_nou],
@@ -204,18 +219,19 @@ def mount_data_partition(image_fpath, logger=None):
         target_dev = re.search(r"(\/dev\/loop[0-9]+)\.$",
                                udisks_loop).groups()[0]
 
-        # udisksctl always mounts under /media/
+        # mount the loop-device (udisksctl sets the mount point)
         udisks_mount_ret, udisks_mount = subprocess_pretty_call(
             [udisksctl_exe, 'mount',
              '--block-device', target_dev, udisks_nou],
             logger, check=False, decode=True)
         udisks_mount = udisks_mount[0].strip()
 
-        # was automatically mounted (gnome default)
         if udisks_mount_ret != 0 and "AlreadyMounted" in udisks_mount:
+            # was automatically mounted (gnome default)
             mount_point = re.search(r"at `(\/media\/.*)'\.$",
                                     udisks_mount).groups()[0]
         elif udisks_mount_ret == 0:
+            # udisksctl always mounts under /media/
             mount_point = re.search(r"at (\/media\/.+)\.$",
                                     udisks_mount).groups()[0]
         else:
@@ -224,12 +240,14 @@ def mount_data_partition(image_fpath, logger=None):
         return mount_point, target_dev
 
     elif sys.platform == "darwin":
-        # attach image to create pseudo devices
+        # attach image to create loop devices
         hdiutil_out = subprocess.check_output(
             [hdiutil_exe, 'attach', '-nomount', image_fpath]) \
             .decode('utf-8', 'ignore')
         target_dev = str(hdiutil_out.splitlines()[0].split()[0])
         target_part = "{dev}s3".format(dev=target_dev)
+
+        # create a mount point in /tmp
         mount_point = tempfile.mkdtemp()
         try:
             subprocess.check_call([mount_exe, '-t', 'exfat',
@@ -247,6 +265,8 @@ def mount_data_partition(image_fpath, logger=None):
         # get an available letter
         target_dev = get_avail_drive_letter(logger)
         mount_point = "{}\\".format(target_dev)
+
+        # mount into the specified drive
         subprocess_pretty_check_call(
             [imdisk_exe, '-a', '-f', image_fpath,
              '-o', 'rw', '-t', 'file', '-v', '3', '-m', target_dev], logger)
@@ -259,6 +279,7 @@ def unmount_data_partition(mount_point, device, logger=None):
     if sys.platform == "linux":
         # sleep to prevent unmount failures
         time.sleep(5)
+        # unmount using device path
         subprocess_pretty_check_call(
             [udisksctl_exe, 'unmount',
              '--block-device', device, udisks_nou], logger)
@@ -266,16 +287,20 @@ def unmount_data_partition(mount_point, device, logger=None):
             os.rmdir(mount_point)
         except FileNotFoundError:
             pass
+        # delete the loop device (might have already been deletec)
         subprocess_pretty_call(
             [udisksctl_exe, 'loop-delete',
              '--block-device', device, udisks_nou], logger)
 
     elif sys.platform == "darwin":
+        # unmount
         subprocess_pretty_call([umount_exe, mount_point], logger)
         try:
             os.rmdir(mount_point)
         except FileNotFoundError:
             pass
+        # detach image file (also unmounts if not already done)
         subprocess_pretty_call([hdiutil_exe, 'detach', device], logger)
     elif sys.platform == "win32":
+        # unmount using force (-D) as -d is not reliable
         subprocess_pretty_call([imdisk_exe, '-D', '-m', device], logger)
