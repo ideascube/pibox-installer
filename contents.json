@@ -42,12 +42,12 @@
         "expanded_size": 2097152
     },
     "wikifundi_parsoid": {
-        "url": "{mirror}/other/wikifundi/parsoid_2016-08.tar.bz2",
-        "name": "parsoid_2016-08.tar.bz2",
+        "url": "{mirror}/other/wikifundi/parsoid_2016-08-nosym.tar.bz2",
+        "name": "parsoid_2016-08-nosym.tar.bz2",
         "folder_name": "parsoid",
-        "checksum": "46c00adcf018a3541050d0035c6490862472ae2aa2f9887c192277d8c1e2e4d4",
-        "archive_size": 49546282,
-        "expanded_size": 1434910720
+        "checksum": "e3d48cf435fb6caa25a4600fd96dbecf6dc5957b7ecdfe76a33aa8f019481958",
+        "archive_size": 49469932,
+        "expanded_size": 426360832
     },
     "wikifundi_langpack_fr": {
         "url": "{mirror}/other/wikifundi/fr.africapack.kiwix.org_2017-01.tar.bz2",
