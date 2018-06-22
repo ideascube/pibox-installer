@@ -1001,7 +1001,7 @@ except Exception as exception:
     dialog.run()
     print(exception, file=sys.stderr)
     dialog.destroy()
-    exit(1)
+    sys.exit(1)
 
 Application(YAML_CATALOGS)
 

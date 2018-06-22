@@ -106,7 +106,7 @@ try:
 except Exception as exception:
     print(exception, file=sys.stderr)
     print("Catalog downloads failed, you may check your internet connection")
-    exit(2)
+    sys.exit(2)
 
 zim_choices = []
 for catalog in YAML_CATALOGS:
@@ -168,7 +168,7 @@ if args.config:
             config = json.load(fd)
     except Exception:
         print("Failed to parse JSON file {}".format(args.config))
-        exit(1)
+        sys.exit(1)
     else:
         try:
             set_config(config, args)
@@ -186,7 +186,7 @@ for key, value in defaults.items():
 if args.catalog:
     for catalog in YAML_CATALOGS:
         print(yaml.dump(catalog, default_flow_style=False, default_style=''))
-    exit(0)
+    sys.exit(0)
 
 if args.admin_account:
     admin_account = { "login": args.admin_account[0], "pwd": args.admin_account[1] }
@@ -233,14 +233,14 @@ if args.size < base_image_size:
     print("image size can not be under {size}"
           .format(size=human_readable_size(base_image_size, False)),
           file=sys.stderr)
-    exit(3)
+    sys.exit(3)
 
 if args.size < required_image_size:
     print("image size ({img}) is not large enough for the content ({req})"
           .format(img=human_readable_size(args.size, False),
                   req=human_readable_size(required_image_size, False)),
           file=sys.stderr)
-    exit(3)
+    sys.exit(3)
 
 if avail_space_in_build_dir < args.size:
     print("Not enough space available at {dir} ({free}) to build image ({img})"
@@ -248,7 +248,7 @@ if avail_space_in_build_dir < args.size:
                   free=human_readable_size(avail_space_in_build_dir),
                   img=human_readable_size(args.size)),
           file=sys.stderr)
-    exit(1)
+    sys.exit(1)
 
 print("\nInstaller will start in ({}) seconds."
       .format(CANCEL_TIMEOUT), end='', flush=True)
