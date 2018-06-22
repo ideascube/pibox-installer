@@ -72,7 +72,7 @@ def run_in_qemu(image_fpath, disk_size, root_size,
 def main(logger,
          disk_size, root_size, build_folder, qemu_ram, image_fname=None):
 
-    # convert sizes to bytes and make sure check if usable
+    # convert sizes to bytes and make sure those are usable
     try:
         root_size = int(root_size) * ONE_GB
         disk_size = int(disk_size) * ONE_GB
@@ -83,11 +83,12 @@ def main(logger,
                 .format(human_readable_size(MIN_ROOT_SIZE, False)))
 
         if root_size >= disk_size:
-            raise ValueError("root partition must be bellow disk size")
+            raise ValueError("root partition must be smaller than disk size")
     except Exception as exp:
         logger.err("Erroneous size option: {}".format(exp))
         sys.exit(1)
 
+    # default output file name
     if image_fname is None:
         image_fname = "pibox-master_{date}.img".format(
             date=datetime.datetime.now().strftime("%Y-%m-%d"))
@@ -129,10 +130,10 @@ def main(logger,
 
 parser = argparse.ArgumentParser(description="pibox base image creator")
 parser.add_argument("--root", help="root partition size (GB)", default=7)
-parser.add_argument("--size", help="SD card size (GB)", default=8)
+parser.add_argument("--size", help="Image (SD card) size (GB)", default=8)
 parser.add_argument("--build", help="Folder to create files in",
                     default=os.path.abspath('.'))
-parser.add_argument("--ram", help="Max RAM for QEMU", default="2G")
+parser.add_argument("--ram", help="RAM to be used by QEMU", default="2G")
 parser.add_argument("--out", help="Base image filename (inside --build)")
 args = parser.parse_args()
 
