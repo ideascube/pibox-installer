@@ -89,14 +89,15 @@
   tags: ['master', 'resize']
 
 # use 32KiB (32768b) for part < 32GB and 128KiB (131072b) for part above
-- name: guess cluster size for exfat partition
-  command: python -c 'print("128" if ({{ disk_size }} - {{ root_partition_size }}) >= 32 else "32")'
-  register: cluster_size_cmd
-  tags: ['master', 'resize']
+# - name: guess cluster size for exfat partition
+#   command: python -c 'print("128" if ({{ disk_size }} - {{ root_partition_size }}) >= 32 else "32")'
+#   register: cluster_size_cmd
+#   tags: ['master', 'resize']
 
 - name: Formatting third partition (exfat)
   become: yes
-  command: mkfs.exfat -n data -p 0 -s {{ cluster_size_cmd.stdout.strip() }} {{ data_partition }}
+  command: mkfs.exfat -n data -p 0 -s 32 {{ data_partition }}
+  # command: mkfs.exfat -n data -p 0 -s {{ cluster_size_cmd.stdout.strip() }} {{ data_partition }}
   # command: mkfs.exfat -n data {{ data_partition }}
   tags: ['master', 'resize']
 
