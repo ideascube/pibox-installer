@@ -13,7 +13,7 @@ import sys
 import re
 
 
-def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, aflatoun, wikifundi, edupi, zim_install, size, logger, cancel_event, sd_card, favicon, logo, css, done_callback=None, build_dir="."):
+def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, aflatoun, wikifundi, edupi, zim_install, size, logger, cancel_event, sd_card, favicon, logo, css, done_callback=None, build_dir=".", qemu_ram="2G"):
 
     logger.start(bool(sd_card))
 
@@ -135,7 +135,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         emulator = qemu.Emulator(data.vexpress_boot_kernel,
                                  data.vexpress_boot_dtb,
                                  image_building_path, logger,
-                                 ram="2G")
+                                 ram=qemu_ram)
 
         # Resize image
         logger.step("Resizing image file to {s}"

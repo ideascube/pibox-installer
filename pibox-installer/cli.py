@@ -158,6 +158,7 @@ parser.add_argument("--catalog",
 parser.add_argument("--admin-account",
                     help="create admin account [LOGIN, PWD]", nargs=2)
 parser.add_argument("--config", help="use a JSON config file to set parameters (superseeds cli parameters)")
+parser.add_argument("--ram", help="Max RAM for QEMU", default="2G")
 
 args = parser.parse_args()
 
@@ -277,6 +278,7 @@ try:
             favicon=args.favicon,
             css=args.css,
             admin_account=admin_account,
-            build_dir=args.build_dir)
+            build_dir=args.build_dir,
+            qemu_ram=args.ram)
 except:
     cancel_event.cancel()
