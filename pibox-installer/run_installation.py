@@ -22,11 +22,11 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
     try:
         logger.step("Check System Requirements")
         logger.std("Please read {} for details".format(requirements_url))
-        sysreq_ok, sysreq_error = host_matches_requirements(build_dir)
+        sysreq_ok, missing_deps = host_matches_requirements(build_dir)
         if not sysreq_ok:
             raise SystemError(
-                "Your system does not matches system requirements: {}"
-                .format(sysreq_error))
+                "Your system does not matches system requirements:\n{}".format(
+                    "\n".join([" - {}".format(dep) for dep in missing_deps])))
 
         logger.step("Prepare Image file")
 
