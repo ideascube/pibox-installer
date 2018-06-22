@@ -33,7 +33,24 @@ def get_collection(edupi=False,
                    kalite_languages=[],
                    wikifundi_languages=[],
                    aflatoun_languages=[]):
-    ''' builds a complete list of fnames, url for all content '''
+    ''' builds complete list of callbacks and options for selected contents
+
+        returns a list of tuples:
+            (project_name, get_content_callback, run_actions_callback, kwargs)
+
+        - project_name: a string describing the project (for progress/UI)
+
+        - kwargs: a dict or arguments to pass to callbacks
+
+        - get_content_callback:
+            expects kwargs
+            returns a list of contents (get_content)
+
+        - run_action_callback:
+            expects cache_folder, mount_point, logger and kwargs
+            runs the action for the project (copy content into mount_point)
+            no return value
+        '''
 
     collection = []
 
@@ -80,7 +97,7 @@ def get_edupi_contents(enable=False):
 
 
 def get_kalite_contents(languages=[]):
-    ''' kalite medium lang packs and huge tarball of videos for each lang '''
+    ''' kalite: medium lang packs and huge tarball of videos for each lang '''
 
     return [
         get_content('kalite_langpack_{lang}'.format(lang=lang))
@@ -91,7 +108,7 @@ def get_kalite_contents(languages=[]):
 
 
 def get_wikifundi_contents(languages=[]):
-    ''' wikifundi: large language pack for each lang '''
+    ''' wikifundi: small size parsoid + large language pack for each lang '''
     return [get_content('wikifundi_parsoid')] + [
         get_content('wikifundi_langpack_{lang}'.format(lang=lang))
         for lang in languages]
@@ -105,6 +122,7 @@ def get_aflatoun_contents(languages=[]):
 
 
 def get_package_content(package_id):
+    ''' content-like dict for packages (zim file or static site) '''
     for catalog in YAML_CATALOGS:
         try:
             package = catalog['all'][package_id]
@@ -113,7 +131,8 @@ def get_package_content(package_id):
                 "name": "package_{langid}-{version}".format(**package),
                 "checksum": package['sha256sum'],
                 "archive_size": package['size'],
-                "expanded_size": package['size'] * 1
+                # add a 10% margin for non-zim (zip file mostly)
+                "expanded_size": package['size'] * 1.1
                 if package['type'] != 'zim' else package['size'],
             }
         except IndexError:
@@ -121,11 +140,15 @@ def get_package_content(package_id):
 
 
 def get_packages_contents(packages=[]):
-    ''' ideacube: ZIM files or ZIP file for each package '''
+    ''' ideacube: ZIM file or ZIP file for each package '''
     return [get_package_content(package) for package in packages]
 
 
 def extract_and_move(content, cache_folder, root_path, final_path, logger):
+    ''' extract compressed archive into mount-point
+
+        moves resulting file or folder to desired location '''
+
     # retrieve archive path
     archive_fpath = get_content_cache(content, cache_folder, True)
 
@@ -146,6 +169,8 @@ def extract_and_move(content, cache_folder, root_path, final_path, logger):
 
 
 def copy(content, cache_folder, final_path, logger):
+    ''' copy a file from the cache into desired location (on mount point) '''
+
     # retrieve archive path
     archive_fpath = get_content_cache(content, cache_folder, True)
 
@@ -162,7 +187,7 @@ def run_edupi_actions(cache_folder, mount_point, logger, enable=False):
 
 
 def run_kalite_actions(cache_folder, mount_point, logger, languages=[]):
-
+    ''' kalite: copy lang packs (ZIP) as-is and extract videos '''
     if not len(languages):
         return
 
@@ -186,7 +211,7 @@ def run_kalite_actions(cache_folder, mount_point, logger, languages=[]):
 
 
 def run_wikifundi_actions(cache_folder, mount_point, logger, languages=[]):
-    ''' extracts all lang packs to their expected folder on partition '''
+    ''' wikifundi: extract parsoid and all lang packs '''
 
     if not len(languages):
         return
@@ -209,16 +234,10 @@ def run_wikifundi_actions(cache_folder, mount_point, logger, languages=[]):
 
 
 def run_aflatoun_actions(cache_folder, mount_point, logger, languages=[]):
-    ''' extracts content.tar.gz to aflatoun_content on partition '''
+    ''' aflatoun: copy lang packs (ZIP) as-is and extract content archive '''
 
     if not len(languages):
         return
-
-    extract_and_move(content=get_content('aflatoun_content'),
-                     cache_folder=cache_folder,
-                     root_path=mount_point,
-                     final_path=os.path.join(mount_point, 'aflatoun_content'),
-                     logger=logger)
 
     for lang in languages:
         # language pack
@@ -229,9 +248,15 @@ def run_aflatoun_actions(cache_folder, mount_point, logger, languages=[]):
              final_path=os.path.join(mount_point, lang_pack['name']),
              logger=logger)
 
+    extract_and_move(content=get_content('aflatoun_content'),
+                     cache_folder=cache_folder,
+                     root_path=mount_point,
+                     final_path=os.path.join(mount_point, 'aflatoun_content'),
+                     logger=logger)
+
 
 def run_packages_actions(cache_folder, mount_point, logger, packages=[]):
-    ''' moves downloaded ZIM files to an expected location on partition '''
+    ''' ideascube: move ZIM/ZIP files to an package cache '''
 
     # ensure packages folder exists
     packages_folder = os.path.join(mount_point, "packages_cache")
@@ -244,6 +269,7 @@ def run_packages_actions(cache_folder, mount_point, logger, packages=[]):
 
         # retrieve downloaded path
         package_fpath = get_content_cache(content, cache_folder, True)
+
         # copy to the packages folder
         final_path = os.path.join(packages_folder,
                                   re.sub(r'^package_', '', content['name']))
@@ -297,6 +323,7 @@ def get_required_image_size(collection):
 
 def get_required_building_space(collection, cache_folder, image_size=None):
     ''' total required space to host downlaods and image '''
+
     # the pibox master image
     # we neglect the master's expanded size as it is going to be moved
     # to the image path and resized in-place (never reduced)
