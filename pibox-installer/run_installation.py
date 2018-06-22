@@ -207,12 +207,12 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                 processed += sum([c['expanded_size']
                                   for c in content_dl_cb(**cb_kwargs)])
                 logger.progress(processed / expanded_total_size)
-        except Exception:
+        except Exception as exp:
             try:
                 unmount_data_partition(mount_point, device, logger)
             except NameError:
                 pass  # if mount_point or device are not defined
-            raise
+            raise exp
 
         # unmount partition
         logger.step("Unmounting data partition")
