@@ -114,6 +114,11 @@
 - import_tasks: clean_apt.yml
   tags: master
 
+- name: install newer exfat-utils from bower
+  apt:
+    deb: http://ftp.fr.debian.org/debian/pool/main/e/exfat-utils/exfat-utils_1.2.8-1_armhf.deb
+  tags: ['master', 'resize']
+
 - name: Install avahi packages
   apt:
     name: "{{ item }}"

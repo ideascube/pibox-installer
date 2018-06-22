@@ -1,12 +1,4 @@
 ---
-- name: install exfat-utils
-  apt:
-    name: exfat-utils
-    state: present
-    autoremove: yes
-    autoclean: yes
-  tags: master
-
 - name: disable exfat-fuse as handler for exfat fs
   file:
     dest: /sbin/mount.exfat
@@ -104,7 +96,8 @@
 
 - name: Formatting third partition (exfat)
   become: yes
-  command: mkfs.exfat -n data -p 0 -s {{ cluster_size_cmd.stdout.strip() }} {{ data_partition }}
+  # command: mkfs.exfat -n data -p 0 -s {{ cluster_size_cmd.stdout.strip() }} {{ data_partition }}
+  command: mkfs.exfat -n data {{ data_partition }}
   tags: ['master', 'resize']
 
 - name: create {{ data_path }} placeholder
