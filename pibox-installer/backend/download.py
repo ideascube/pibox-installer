@@ -17,6 +17,7 @@ szip_exe = os.path.join(data_dir, '7za.exe')
 
 
 class RequestedFile(object):
+    ''' interface to harmonize result of file request '''
     PENDING = 0
     FAILED = 1
     FOUND = 2
@@ -78,6 +79,11 @@ class RequestedFile(object):
 
 
 def stream(url, write_to=None, callback=None, block_size=1024):
+    ''' download an URL without blocking
+
+        - retries download on failure (with increasing wait delay)
+        - feeds a callback to provide progress indication '''
+
     # prepare adapter so it retries on failure
     session = requests.Session()
     # retries up-to FAILURE_RETRIES whichever kind of listed error
@@ -90,7 +96,7 @@ def stream(url, write_to=None, callback=None, block_size=1024):
         backoff_factor=1,  # sleep factor between retries
         status_forcelist=[413, 429, 500, 502, 503, 504])
     retry_adapter = requests.adapters.HTTPAdapter(max_retries=retries)
-    session.mount('http', retry_adapter)
+    session.mount('http', retry_adapter)  # tied to http and https
     req = session.get(url, stream=True)
 
     total_size = int(req.headers.get('content-length', 0))
@@ -118,6 +124,7 @@ def stream(url, write_to=None, callback=None, block_size=1024):
 
 
 def download_file(url, fpath, logger, checksum=None):
+    ''' downloads expected URL+sum to file while showing progress to logger '''
     hook = ReportHook(logger.raw_std).reporthook
     try:
         size, path = stream(url, fpath, callback=hook)
@@ -128,6 +135,8 @@ def download_file(url, fpath, logger, checksum=None):
 
 
 def download_if_missing(url, fpath, logger, checksum=None):
+    ''' returns local file if existing and matching sum otherwise download '''
+
     # file already downloaded
     if checksum and os.path.exists(fpath):
         logger.std("calculating sum for {}...".format(fpath), '')
@@ -141,11 +150,13 @@ def download_if_missing(url, fpath, logger, checksum=None):
 
 def get_content_cache(content, folder, is_cache_folder=False):
     ''' shortcut to content's fpath from build_folder or cache_folder '''
+
     cache_folder = folder if is_cache_folder else get_cache(folder)
     return os.path.join(cache_folder, content.get('name'))
 
 
 def download_content(content, logger, build_folder):
+    ''' download or retrieve an item from contents '''
     return download_if_missing(url=content.get('url'),
                                fpath=get_content_cache(content, build_folder),
                                logger=logger,
@@ -153,6 +164,7 @@ def download_content(content, logger, build_folder):
 
 
 def unzip_file(archive_fpath, src_fname, build_folder, dest_fpath=None):
+    ''' extracts an expected filename from a ZIP archive '''
     with zipfile.ZipFile(archive_fpath, 'r') as zip_archive:
         extraction = zip_archive.extract(src_fname, build_folder)
         if dest_fpath:
@@ -160,13 +172,15 @@ def unzip_file(archive_fpath, src_fname, build_folder, dest_fpath=None):
 
 
 def unzip_archive(archive_fpath, dest_folder):
+    ''' extracts a ZIP archive (all files) '''
     with zipfile.ZipFile(archive_fpath) as zip_archive:
         zip_archive.extractall(dest_folder)
 
 
 def unarchive(archive_fpath, dest_folder, logger):
-    ''' single poe for extracting our content archives '''
-    supported_extensions = ('.tar', '.tar.bz2', '.tar.gz', '.zip', '.tar.xz')
+    ''' extracts a supported archive to a specified folder '''
+
+    supported_extensions = ('.zip', '.tar', '.tar.bz2', '.tar.gz', '.tar.xz')
     if sum([1 for ext in supported_extensions
             if archive_fpath.endswith(ext)]) == 0:
         raise NotImplementedError("Archive format extraction not supported: {}"
@@ -193,12 +207,15 @@ def unarchive(archive_fpath, dest_folder, logger):
 
 def win_unarchive_compressed_tar_pipe(archive_fpath, dest_folder, logger):
     ''' uncompress tar.[bz2|gz] on windows in a single pass '''
+
+    # 7z extraction to stdout
     uncompress = subprocess.Popen([szip_exe, 'x', '-so', archive_fpath],
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.STDOUT,
                                   **startup_info_args())
     logger.std("Call: " + str(uncompress.args))
 
+    # 7x tar extraction using stdin (piping other process' stdout)
     untar = subprocess.Popen([szip_exe, 'x', '-si',
                               '-ttar', '-o{}'.format(dest_folder)],
                              stdin=uncompress.stdout,
@@ -217,6 +234,7 @@ def win_unarchive_compressed_tar_pipe(archive_fpath, dest_folder, logger):
 
 def win_unarchive_compressed_tar(archive_fpath, dest_folder, logger):
     ''' uncompress tar.[bz2|gz] on windows using two passes '''
+
     # uncompress first
     subprocess_pretty_check_call([szip_exe, 'x',
                                   '-o{}'.format(dest_folder), archive_fpath],
