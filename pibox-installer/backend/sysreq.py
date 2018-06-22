@@ -16,24 +16,27 @@ requirements_url = ("https://framagit.org/ideascube/pibox-installer"
 def host_matches_requirements(build_dir):
     ''' whether the host is ready to start process
 
-        returns bool, str (error message) '''
+        returns bool, [error_message,] '''
 
-    # check that build_dir supports file_size > 4GB (not fat)
+    # TODO: check that build_dir supports file_size > 4GB (not fat)
+
+    missing_reqs = []
 
     if sys.platform == "win32":
-        # check that current directory is not on network share (qemu crash)
+        # TODO: check that current directory is not network share (qemu crash)
         pass
 
     if sys.platform == "linux":
         # udisks2
         if not os.path.exists(udisksctl_exe) or \
                 not os.access(udisksctl_exe, os.X_OK):
-            return False, "udisks2 (udisksctl) is required."
+            missing_reqs.append("udisks2 (udisksctl) is required.")
 
         # exfat
         mount_exfat = '/sbin/mount.exfat'
         if not system_has_exfat() and (not os.path.exists(mount_exfat) or
                                        not os.access(mount_exfat, os.X_OK)):
-            return False, "exfat (kernel module) or exfat-fuse is required."
+            missing_reqs.append(
+                "exfat (kernel module) or exfat-fuse is required.")
 
-    return True, None
+    return len(missing_reqs) == 0, missing_reqs
