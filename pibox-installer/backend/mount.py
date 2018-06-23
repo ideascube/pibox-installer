@@ -13,6 +13,7 @@ import subprocess
 
 from data import data_dir
 from backend.content import get_content
+from backend.qemu import get_qemu_image_size
 from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
 
 
@@ -61,6 +62,12 @@ def get_start_offset(root_size):
     data_start = roundup(root_end + sector_size)
 
     return data_start * sector_size
+
+
+def get_partition_size(image_fpath, start_bytes, logger):
+    ''' bytes size of the data partition '''
+    full_size = get_qemu_image_size(image_fpath, logger)
+    return full_size - start_bytes
 
 
 def install_imdisk(logger=None, force=False):
@@ -209,11 +216,13 @@ def mount_data_partition(image_fpath, logger=None):
         # find out offset for third partition from the root part size
         base_image = get_content('pibox_base_image')
         offset = str(get_start_offset(base_image.get('root_partition_size')))
+        size = get_partition_size(image_fpath, offset, logger)
 
         # prepare loop device
         udisks_loop = subprocess_pretty_call(
             [udisksctl_exe, 'loop-setup',
-             '--offset', offset, '--file', image_fpath, udisks_nou],
+             '--offset', offset, '--size', size,
+             '--file', image_fpath, udisks_nou],
             logger, check=True, decode=True)[0].strip()
 
         target_dev = re.search(r"(\/dev\/loop[0-9]+)\.$",

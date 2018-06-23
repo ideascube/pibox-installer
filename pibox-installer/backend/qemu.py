@@ -57,6 +57,17 @@ def get_free_port():
     s.close()
     return port
 
+def get_qemu_image_size(image_fpath, logger):
+    output = subprocess_pretty_check_call([qemu_img_exe_path, "info", "-f", "raw", image_fpath], logger)
+    matches = []
+    for line_number, line in enumerate(output):
+        if line_number == 2:
+            matches = re.findall(b"virtual size: \S*G \((\d*) bytes\)", line)
+
+    if len(matches) != 1:
+        raise QemuException("cannot get image %s size from qemu-img info" % image_fpath)
+    return int(matches[0])
+
 class Emulator:
     _image = None
     _kernel = None
@@ -109,15 +120,7 @@ class Emulator:
         return _RunningInstance(self, self._logger, cancel_event)
 
     def get_image_size(self):
-        output = subprocess_pretty_check_call([qemu_img_exe_path, "info", "-f", "raw", self._image], self._logger)
-        matches = []
-        for line_number, line in enumerate(output):
-            if line_number == 2:
-                matches = re.findall(b"virtual size: \S*G \((\d*) bytes\)", line)
-
-        if len(matches) != 1:
-            raise QemuException("cannot get image %s size from qemu-img info" % self._image)
-        return int(matches[0])
+        return get_qemu_image_size(self._image, self._logger)
 
     def resize_image(self, size):
         subprocess_pretty_check_call([qemu_img_exe_path, "resize", "-f", "raw", self._image, "{}".format(size)], self._logger)
