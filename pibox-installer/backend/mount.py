@@ -215,13 +215,13 @@ def mount_data_partition(image_fpath, logger=None):
     if sys.platform == "linux":
         # find out offset for third partition from the root part size
         base_image = get_content('pibox_base_image')
-        offset = str(get_start_offset(base_image.get('root_partition_size')))
+        offset = get_start_offset(base_image.get('root_partition_size'))
         size = get_partition_size(image_fpath, offset, logger)
 
         # prepare loop device
         udisks_loop = subprocess_pretty_call(
             [udisksctl_exe, 'loop-setup',
-             '--offset', offset, '--size', size,
+             '--offset', str(offset), '--size', str(size),
              '--file', image_fpath, udisks_nou],
             logger, check=True, decode=True)[0].strip()
 
