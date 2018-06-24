@@ -59,6 +59,7 @@ def get_partitions_boundaries(lines, root_size, disk_size=None):
 
     sector_size = 512
     round_bound = 128
+    end_margin = 4194304  # 4MiB
 
     def roundup(sector):
         return rounddown(sector) + round_bound \
@@ -105,7 +106,14 @@ def get_partitions_boundaries(lines, root_size, disk_size=None):
     root_end = roundup(nb_clusters_endofroot)
 
     data_start = roundup(root_end + sector_size)
-    data_end = number_of_sector - 1
+
+    # data_end = number_of_sector (using full avail space)
+
+    # end second partition on a predicatble cluster
+    # full_size - root_size (root_end) - margin
+    data_bytes = disk_size * ONE_GB - root_size * ONE_GB - end_margin
+    data_clusters = data_bytes // sector_size
+    data_end = data_start + data_clusters
 
     return root_start, root_end, data_start, data_end
 

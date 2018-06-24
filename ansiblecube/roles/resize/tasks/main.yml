@@ -30,6 +30,10 @@
     dest: /tmp/partition_boundaries.py
   tags: ['master', 'resize']
 
+- name: display disk table
+  command: fdisk -l {{ disk }}
+  tags: ['master', 'resize']
+
 - name: Analyze disk partition table
   become: yes
   shell: fdisk -l {{ disk }} | python /tmp/partition_boundaries.py {{ root_partition_size }} {{ disk_size }}
@@ -97,9 +101,13 @@
 # 256 * 512 = 128KiB
 - name: Formatting third partition (exfat)
   become: yes
-  command: mkfs.exfat -n data -s 256 {{ data_partition }}
+  # command: mkfs.exfat -n data -s 256 {{ data_partition }}
   # command: mkfs.exfat -n data -p 0 -s {{ cluster_size_cmd.stdout.strip() }} {{ data_partition }}
-  # command: mkfs.exfat -n data {{ data_partition }}
+  command: mkfs.exfat -n data {{ data_partition }}
+  tags: ['master', 'resize']
+
+- name: display disk table
+  command: fdisk -l {{ disk }}
   tags: ['master', 'resize']
 
 - name: create {{ data_path }} placeholder

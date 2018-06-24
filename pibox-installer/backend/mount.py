@@ -42,12 +42,13 @@ elif sys.platform == "darwin":
     umount_exe = '/sbin/umount'
 
 
-def get_start_offset(root_size):
-    ''' bytes offset to the start of the third partition
+def get_start_offset(root_size, disk_size):
+    ''' bytes start offset and bytes size of the third partition
 
         third partition directly follows root partition '''
     sector_size = 512
     round_bound = 128
+    end_margin = 4194304  # 4MiB
 
     def roundup(sector):
         return rounddown(sector) + round_bound \
@@ -60,8 +61,13 @@ def get_start_offset(root_size):
     nb_clusters_endofroot = root_size // sector_size
     root_end = roundup(nb_clusters_endofroot)
     data_start = roundup(root_end + sector_size)
+    data_bytes = disk_size - root_size - end_margin
+    # data_clusters = data_bytes // sector_size
+    # data_end = data_start + data_clusters
+    # data_size = data_end - data_start
+    # data_size * sector_size
 
-    return data_start * sector_size
+    return data_start * sector_size, data_bytes
 
 
 def get_partition_size(image_fpath, start_bytes, logger):
@@ -215,8 +221,10 @@ def mount_data_partition(image_fpath, logger=None):
     if sys.platform == "linux":
         # find out offset for third partition from the root part size
         base_image = get_content('pibox_base_image')
-        offset = get_start_offset(base_image.get('root_partition_size'))
-        size = get_partition_size(image_fpath, offset, logger)
+        disk_size = get_qemu_image_size(image_fpath, logger)
+        offset, size = get_start_offset(
+            base_image.get('root_partition_size'), disk_size)
+        # size = get_partition_size(image_fpath, offset, logger)
 
         # prepare loop device
         udisks_loop = subprocess_pretty_call(
@@ -289,7 +297,7 @@ def unmount_data_partition(mount_point, device, logger=None):
         # sleep to prevent unmount failures
         time.sleep(5)
         # unmount using device path
-        subprocess_pretty_check_call(
+        subprocess_pretty_call(
             [udisksctl_exe, 'unmount',
              '--block-device', device, udisks_nou], logger)
         try:
