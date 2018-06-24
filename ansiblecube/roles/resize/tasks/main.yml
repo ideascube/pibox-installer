@@ -110,6 +110,18 @@
   command: fdisk -l {{ disk }}
   tags: ['master', 'resize']
 
+- name: display disk table
+  command: fdisk -l {{ data_partition }}
+  tags: ['master', 'resize']
+
+- name: display exfat table
+  command: dumpexfat -s {{ data_partition }}
+  tags: ['master', 'resize']
+
+- name: check exfat
+  command: fsck.exfat {{ data_partition }}
+  tags: ['master', 'resize']
+
 - name: create {{ data_path }} placeholder
   file:
     dest: "{{ data_path }}"
