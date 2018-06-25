@@ -102,10 +102,10 @@ def get_partitions_boundaries(lines, root_size, disk_size=None):
     nb_clusters_endofroot = size_up_to_root_b // sector_size
 
     # align partitions (otherwise exfat-fuse gets often corrupt)
-    root_start = roundup(second_partition_start)
-    root_end = roundup(nb_clusters_endofroot)
+    root_start = second_partition_start
+    root_end = nb_clusters_endofroot
 
-    data_start = roundup(root_end + sector_size)
+    data_start = root_end + 1
 
     # data_end = number_of_sector (using full avail space)
 

@@ -103,7 +103,7 @@
   become: yes
   # command: mkfs.exfat -n data -s 256 {{ data_partition }}
   # command: mkfs.exfat -n data -p 0 -s {{ cluster_size_cmd.stdout.strip() }} {{ data_partition }}
-  command: mkfs.exfat -n data {{ data_partition }}
+  command: mkfs.exfat {{ data_partition }}
   tags: ['master', 'resize']
 
 - name: display disk table

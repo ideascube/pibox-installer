@@ -114,20 +114,20 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                 name=dl_content['name'],
                 size=human_readable_size(dl_content['archive_size'])))
 
-            rf = download_content(dl_content, logger, build_dir)
-            if not rf.successful:
-                logger.err("Error downloading {u} to {p}\n{e}"
-                           .format(u=dl_content['url'],
-                                   p=rf.fpath, e=rf.exception))
-                raise rf.exception if rf.exception else IOError
-            elif rf.found:
-                logger.std("Reusing already downloaded {p}".format(p=rf.fpath))
-            else:
-                logger.std("Saved `{p}` successfuly: {s}"
-                           .format(p=dl_content['name'],
-                                   s=human_readable_size(rf.downloaded_size)))
-            retrieved += dl_content['archive_size']
-            logger.progress(retrieved / archives_total_size)
+            # rf = download_content(dl_content, logger, build_dir)
+            # if not rf.successful:
+            #     logger.err("Error downloading {u} to {p}\n{e}"
+            #                .format(u=dl_content['url'],
+            #                        p=rf.fpath, e=rf.exception))
+            #     raise rf.exception if rf.exception else IOError
+            # elif rf.found:
+            #     logger.std("Reusing already downloaded {p}".format(p=rf.fpath))
+            # else:
+            #     logger.std("Saved `{p}` successfuly: {s}"
+            #                .format(p=dl_content['name'],
+            #                        s=human_readable_size(rf.downloaded_size)))
+            # retrieved += dl_content['archive_size']
+            # logger.progress(retrieved / archives_total_size)
 
         # instanciate emulator
         logger.stage('setup')

@@ -59,13 +59,9 @@ def get_start_offset(root_size, disk_size):
             if sector % round_bound != 0 else sector
 
     nb_clusters_endofroot = root_size // sector_size
-    root_end = roundup(nb_clusters_endofroot)
-    data_start = roundup(root_end + sector_size)
+    root_end = nb_clusters_endofroot
+    data_start = root_end + 1
     data_bytes = disk_size - root_size - end_margin
-    # data_clusters = data_bytes // sector_size
-    # data_end = data_start + data_clusters
-    # data_size = data_end - data_start
-    # data_size * sector_size
 
     return data_start * sector_size, data_bytes
 
