@@ -103,7 +103,7 @@ def get_partitions_boundaries(lines, root_size, disk_size=None):
 
     # align partitions (otherwise exfat-fuse gets often corrupt)
     root_start = second_partition_start
-    root_end = nb_clusters_endofroot
+    root_end = roundup(nb_clusters_endofroot)
 
     data_start = root_end + 1
 

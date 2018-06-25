@@ -65,23 +65,26 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         logger.stage('master')
         logger.step("Retrieving pibox base image file")
         base_image = get_content('pibox_base_image')
-        rf = download_content(base_image, logger, build_dir)
-        if not rf.successful:
-            logger.err("Failed to download pibox base image.\n{e}"
-                       .format(e=rf.exception))
-            sys.exit(1)
-        elif rf.found:
-            logger.std("Reusing already downloaded base image ZIP file")
-        logger.progress(.5)
+        # rf = download_content(base_image, logger, build_dir)
+        # if not rf.successful:
+        #     logger.err("Failed to download pibox base image.\n{e}"
+        #                .format(e=rf.exception))
+        #     sys.exit(1)
+        # elif rf.found:
+        #     logger.std("Reusing already downloaded base image ZIP file")
+        # logger.progress(.5)
 
-        # extract base image and rename
-        logger.step("Extracting base image from ZIP file")
-        unzip_file(archive_fpath=rf.fpath,
-                   src_fname=base_image['name'].replace('.zip', ''),
-                   build_folder=build_dir,
-                   dest_fpath=image_building_path)
-        logger.std("Extraction complete: {p}".format(p=image_building_path))
-        logger.progress(.9)
+        # # extract base image and rename
+        # logger.step("Extracting base image from ZIP file")
+        # unzip_file(archive_fpath=rf.fpath,
+        #            src_fname=base_image['name'].replace('.zip', ''),
+        #            build_folder=build_dir,
+        #            dest_fpath=image_building_path)
+        # logger.std("Extraction complete: {p}".format(p=image_building_path))
+        # logger.progress(.9)
+
+        import shutil
+        shutil.move(os.path.join(build_dir, 'test.img'), image_building_path)
 
         if not os.path.exists(image_building_path):
             raise IOError("image path does not exists: {}"
