@@ -185,6 +185,34 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
 
         # mount image's 3rd partition on host
         logger.stage('copy')
+        if sys.platform == "linux":
+            logger.step("mkfs on host")
+            from backend.qemu import get_qemu_image_size
+            from backend.mount import (get_start_offset,
+                                       udisksctl_exe, udisks_nou)
+            # find out offset for third partition from the root part size
+            base_image = get_content('pibox_base_image')
+            disk_size = get_qemu_image_size(image_building_path, logger)
+            offset, size = get_start_offset(
+                base_image.get('root_partition_size'), disk_size)
+
+            # prepare loop device
+            udisks_loop = subprocess_pretty_call(
+                [udisksctl_exe, 'loop-setup',
+                 '--offset', str(offset), '--size', str(size),
+                 '--file', image_building_path, udisks_nou],
+                logger, check=True, decode=True)[0].strip()
+
+            target_dev = re.search(r"(\/dev\/loop[0-9]+)\.$",
+                                   udisks_loop).groups()[0]
+
+            subprocess_pretty_call([
+                '/sbin/mkfs.exfat', '-n', 'data', target_dev])
+
+            subprocess_pretty_call([
+                udisksctl_exe, 'loop-delete',
+                '--block-device', target_dev, udisks_nou], logger)
+
         logger.step("Mounting data partition on host")
 
         # copy contents from cache to mount point
