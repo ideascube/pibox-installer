@@ -70,9 +70,9 @@
   become: yes
   become_user: "{{ username }}"
   replace:
-    name: "{{ edupi_root }}/edupi/settings.py"
+    path: "{{ edupi_root }}/edupi/settings.py"
     regexp: '^ALLOWED_HOSTS =.*$'
-    replace: 'ALLOWED_HOSTS = [''.{{ fqdn }}'', ''{{ fqdn }}'', ''{{ hostname }}'', ''localhost'']'
+    replace: 'ALLOWED_HOSTS = ["{{ edupi_fqdn }}", ".{{ fqdn }}", "{{ fqdn }}", "{{ hostname }}", "localhost"]'
   tags: ['setup', 'rename']
 
 - name: Replace EduPi DATA_ROOT
