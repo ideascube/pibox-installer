@@ -30,7 +30,7 @@
     state: present
   with_items: '{{ packages | default(omit) }}'
   when: packages | length
-  tags: move-content
+  tags: ['move-content', 'rename']
 
 - name: collect static for ideascube
   become: yes
