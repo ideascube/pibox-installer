@@ -34,34 +34,34 @@
 
       # master, rename
     - role: captive_portal
-      when: captive_portal|bool
+      when: ansible_local.config.captive_portal|bool
 
       # content setup (install, dependencies)
     - role: wikifundi_setup
-      when: wikifundi_languages | length
+      when: ansible_local.config.wikifundi_languages | length
 
     - role: aflatoun_setup
-      when: aflatoun_languages | length
+      when: ansible_local.config.aflatoun_languages | length
 
     - role: edupi
-      when: edupi|bool
+      when: ansible_local.config.edupi|bool
 
     - role: kalite_setup
-      when: kalite_languages | length
+      when: ansible_local.config.kalite_languages | length
 
       # move content
     - role: packages
-      when: packages | length
+      when: ansible_local.config.packages | length
       tags: move-content
 
     - role: kalite_content
-      when: kalite_languages | length
+      when: ansible_local.config.kalite_languages | length
 
     - role: aflatoun_content
-      when: aflatoun_languages | length
+      when: ansible_local.config.aflatoun_languages | length
 
     - role: wikifundi_content
-      when: wikifundi_languages | length
+      when: ansible_local.config.wikifundi_languages | length
 
     - role: services
       tags: seal

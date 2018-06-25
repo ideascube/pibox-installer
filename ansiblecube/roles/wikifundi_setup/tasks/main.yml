@@ -14,7 +14,7 @@
     dest: "/var/www/{{ item }}.africapack.kiwix.org"
     state: link
     force: yes
-  with_items: "{{ wikifundi_languages | default(omit) }}"
+  with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
   tags: ['setup', 'reconfigure']
 
 - name: Install dependencies (tex)
@@ -100,6 +100,6 @@
   template:
     src: wikifundi.vhost.j2
     dest: /etc/nginx/sites-available/{{ item }}.wikifundi
-  with_items: "{{ wikifundi_languages | default(omit) }}"
+  with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
   notify: restart nginx
   tags: ['setup', 'rename']

@@ -26,5 +26,5 @@
     KALITE_PYTHON: "{{ aflatoun_env }}/bin/python"
     KALITE_HOME: "{{ aflatoun_root }}"
   command: "{{ aflatoun_env }}/bin/kalite manage retrievecontentpack local {{ item }} {{ aflatoun_langpack_prefix }}{{ item }}.zip"
-  with_items: "{{ aflatoun_languages }}"
+  with_items: "{{ ansible_local.config.aflatoun_languages }}"
   tags: move-content

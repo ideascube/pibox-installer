@@ -3,12 +3,12 @@
   file:
     path: "{{ wikifundi_root }}/{{ item }}.africapack.kiwix.org"
     state: absent
-  with_items: "{{ wikifundi_languages | default(omit) }}"
+  with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
   tags: move-content
 
 - name: Move downloaded content to proper location
   command: mv {{ wikifundi_langpack_prefix }}{{ item }}/ {{ wikifundi_root }}/{{ item }}.africapack.kiwix.org
-  with_items: "{{ wikifundi_languages | default(omit) }}"
+  with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
   notify: restart nginx
   tags: move-content
 
@@ -18,7 +18,7 @@
     name: "{{ wikifundi_root }}/{{ item }}.africapack.kiwix.org/w/LocalSettings.custom.php"
     regexp: '^\<\?php$'
     replace: '<?php\nputenv("TMP={$wgUploadDirectory}/temp");\n$wgScribuntoEngineConf[''luastandalone''][''luaPath''] = "/usr/bin/lua5.1";'
-  with_items: "{{ wikifundi_languages | default(omit) }}"
+  with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
   notify: restart nginx
   tags: move-content
 
@@ -27,7 +27,7 @@
     name: "{{ wikifundi_root }}/{{ item }}.africapack.kiwix.org/w/LocalSettings.custom.php"
     regexp: "^.+'domain' => '{{ item }}.africapack.kiwix.org',$"
     replace: "\t\t\t\t\t\t   'domain' => '{{ item }}.{{ wikifundi_fqdn }}',"
-  with_items: "{{ wikifundi_languages | default(omit) }}"
+  with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
   notify: restart nginx
   tags: move-content
 
@@ -37,7 +37,7 @@
     line: '$wgMaxUploadSize = 1024*1024*5;'
     insertbefore: '^\?>$'
     state: present
-  with_items: "{{ wikifundi_languages | default(omit) }}"
+  with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
   tags: move-content
 
 # fix extensions in the content
@@ -48,7 +48,7 @@
     make clean all;
     cd {{ wikifundi_root }}/{{ item }}.africapack.kiwix.org/w/extensions/Math/texvccheck;
     make clean all;
-  with_items: "{{ wikifundi_languages | default(omit) }}"
+  with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
   notify: restart nginx
   tags: move-content
 
@@ -69,6 +69,6 @@
     name: "{{ wikifundi_parsoid }}/localsettings.js"
     regexp: "{{ item }}.africapack.kiwix.org"
     replace: "{{ item }}.{{ wikifundi_fqdn }}"
-  with_items: "{{ wikifundi_languages | default(omit) }}"
+  with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
   notify: restart nginx
   tags: move-content
