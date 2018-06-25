@@ -13,6 +13,35 @@ before_script:
   - ssh-keyscan download.kiwix.org >> ~/.ssh/known_hosts
   - chmod 644 ~/.ssh/known_hosts
 
+build-linux:
+  stage: build
+  variables:
+    LANG: 'en_US.UTF-8'
+  script:
+    # download custom kernel
+    - wget http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
+    - unzip pibox-installer-vexpress-boot.zip
+
+    # download a static qemu
+    - wget http://download.kiwix.org/dev/qemu-2.12.0-linux-x86_64.tar.gz
+    - tar xf qemu-2.12.0-linux-x86_64.tar.gz
+
+    # Install python dependancies
+    - pip3 install -r requirements-linux.txt
+
+    # Install and run pyinstaller
+    - pip3 install https://github.com/thiolliere/pyinstaller/archive/develop.zip
+    - pyinstaller --log-level=DEBUG pibox-installer-linux.spec
+    - cat build/pibox-installer-linux/warnpibox-installer-linux.txt
+    - cd dist
+    - tar czvf ../pibox-installer-linux_${CI_COMMIT_REF_SLUG}.tar.gz pibox-installer
+    - cd ..
+
+  artifacts:
+    paths:
+    - pibox-installer-linux_${CI_COMMIT_REF_SLUG}.tar.gz
+    expire_in: 1 week
+
 build-pibox-image:
   stage: build
   variables:
