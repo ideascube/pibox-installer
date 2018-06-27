@@ -11,7 +11,6 @@
 * Friendlier cli arguments handling
 * Devices permissions restored at the end of the process (Linux, macOS)
 * Bundled imdisk (image file mounter) on Windows
-* Bundled exfat-fuse on linux
 * Bundled Exfat support in vexpress (QEMU) kernel and as a kernel module on image
 * Using GB (decimal) sizes for disk/images/partitions and GiB (binary) for contents
 * Updated ideacube with ZIM move instead of copy and skip-sha256
