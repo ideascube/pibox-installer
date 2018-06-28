@@ -11,7 +11,7 @@ import threading
 import posixpath
 import psutil
 import multiprocessing
-from .util import ONE_GiB, ONE_MiB, human_readable_size
+from util import ONE_GiB, ONE_MiB, human_readable_size
 from .util import startup_info_args
 from .util import subprocess_pretty_check_call
 
