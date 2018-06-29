@@ -20,6 +20,9 @@
       # master, resize
     - role: resize
 
+    # master
+    - role: upgrade
+
     - role: nginx
       tags: master
 
