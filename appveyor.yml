@@ -6,6 +6,10 @@ image: Visual Studio 2015
 
 build: off
 
+environment:
+  kiwix_certificate_secret:
+    secure: 5NoKiSa8D/4H1mZDpW/QvQ==
+
 platform:
   - x64
   - x86
@@ -13,7 +17,7 @@ platform:
 install:
   # decrypt certificate
   - nuget install secure-file -ExcludeVersion
-  - secure-file\tools\secure-file -decrypt pibox_installer_ci_rsa.appveyor_enc -secret %certificate_secret% -out pibox_installer_ci_rsa
+  - secure-file\tools\secure-file -decrypt pibox_installer_ci_rsa-kiwix.appveyor_enc -secret %kiwix_certificate_secret% -out pibox_installer_ci_rsa-kiwix
 
   # Download pibox-installer-vexpress-boot
   - appveyor DownloadFile "http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip"
@@ -91,12 +95,12 @@ install:
 
   - if %platform%==x86 move C:\projects\pibox-installer\windows_bundle\pibox-installer.exe C:\msys64\home\appveyor\pibox-installer-win32.exe
   - if %platform%==x64 move C:\projects\pibox-installer\windows_bundle\pibox-installer.exe C:\msys64\home\appveyor\pibox-installer-win64.exe
-  - move C:\projects\pibox-installer\pibox_installer_ci_rsa C:\msys64\home\appveyor\
+  - move C:\projects\pibox-installer\pibox_installer_ci_rsa-kiwix C:\msys64\home\appveyor\
 
   - if defined APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH (echo %APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH% > branch.txt) else (echo %APPVEYOR_REPO_BRANCH% > branch.txt)
   - move branch.txt C:\msys64\home\appveyor\
-  - if %platform%==x86 C:\msys64\usr\bin\bash --login -c "scp -r -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa pibox-installer-win32.exe pibox_ci@buildbot.wan.bsf-intranet.org:/srv/repos/pibox/nightlies/$(date +'%%Y-%%m-%%d')/pibox-installer-win32-$(cat branch.txt | sed 's/ //g').exe"
-  - if %platform%==x64 C:\msys64\usr\bin\bash --login -c "scp -r -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa pibox-installer-win64.exe pibox_ci@buildbot.wan.bsf-intranet.org:/srv/repos/pibox/nightlies/$(date +'%%Y-%%m-%%d')/pibox-installer-win64-$(cat branch.txt | sed 's/ //g').exe"
+  - if %platform%==x86 C:\msys64\usr\bin\bash --login -c "scp -r -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa-kiwix pibox-installer-win32.exe nightlybot@download.kiwix.org:/var/www/download.kiwix.org/nightly/$(date +'%%Y-%%m-%%d')/pibox-installer-win32-$(cat branch.txt | sed 's/ //g').exe"
+  - if %platform%==x64 C:\msys64\usr\bin\bash --login -c "scp -r -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa-kiwix pibox-installer-win64.exe nightlybot@download.kiwix.org:/var/www/download.kiwix.org/nightly/$(date +'%%Y-%%m-%%d')/pibox-installer-win64-$(cat branch.txt | sed 's/ //g').exe"
 
   - if defined APPVEYOR_REPO_TAG_NAME (echo %APPVEYOR_REPO_TAG_NAME% > C:\msys64\home\appveyor\tag.txt)
-  - C:\msys64\usr\bin\bash --login -c "PIBOX_RELEASE=$(cat tag.txt | sed 's/ //g' | grep -x 'v[[:digit:]]\+.[[:digit:]]\+\(.[[:digit:]]\+\)*\(-rc[[:digit:]]\+\)\?') || true; if [ $PIBOX_RELEASE ]; then mkdir -p releases/$PIBOX_RELEASE/; cp pibox-installer-win*.exe releases/$PIBOX_RELEASE/; scp -r -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa releases pibox_ci@buildbot.wan.bsf-intranet.org:/srv/repos/pibox/; fi"
+  - C:\msys64\usr\bin\bash --login -c "PIBOX_RELEASE=$(cat tag.txt | sed 's/ //g' | grep -x 'v[[:digit:]]\+.[[:digit:]]\+\(.[[:digit:]]\+\)*\(-rc[[:digit:]]\+\)\?') || true; if [ $PIBOX_RELEASE ]; then mkdir -p releases/$PIBOX_RELEASE/; cp pibox-installer-win*.exe releases/$PIBOX_RELEASE/; scp -r -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa-kiwix releases/$PIBOX_RELEASE nightlybot@download.kiwix.org:/var/www/download.kiwix.org/release/kiwix-plug_installer/; fi"
