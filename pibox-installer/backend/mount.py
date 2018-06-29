@@ -30,9 +30,10 @@ def system_has_exfat():
 
 if sys.platform == "win32":
     imdiskinst = os.path.join(data_dir, 'imdiskinst')
-    # imdisk installs in System32 on all platforms
     system32 = os.path.join(os.environ['SystemRoot'], 'System32')
-    imdisk_exe = os.path.join(system32, 'imdisk.exe')
+    system = os.path.join(os.environ['SystemRoot'], 'SysWOW64') \
+        if platform.architecture()[0] == '64bit' else system32
+    imdisk_exe = os.path.join(system, 'imdisk.exe')
 elif sys.platform == "linux":
     udisksctl_exe = '/usr/bin/udisksctl'
     udisks_nou = '--no-user-interaction'
@@ -77,18 +78,19 @@ def install_imdisk(logger=None, force=False):
 
     # assume already installed
     if os.path.exists(imdisk_exe) and not force:
+        logger.std("imdisk present at {}".format(imdisk_exe))
         return
 
     # disable integrity checks (allow install of unsigned driver)
-    subprocess_pretty_call(['bcdedit.exe', '/set', 'nointegritychecks', 'on'],
-                           logger)
+    subprocess_pretty_call([os.path.join(system32, 'bcdedit.exe'),
+                           '/set', 'nointegritychecks', 'on'], logger)
 
     # install the driver and files
     cwd = os.getcwd()
     try:
         os.chdir(imdiskinst)
         ret, _ = subprocess_pretty_call([
-            os.path.join(system32, 'rundll32.exe'),
+            os.path.join(system, 'rundll32.exe'),
             'setupapi.dll,InstallHinfSection',
             'DefaultInstall', '132',  '.\\imdisk.inf'], logger)
     except Exception:
