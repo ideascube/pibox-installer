@@ -84,17 +84,17 @@ def run_for_image(machine, root_partition_size, disk_size):
     machine.exec_cmd("sudo mkdir --mode 0755 -p /etc/ansible/facts.d")
 
     # default configuration on the master: all contents enabled for setup tag
-    extra_vars = {
-        'project_name': "default",
-        'timezone': "UTC",
-        'root_partition_size': root_partition_size // ONE_GB,
-        'disk_size': disk_size // ONE_GB,
-
-        'kalite_languages': ['en', 'fr', 'es'],
-        'wikifundi_languages': ['en', 'fr'],
-        'aflatoun_languages': ['en', 'fr'],
-        'edupi': True,
-    }
+    extra_vars, _ = build_extra_vars(
+        name="default", timezone="UTC",
+        language="en", language_name="English", wifi_pwd="",
+        edupi=True,
+        wikifundi_languages=['en', 'fr'],
+        aflatoun_languages=['en', 'fr'],
+        kalite_languages=['en', 'fr', 'es'],
+        packages=[],
+        admin_account=None,
+        root_partition_size=root_partition_size // ONE_GB,
+        disk_size=disk_size // ONE_GB)
 
     run(machine, tags, extra_vars)
 
@@ -159,7 +159,7 @@ def run_phase_one(machine, extra_vars, secret_keys,
 
 def run_phase_two(machine, extra_vars, secret_keys):
     ''' run ansiblecube to complete config now that content is in data part '''
-    
+
     tags = ['move-content', 'seal']
 
     run(machine, tags, extra_vars, secret_keys)
