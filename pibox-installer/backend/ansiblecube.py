@@ -93,8 +93,8 @@ def run_for_image(machine, root_partition_size, disk_size):
         kalite_languages=['en', 'fr', 'es'],
         packages=[],
         admin_account=None,
-        root_partition_size=root_partition_size // ONE_GB,
-        disk_size=disk_size // ONE_GB)
+        root_partition_size=root_partition_size,
+        disk_size=disk_size)
 
     run(machine, tags, extra_vars)
 
