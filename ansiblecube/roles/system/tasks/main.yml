@@ -119,6 +119,14 @@
     deb: "{{ mirror }}/dev/exfat-utils_1.2.8-1_armhf.deb"
   tags: ['master', 'resize']
 
+- name: remove resize_fs from first boot
+  replace:
+    path: /boot/cmdline.txt
+    regexp: ' init=/usr/lib/raspi-config/init_resize.sh'
+    replace: ''
+    backup: yes
+  tags: master
+
 - name: Install avahi packages
   apt:
     name: "{{ item }}"
