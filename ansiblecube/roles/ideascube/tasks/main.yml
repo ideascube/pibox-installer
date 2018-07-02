@@ -34,6 +34,8 @@
   tags: master
 
 - name: Create ideascube handlers directories
+  become: yes
+  become_user: "{{ username }}"
   file:
     path: "{{ data_path }}/ideascube"
     state: directory
@@ -50,12 +52,16 @@
   tags: reconfigure
 
 - name: move ideascube handlers directories
+  become: yes
+  become_user: "{{ username }}"
   command: mv /var/ideascube/{{ item }} {{ data_path }}/ideascube/
   with_items: "{{ ideascube_handlers }}"
   ignore_errors: yes
   tags: reconfigure
 
 - name: Symlink ideascube handlers in idascube folder
+  become: yes
+  become_user: "{{ username }}"
   file:
     src: "{{ data_path }}/ideascube/{{ item }}"
     dest: "/var/ideascube/{{ item }}"
