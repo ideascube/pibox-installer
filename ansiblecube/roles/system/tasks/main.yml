@@ -1,4 +1,13 @@
 ---
+- name: prevent kernel from being upgraded
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  with_items:
+    - raspberrypi-kernel
+    - raspberrypi-bootloader
+  tags: master
+
 - name: Remove udev rules for wifi
   file:
     path: /etc/udev/rules.d/70-persistent-net.rules
