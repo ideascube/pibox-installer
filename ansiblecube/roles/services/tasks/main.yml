@@ -34,6 +34,7 @@
   when: ansible_local.config.wikifundi_languages | length
 
 - include_tasks: enable_service.yml service=dnsmasq
+- include_tasks: enable_service.yml service=hostapd
 
 # TODO: set to no
 - name: Disable SSH

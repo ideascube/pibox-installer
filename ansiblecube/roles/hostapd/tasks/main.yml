@@ -36,6 +36,7 @@
     owner: root
     group: root
     mode: 0664
+  notify: reload systemd
   tags: master
 
 - include_tasks: enable_service.yml service=hostapd
