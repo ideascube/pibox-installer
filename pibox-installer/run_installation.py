@@ -194,6 +194,8 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         try:
             mount_point, device = mount_data_partition(
                 image_building_path, logger)
+            logger.step("Listing content of {}".format(mount_point))
+            logger.std("\n".join(os.listdir(mount_point)))
             logger.step("Processing downloaded content onto data partition")
             expanded_total_size = sum([c['expanded_size'] for c in downloads])
             processed = 0
@@ -210,6 +212,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                 processed += sum([c['expanded_size']
                                   for c in content_dl_cb(**cb_kwargs)])
                 logger.progress(processed / expanded_total_size)
+            os.sync()
         except Exception as exp:
             try:
                 unmount_data_partition(mount_point, device, logger)
