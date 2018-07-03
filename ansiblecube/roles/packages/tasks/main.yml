@@ -1,4 +1,19 @@
 ---
+- name: Make sure handlers are all present on disk
+  become: yes
+  become_user: "{{ username }}"
+  file:
+    path: "{{ data_path }}/ideascube/{{ item }}"
+    state: directory
+  with_items: "{{ ideascube_handlers }}"
+  tags: move-content
+
+- name: create kiwix-data folder
+  become: yes
+  become_user: "{{ username }}"
+  shell: mkdir -p {{ data_path }}/ideascube/kiwix/data
+  tags: move-content
+
 - name: Install catalogs
   become: yes
   become_user: "{{ username }}"
