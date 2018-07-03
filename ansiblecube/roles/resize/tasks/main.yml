@@ -162,3 +162,7 @@
     - "{{ data_path }}/test"
   tags: ['setup', 'reconfigure']
 
+- name: List content of data partition
+  command: ls -l {{ data_path }}
+  tags: ['setup', 'reconfigure', 'move-content']
+

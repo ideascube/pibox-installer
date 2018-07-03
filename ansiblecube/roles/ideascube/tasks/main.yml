@@ -33,7 +33,7 @@
   register: ideascube_newversion
   tags: master
 
-- name: Create ideascube handlers directories
+- name: Create ideascube folder on data part
   become: yes
   become_user: "{{ username }}"
   file:
@@ -41,22 +41,25 @@
     state: directory
   tags: reconfigure
 
-- name: change ownership of ideascube handlers directories
+- name: Make sure handlers are all present on disk
+  become: yes
+  become_user: "{{ username }}"
   file:
-    path: /var/ideascube/{{ item }}
-    owner: "{{ username }}"
-    group: www-data
-    mode: 0775
+    path: "/var/ideascube/{{ item }}"
     state: directory
   with_items: "{{ ideascube_handlers }}"
   tags: reconfigure
 
-- name: move ideascube handlers directories
-  become: yes
-  become_user: "{{ username }}"
-  command: mv /var/ideascube/{{ item }} {{ data_path }}/ideascube/
+- name: move ideascube handlers to data part
+  command: rsync -a --no-owner --no-group --remove-source-files "/var/ideascube/{{ item }}" "{{ data_path }}/ideascube/"
   with_items: "{{ ideascube_handlers }}"
-  ignore_errors: yes
+  tags: reconfigure
+
+- name: make sure ideascube handlers are gone
+  file:
+    path: "/var/ideascube/{{ item }}"
+    state: absent
+  with_items: "{{ ideascube_handlers }}"
   tags: reconfigure
 
 - name: Symlink ideascube handlers in idascube folder
