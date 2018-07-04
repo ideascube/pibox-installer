@@ -186,56 +186,56 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
             ansiblecube.run_phase_one(emulation, extra_vars, secret_keys,
                                       logo=logo, favicon=favicon, css=css)
 
-        # mount image's 3rd partition on host
-        logger.stage('copy')
-        logger.step("Mounting data partition on host")
+        # # mount image's 3rd partition on host
+        # logger.stage('copy')
+        # logger.step("Mounting data partition on host")
 
-        # copy contents from cache to mount point
-        try:
-            mount_point, device = mount_data_partition(
-                image_building_path, logger)
-            logger.step("Listing content of {}".format(mount_point))
-            logger.std("\n".join(os.listdir(mount_point)))
-            logger.step("Processing downloaded content onto data partition")
-            expanded_total_size = sum([c['expanded_size'] for c in downloads])
-            processed = 0
+        # # copy contents from cache to mount point
+        # try:
+        #     mount_point, device = mount_data_partition(
+        #         image_building_path, logger)
+        #     logger.step("Listing content of {}".format(mount_point))
+        #     logger.std("\n".join(os.listdir(mount_point)))
+        #     logger.step("Processing downloaded content onto data partition")
+        #     expanded_total_size = sum([c['expanded_size'] for c in downloads])
+        #     processed = 0
 
-            cache_folder = get_cache(build_dir)
-            for category, content_dl_cb, \
-                    content_run_cb, cb_kwargs in collection:
+        #     cache_folder = get_cache(build_dir)
+        #     for category, content_dl_cb, \
+        #             content_run_cb, cb_kwargs in collection:
 
-                logger.step("Processing {cat}".format(cat=category))
-                content_run_cb(cache_folder=cache_folder,
-                               mount_point=mount_point,
-                               logger=logger, **cb_kwargs)
-                # size of expanded files for this category (for progress)
-                processed += sum([c['expanded_size']
-                                  for c in content_dl_cb(**cb_kwargs)])
-                logger.progress(processed / expanded_total_size)
-            os.sync()
-        except Exception as exp:
-            try:
-                unmount_data_partition(mount_point, device, logger)
-            except NameError:
-                pass  # if mount_point or device are not defined
-            raise exp
+        #         logger.step("Processing {cat}".format(cat=category))
+        #         content_run_cb(cache_folder=cache_folder,
+        #                        mount_point=mount_point,
+        #                        logger=logger, **cb_kwargs)
+        #         # size of expanded files for this category (for progress)
+        #         processed += sum([c['expanded_size']
+        #                           for c in content_dl_cb(**cb_kwargs)])
+        #         logger.progress(processed / expanded_total_size)
+        #     os.sync()
+        # except Exception as exp:
+        #     try:
+        #         unmount_data_partition(mount_point, device, logger)
+        #     except NameError:
+        #         pass  # if mount_point or device are not defined
+        #     raise exp
 
-        # unmount partition
-        logger.step("Unmounting data partition")
-        unmount_data_partition(mount_point, device, logger)
+        # # unmount partition
+        # logger.step("Unmounting data partition")
+        # unmount_data_partition(mount_point, device, logger)
 
-        # rerun emulation for discovery
-        logger.stage('move')
-        logger.step("Starting-up VM again for content-discovery")
-        with emulator.run(cancel_event) as emulation:
-            logger.step("Re-run ansiblecube for move-content")
-            ansiblecube.run_phase_two(emulation, extra_vars, secret_keys)
+        # # rerun emulation for discovery
+        # logger.stage('move')
+        # logger.step("Starting-up VM again for content-discovery")
+        # with emulator.run(cancel_event) as emulation:
+        #     logger.step("Re-run ansiblecube for move-content")
+        #     ansiblecube.run_phase_two(emulation, extra_vars, secret_keys)
 
-        # Write image to SD Card
-        if sd_card:
-            logger.stage('write')
-            logger.step("Writting image to SD-card ({})".format(sd_card))
-            emulator.copy_image(sd_card)
+        # # Write image to SD Card
+        # if sd_card:
+        #     logger.stage('write')
+        #     logger.step("Writting image to SD-card ({})".format(sd_card))
+        #     emulator.copy_image(sd_card)
 
     except Exception as e:
         logger.failed(str(e))
