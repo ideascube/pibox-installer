@@ -25,11 +25,11 @@ matrix:
     - python3 -m pip install https://github.com/pyinstaller/pyinstaller/archive/93eec04eb2fbfc714d2c3453e04fd126e6a86f52.zip
 
     # Download pibox-installer-vexpress-boot
-    - wget http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
+    - wget http://mirror.download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
     - unzip pibox-installer-vexpress-boot.zip
 
     # Bundle QEMU
-    - wget http://download.kiwix.org/dev/qemu-2.12.0_macOS.tar
+    - wget http://mirror.download.kiwix.org/dev/qemu-2.12.0_macOS.tar
     - tar xf qemu-2.12.0_macOS.tar
 
     # Run PyInstaller
@@ -81,7 +81,7 @@ matrix:
           libgdk-pixbuf2.0-dev
     script:
     # update XZ (trusty version -5.0.5 is too old)
-    - wget http://download.kiwix.org/dev/xz-5.2.4.tar.gz
+    - wget http://mirror.download.kiwix.org/dev/xz-5.2.4.tar.gz
     - tar xf xz-5.2.4.tar.gz
     - cd xz-5.2.4
     - ./configure --enable-shared
@@ -91,11 +91,11 @@ matrix:
     - cd ..
 
     # Download pibox-installer-vexpress-boot
-    - wget http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
+    - wget http://mirror.download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
     - unzip pibox-installer-vexpress-boot.zip
 
     # get static QEMU
-    - wget http://download.kiwix.org/dev/qemu-2.12.0-linux-x86_64.tar.gz
+    - wget http://mirror.download.kiwix.org/dev/qemu-2.12.0-linux-x86_64.tar.gz
     - tar xf qemu-2.12.0-linux-x86_64.tar.gz
 
     # Install python dependancies
