@@ -5,6 +5,13 @@
     state: absent
   tags: master
 
+- name: unmount /data via systemd
+  systemd:
+    name: data.mount
+    state: stopped
+    enabled: no
+  tags: resize
+
 - name: make sure data partition is removed from fstab
   lineinfile:
     dest: /etc/fstab
@@ -151,6 +158,13 @@
     warn: no
   ignore_errors: True
   tags: ['master', 'resize']
+
+- name: mount /data via systemd
+  systemd:
+    name: data.mount
+    state: started
+    enabled: yes
+  tags: resize
 
 - name: Create test directory
   become: yes
