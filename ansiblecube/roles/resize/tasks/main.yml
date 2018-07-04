@@ -5,17 +5,17 @@
     state: absent
   tags: master
 
-- name: Unmount {{ data_path }} partition
-  become: yes
-  command: umount {{ data_path }}
-  ignore_errors: True
-  tags: ['master', 'resize']
-
 - name: make sure data partition is removed from fstab
   lineinfile:
     dest: /etc/fstab
     state: absent
     regexp: 'exfat'
+  tags: ['master', 'resize']
+
+- name: Unmount {{ data_path }} partition
+  become: yes
+  command: umount {{ data_path }}
+  ignore_errors: True
   tags: ['master', 'resize']
 
 - name: remove {{ data_path }} if it exists
