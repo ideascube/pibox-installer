@@ -99,6 +99,11 @@ def set_config(config, args):
                 vl = "yes" if config["content"][key] in ("yes", True) else "no"
                 setif(key, vl)
 
+        # edupi resources
+        if config["content"].get("edupi_resources") is not None:
+            setif('edupi_resources',
+                  os.path.abspath(config["content"]["edupi_resources"]))
+
 
 try:
     assert len(YAML_CATALOGS)
@@ -143,6 +148,8 @@ parser.add_argument("--aflatoun", help="install aflatoun",
 parser.add_argument("--wikifundi", help="install wikifundi",
                     choices=["fr", "en"], nargs="+")
 parser.add_argument("--edupi", help="install edupi", choices=["yes", "no"])
+parser.add_argument("--edupi-resources",
+                    help="Zipped folder of resources to init EduPi with")
 parser.add_argument("--zim-install", help="install zim",
                     choices=zim_choices, nargs="+")
 parser.add_argument("--size", help="resize image ({})"
@@ -214,6 +221,7 @@ for name in keys:
 
 # check disk space
 collection = get_collection(edupi=args.edupi == "yes",
+                            edupi_resources=args.edupi_resources,
                             packages=args.zim_install,
                             kalite_languages=args.kalite,
                             wikifundi_languages=args.wikifundi,
@@ -268,6 +276,7 @@ try:
             wikifundi=args.wikifundi,
             aflatoun=args.aflatoun == "yes",
             edupi=args.edupi == "yes",
+            edupi_resources=args.edupi_resources,
             zim_install=args.zim_install,
             size=args.size,
             logger=logger,
