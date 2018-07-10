@@ -84,12 +84,8 @@
   tags: setup
 
 - name: download mediawiki
-  environment:
-    MEDIAWIKI_MAJOR_VERSION: 1.31
-    MEDIAWIKI_VERSION: 1.31.0
-    MEDIAWIKI_RC: rc.0
   get_url:
-    url: https://releases.wikimedia.org/mediawiki/${MEDIAWIKI_MAJOR_VERSION}}/mediawiki-${MEDIAWIKI_VERSION}-${MEDIAWIKI_RC}.tar.gz
+    url: https://releases.wikimedia.org/mediawiki/{{mediawiki_major_version}}/mediawiki-{{mediawiki_version}}-{{mediawiki_rc}}.tar.gz
     dest: /tmp/mediawiki.tar.gz
   tags: setup
 
@@ -147,9 +143,7 @@
   tags: setup
 
 - name: install mediawiki extension
-  environment:
-    MEDIAWIKI_EXT_VERSION: REL1_31
-  command: add_mw_extension {{ item }} ${MEDIAWIKI_EXT_VERSION} {{ mediawiki_root }}
+  command: add_mw_extension {{ item }} {{mediawiki_ext_version}} {{ mediawiki_root }}
   with_items:
     - Nuke
     - Scribunto
