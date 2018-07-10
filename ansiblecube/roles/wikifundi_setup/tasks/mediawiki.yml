@@ -2,15 +2,6 @@
 - import_tasks: clean_apt.yml
   tags: setup
 
-# add nodejs repository
-- name: Install gnupg and ca-certificates
-  apt:
-    name: gnupg,curl,ca-certificates
-    state: latest
-    autoremove: yes
-    autoclean: yes
-  tags: setup
-
 - name: Get nodejs repository installer
   get_url:
     url: https://deb.nodesource.com/setup_10.x
@@ -20,6 +11,16 @@
 
 - name: Run nodejs repository installer
   command: /tmp/setup_10.x
+  tags: setup
+
+- name: Install nodejs
+  environment:
+    RUNLEVEL: 1
+  apt:
+    name: nodejs
+    state: latest
+    autoremove: yes
+    autoclean: yes
   tags: setup
 
 - name: Install dependencies (tex, for MathRenderer)
@@ -59,7 +60,7 @@
   environment:
     RUNLEVEL: 1
   apt:
-    name: git,vim,unzip,imagemagick,libicu-dev,libav-tools,librsvg2-bin,poppler-utils,memcached,redis-server,nodejs,lua5.1,python3,locales
+    name: git,vim,unzip,imagemagick,libicu-dev,libav-tools,librsvg2-bin,poppler-utils,memcached,redis-server,lua5.1,python3,locales
     state: latest
     autoremove: yes
     autoclean: yes
