@@ -96,7 +96,7 @@
 - name: change ownership of folders
   file:
     path: "{{ mediawiki_root }}/{{ item }}"
-    user: www-data
+    owner: www-data
     group: www-data
     state: directory
     recurse: yes
