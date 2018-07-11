@@ -8,7 +8,7 @@ import tempfile
 import data
 from backend.catalog import YAML_CATALOGS
 from backend.content import (get_collection, get_required_building_space,
-                             get_required_image_size, get_content)
+                             get_required_image_size, get_content, isremote)
 from run_installation import run_installation
 from util import CancelEvent
 from util import get_free_space_in_dir
@@ -101,8 +101,9 @@ def set_config(config, args):
 
         # edupi resources
         if config["content"].get("edupi_resources") is not None:
+            rsc = config["content"]["edupi_resources"]
             setif('edupi_resources',
-                  os.path.abspath(config["content"]["edupi_resources"]))
+                  rsc if isremote(rsc) else os.path.abspath(rsc))
 
 
 try:
