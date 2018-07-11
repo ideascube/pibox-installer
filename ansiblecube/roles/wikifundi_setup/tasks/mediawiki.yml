@@ -111,10 +111,15 @@
     chdir: "{{ mediawiki_root }}"
   tags: setup
 
+- name: downgrade npm first
+  command: npm install -g npm@4
+  tags: setup
+
 - name: install node dependencies for parsoid
   command: npm install
   args:
     chdir: "{{ parsoid_root }}"
+  ignore_errors: yes
   tags: setup
 
 - name: clean npm cache
@@ -127,6 +132,10 @@
   command: npm install -g n
   args:
     chdir: "{{ mediawiki_root }}"
+  tags: setup
+
+- name: upgrade npm back
+  command: npm install -g npm
   tags: setup
 
 - name: updating node to lastest stable
