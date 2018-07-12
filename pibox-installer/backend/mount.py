@@ -9,6 +9,7 @@ import time
 import string
 import random
 import tempfile
+import platform
 import subprocess
 
 from data import data_dir
