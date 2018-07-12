@@ -23,7 +23,7 @@ matrix:
     language: generic
     env:
       - PYTHON=3.4.4
-      - PYTHON_CONFIGURE_OPTS="--enabled-shared"
+      - CONFIGURE_OPTS="--enabled-shared"
     install:
     # Package pibox-installer
     - brew update
