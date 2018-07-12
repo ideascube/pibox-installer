@@ -30,7 +30,7 @@ matrix:
     - brew outdated pyenv || brew upgrade pyenv
     - pyenv install $PYTHON
     - export PYENV_VERSION=$PYTHON
-    #- export PATH="/Users/travis/.pyenv/shims:${PATH}"
+    - export PATH="/Users/travis/.pyenv/shims:${PATH}"
     - pyenv global $PYTHON
     - python --version
     - python -m pip install -U pip
