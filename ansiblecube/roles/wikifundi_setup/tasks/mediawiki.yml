@@ -152,7 +152,7 @@
   tags: setup
 
 - name: install mediawiki extension
-  command: add_mw_extension {{ item }} {{mediawiki_ext_version}} {{ mediawiki_root }}
+  command: /usr/local/bin/add_mw_extension {{ item }} {{mediawiki_ext_version}} {{ mediawiki_root }}
   with_items:
     - Nuke
     - Scribunto
