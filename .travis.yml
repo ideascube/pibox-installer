@@ -49,7 +49,7 @@ matrix:
     - tar xf qemu-2.12.0_macOS.tar
 
     # Run PyInstaller
-    - /Users/travis/.pyenv/versions/3.4.4/bin/pyinstaller --log-level=DEBUG pibox-installer-macos.spec
+    - /Users/travis/.pyenv/versions/$PYTHON/bin/pyinstaller --log-level=DEBUG pibox-installer-macos.spec
 
     # Sign application
     - security create-keychain -p mysecretpassword build.keychain
