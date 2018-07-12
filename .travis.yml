@@ -35,7 +35,7 @@ matrix:
     - export PATH="/Users/travis/.pyenv/shims:${PATH}"
     - pyenv global $PYTHON
     - python --version
-    - python -m pip install -U pip
+    - python -m pip install -U pip setuptools
     - python3 --version
     - python3 -m pip install -r requirements-macos.txt
     - python3 -m pip install https://github.com/pyinstaller/pyinstaller/archive/develop.zip
