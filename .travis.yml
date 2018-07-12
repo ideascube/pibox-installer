@@ -24,6 +24,11 @@ matrix:
     install:
     # Package pibox-installer
     - brew update
+    - brew install pyenv
+    - pyenv install 3.6.5
+    - pyenv global 3.6.5
+    - python --version
+    - python3 --version
     - brew install pygobject3 --with-python3 gtk+3 adwaita-icon-theme
     - python3 -m pip install -r requirements-macos.txt
     - python3 -m pip install https://github.com/pyinstaller/pyinstaller/archive/93eec04eb2fbfc714d2c3453e04fd126e6a86f52.zip
