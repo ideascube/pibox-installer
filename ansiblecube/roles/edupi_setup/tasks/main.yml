@@ -14,13 +14,6 @@
 - import_tasks: clean_apt.yml
   tags: setup
 
-- name: Link node to nodejs binary
-  file:
-    src: /usr/bin/nodejs
-    dest: /usr/bin/node
-    state: link
-  tags: setup
-
 - name: Install bower
   npm:
     name: bower
