@@ -214,7 +214,7 @@
 - name: fix permission on folder
   file:
     path: "{{ mediawiki_root }}/extensions"
-    user: www-data
+    owner: www-data
     group: www-data
     state: directory
     recurse: yes
