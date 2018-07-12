@@ -30,7 +30,7 @@ matrix:
     - brew outdated pyenv || brew upgrade pyenv
     - pyenv install $PYTHON
     - export PYENV_VERSION=$PYTHON
-    - export PATH="/Users/travis/.pyenv/shims:${PATH}"
+    #- export PATH="/Users/travis/.pyenv/shims:${PATH}"
     - pyenv global $PYTHON
     - python --version
     - python -m pip install -U pip
@@ -47,7 +47,7 @@ matrix:
     - tar xf qemu-2.12.0_macOS.tar
 
     # Run PyInstaller
-    - pyinstaller --log-level=DEBUG pibox-installer-macos.spec
+    - /Users/travis/.pyenv/versions/3.4.4/bin/pyinstaller --log-level=DEBUG pibox-installer-macos.spec
 
     # Sign application
     - security create-keychain -p mysecretpassword build.keychain
