@@ -84,14 +84,14 @@ install:
 
   # Run pyinstaller and show warning
   - cd C:\projects\pibox-installer
-  - if %platform%==x86 C:\Python34\python.exe C:\Python34\Scripts\pyinstaller-script.py --log-level=DEBUG pibox-installer-win32.spec --debug
-  - if %platform%==x64 C:\Python34\python.exe C:\Python34\Scripts\pyinstaller-script.py --log-level=DEBUG pibox-installer-win64.spec --debug
+  - if %platform%==x86 C:\Python34\python.exe C:\Python34\Scripts\pyinstaller-script.py --log-level=DEBUG pibox-installer-win32.spec
+  - if %platform%==x64 C:\Python34\python.exe C:\Python34\Scripts\pyinstaller-script.py --log-level=DEBUG pibox-installer-win64.spec
   - if %platform%==x86 type build\pibox-installer-win32\warnpibox-installer-win32.txt
   - if %platform%==x64 type build\pibox-installer-win64\warnpibox-installer-win64.txt
 
   # Deploy
   - cd C:\projects\pibox-installer\dist\kiwix-plug_installer
-  - 7z.exe a C:\projects\pibox-installer\windows_bundle\kiwix-plug_installer.exe *
+  - 7z.exe a -m0=Copy C:\projects\pibox-installer\windows_bundle\kiwix-plug_installer.exe *
 
   - if %platform%==x86 move C:\projects\pibox-installer\windows_bundle\kiwix-plug_installer.exe C:\msys64\home\appveyor\kiwix-plug_installer-win32.exe
   - if %platform%==x64 move C:\projects\pibox-installer\windows_bundle\kiwix-plug_installer.exe C:\msys64\home\appveyor\kiwix-plug_installer-win64.exe

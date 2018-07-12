@@ -8,6 +8,7 @@ typelib_path = os.path.join(site.getsitepackages()[1], 'gnome', 'lib', 'gireposi
 
 a = Analysis(['pibox-installer/__main__.py'],
              pathex=['.'],
+             # binaries=[(os.path.join(typelib_path, tl), 'gi_typelibs') for tl in os.listdir(typelib_path)],
              datas=[('ui.glade', '.'),
                     ('contents.json', '.'),
                     ('pibox-installer-logo.png', '.'),
@@ -29,15 +30,14 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          [('v', None, 'OPTION')],
-          exclude_binaries=False,
+          exclude_binaries=True,
           name='launcher',
-          debug=True,
+          debug=False,
           strip=False,
-          upx=False,
-          console=True,
+          upx=True,
+          console=False,
           icon='pibox-installer-logo.ico',
-          uac_admin=False)
+          uac_admin=True)
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
