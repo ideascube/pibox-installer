@@ -27,11 +27,10 @@ matrix:
     - brew update
     - brew install openssl readline
     - brew outdated pyenv || brew upgrade pyenv
-    - brew install pyenv-virtualenv
     - pyenv install $PYTHON
     - export PYENV_VERSION=$PYTHON
     - export PATH="/Users/travis/.pyenv/shims:${PATH}"
-    - pyenv global 3.3.3
+    - pyenv global $PYTHON
     - python --version
     - python -m pip install -U pip
     - python3 --version
