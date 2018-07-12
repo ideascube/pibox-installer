@@ -30,14 +30,15 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
+          [('v', None, 'OPTION')],
           exclude_binaries=False,
           name='launcher',
           debug=True,
           strip=False,
-          upx=True,
+          upx=False,
           console=True,
           icon='pibox-installer-logo.ico',
-          uac_admin=True)
+          uac_admin=False)
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
