@@ -21,17 +21,24 @@ matrix:
 
   - os: osx
     language: generic
+    env: PYTHON=3.4.4
     install:
     # Package pibox-installer
     - brew update
-    - brew upgrade pyenv
-    - pyenv install 3.6.5
-    - pyenv global 3.6.5
+    - brew install openssl readline
+    - brew outdated pyenv || brew upgrade pyenv
+    - brew install pyenv-virtualenv
+    - pyenv install $PYTHON
+    - export PYENV_VERSION=$PYTHON
+    - export PATH="/Users/travis/.pyenv/shims:${PATH}"
+    - pyenv-virtualenv venv
+    - source venv/bin/activate
     - python --version
-    - python3 --version
+    - python -m pip install -U pip
+    - python --version
     - brew install pygobject3 --with-python3 gtk+3 adwaita-icon-theme
-    - python3 -m pip install -r requirements-macos.txt
-    - python3 -m pip install https://github.com/pyinstaller/pyinstaller/archive/93eec04eb2fbfc714d2c3453e04fd126e6a86f52.zip
+    - python -m pip install -r requirements-macos.txt
+    - python -m pip install https://github.com/pyinstaller/pyinstaller/archive/93eec04eb2fbfc714d2c3453e04fd126e6a86f52.zip
 
     # Download pibox-installer-vexpress-boot
     - wget http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
