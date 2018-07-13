@@ -22,7 +22,7 @@ matrix:
   - os: osx
     language: generic
     env:
-      - PYTHON=3.5.2
+      - PYTHON=3.6.4
       - CONFIGURE_OPTS="--enable-shared"
     install:
     # Package pibox-installer
