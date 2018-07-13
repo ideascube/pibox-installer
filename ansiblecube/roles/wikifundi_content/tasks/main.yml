@@ -17,6 +17,16 @@
   with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
   tags: move-content
 
+- name: Add admin account to Wikifundi
+  environment:
+    WIKIFUNDI_LANG: "{{ item }}"
+  command: php maintenance/createAndPromote.php --bureaucrat --sysop --bot --force "{{ admin_account }}" "{{ admin_password }}"
+  args:
+    chdir: "{{ mediawiki_root }}"
+  with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
+  when: ansible_local.config.admin_account is defined
+  tags: move-content
+
 - name: move wikifundi images
   command: mv {{ wikifundi_langpack_prefix }}{{ item }}/images {{ wikifundi_data_root }}/images_{{ item }}
   with_items: "{{ ansible_local.config.wikifundi_languages | default(omit) }}"
