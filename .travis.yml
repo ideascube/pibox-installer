@@ -28,7 +28,7 @@ matrix:
     # Package pibox-installer
     - brew update
     - brew install openssl readline
-    - brew install pygobject3 --with-python3 gtk+3 adwaita-icon-theme
+#    - brew install pygobject3 --with-python3 gtk+3 adwaita-icon-theme
     - brew outdated pyenv || brew upgrade pyenv
     - pyenv install $PYTHON
     - export PYENV_VERSION=$PYTHON
@@ -37,6 +37,7 @@ matrix:
     - python --version
     - python -m pip install -U pip setuptools
     - python3 --version
+    - python3 -m pip install pygobject
     - python3 -m pip install -r requirements-macos.txt
     - python3 -m pip install https://github.com/pyinstaller/pyinstaller/archive/93eec04eb2fbfc714d2c3453e04fd126e6a86f52.zip
 
