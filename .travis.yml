@@ -38,7 +38,7 @@ matrix:
     - python -m pip install -U pip setuptools
     - python3 --version
     - python3 -m pip install -r requirements-macos.txt
-    - python3 -m pip install https://github.com/pyinstaller/pyinstaller/archive/develop.zip
+    - python3 -m pip install https://github.com/pyinstaller/pyinstaller/archive/93eec04eb2fbfc714d2c3453e04fd126e6a86f52.zip
 
     # Download pibox-installer-vexpress-boot
     - wget http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip
