@@ -8,8 +8,6 @@ typelib_path = os.path.join(site.getsitepackages()[1], 'gnome', 'lib', 'gireposi
 
 a = Analysis(['pibox-installer/__main__.py'],
              pathex=['.'],
-             
-             # binaries=[(os.path.join(typelib_path, tl), 'gi_typelibs') for tl in os.listdir(typelib_path)],
              datas=[('ui.glade', '.'),
                     ('contents.json', '.'),
                     ('pibox-installer-logo.png', '.'),
@@ -38,11 +36,11 @@ exe = EXE(pyz,
           upx=False,
           console=True,
           icon='pibox-installer-logo.ico',
-          uac_admin=False)
+          uac_admin=True)
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
                a.datas,
                strip=False,
-               upx=True,
+               upx=False,
                name='kiwix-plug_installer')
