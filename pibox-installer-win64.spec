@@ -37,7 +37,7 @@ exe = EXE(pyz,
           upx=False,
           console=False,
           icon='pibox-installer-logo.ico',
-          uac_admin=False)
+          uac_admin=True)
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
