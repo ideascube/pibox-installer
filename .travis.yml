@@ -27,7 +27,7 @@ matrix:
     install:
     # Package pibox-installer
     - brew update
-    - brew install openssl readline cairo
+    - brew install openssl readline cairo gobject-introspection
 #    - brew install pygobject3 --with-python3 gtk+3 adwaita-icon-theme
     - brew outdated pyenv || brew upgrade pyenv
     - pyenv install $PYTHON
