@@ -26,9 +26,9 @@ matrix:
       - CONFIGURE_OPTS="--enable-shared"
     install:
     # Package pibox-installer
-    - brew update
-    - brew install openssl readline cairo libffi glib gtk+3 --without-gsettings-desktop-schemas
-    - brew install gobject-introspection || true
+    - travis_wait 30 brew update
+    - travis_wait 30 brew install openssl readline cairo libffi glib gtk+3 --without-gsettings-desktop-schemas
+    - travis_wait 30 brew install gobject-introspection || true
 #    - brew install pygobject3 --with-python3 gtk+3 adwaita-icon-theme
     - brew outdated pyenv || brew upgrade pyenv
     - pyenv install $PYTHON
