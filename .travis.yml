@@ -38,6 +38,7 @@ matrix:
     - python --version
     - python -m pip install -U pip setuptools
     - python3 --version
+    - export PKG_CONFIG_PATH=/usr/local/Cellar/libffi/3.0.13/lib/pkgconfig/
     - python3 -m pip install pycairo
     - python3 -m pip install pygobject
     - python3 -m pip install -r requirements-macos.txt
