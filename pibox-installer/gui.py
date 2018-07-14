@@ -1,7 +1,7 @@
-from collections import OrderedDict
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GObject
+from collections import OrderedDict
 from backend.catalog import YAML_CATALOGS
 from backend.content import get_expanded_size, get_collection, get_required_image_size, get_content
 from run_installation import run_installation
