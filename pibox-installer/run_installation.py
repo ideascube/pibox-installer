@@ -143,13 +143,13 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         #     retrieved += dl_content['archive_size']
         #     logger.progress(retrieved / archives_total_size)
 
-        # # instanciate emulator
-        # logger.stage('setup')
-        # logger.step("Preparing qemu VM")
-        # emulator = qemu.Emulator(data.vexpress_boot_kernel,
-        #                          data.vexpress_boot_dtb,
-        #                          image_building_path, logger,
-        #                          ram=qemu_ram)
+        # instanciate emulator
+        logger.stage('setup')
+        logger.step("Preparing qemu VM")
+        emulator = qemu.Emulator(data.vexpress_boot_kernel,
+                                 data.vexpress_boot_dtb,
+                                 image_building_path, logger,
+                                 ram=qemu_ram)
 
         # # Resize image
         # logger.step("Resizing image file to {s}"
