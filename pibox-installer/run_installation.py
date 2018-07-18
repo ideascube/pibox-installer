@@ -116,12 +116,12 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
             wikifundi_languages=wikifundi_languages,
             aflatoun_languages=aflatoun_languages)
 
-        # # download contents into cache
-        # logger.stage('download')
-        # logger.step("Starting all content downloads")
-        # downloads = list(get_all_contents_for(collection))
-        # archives_total_size = sum([c['archive_size'] for c in downloads])
-        # retrieved = 0
+        # download contents into cache
+        logger.stage('download')
+        logger.step("Starting all content downloads")
+        downloads = list(get_all_contents_for(collection))
+        archives_total_size = sum([c['archive_size'] for c in downloads])
+        retrieved = 0
 
         # for dl_content in downloads:
         #     logger.step("Retrieving {name} ({size})".format(
