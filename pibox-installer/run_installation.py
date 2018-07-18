@@ -64,10 +64,10 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                 logger.std("diskpart select disk {} and clean".format(device_number))
                 subprocess_pretty_check_call(["diskpart"], logger, stdin=r)
 
-        # # Download Base image
-        # logger.stage('master')
-        # logger.step("Retrieving pibox base image file")
-        # base_image = get_content('pibox_base_image')
+        # Download Base image
+        logger.stage('master')
+        logger.step("Retrieving pibox base image file")
+        base_image = get_content('pibox_base_image')
         # rf = download_content(base_image, logger, build_dir)
         # if not rf.successful:
         #     logger.err("Failed to download pibox base image.\n{e}"
