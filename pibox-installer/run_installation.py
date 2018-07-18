@@ -91,7 +91,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                           .format(image_building_path))
 
         logger.step("Testing mount procedure")
-        test_mount_procedure(image_building_path, logger)
+        test_mount_procedure(image_building_path, logger, thorough=True)
 
         # harmonize options
         packages = [] if zim_install is None else zim_install
@@ -190,6 +190,9 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                 ansiblecube.ansiblecube_path))
             emulation.put_dir(data.ansiblecube_path,
                               ansiblecube.ansiblecube_path)
+
+            logger.step("Resize in QEMU")
+            ansiblecube.run_resize_phase(emulation, extra_vars, secret_keys)
 
             logger.step("Run ansiblecube")
             ansiblecube.run_phase_one(emulation, extra_vars, secret_keys,

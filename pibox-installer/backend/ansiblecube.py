@@ -140,11 +140,15 @@ def build_extra_vars(name, timezone, language, language_name, wifi_pwd,
     return extra_vars, secret_keys
 
 
+def run_resize_phase(machine, extra_vars, secret_keys):
+    run(machine, ['resize'], extra_vars, secret_keys)
+
+
 def run_phase_one(machine, extra_vars, secret_keys,
                   logo=None, favicon=None, css=None):
     ''' run ansiblecube in machine to configure requested softwares '''
 
-    tags = ['resize', 'rename', 'reconfigure']
+    tags = ['rename', 'reconfigure']
 
     # copy branding files if set
     branding = {'favicon.png': favicon,
