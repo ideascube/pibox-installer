@@ -65,6 +65,9 @@
     - role: wikifundi_content
       when: ansible_local.config.wikifundi_languages | length
 
+    - role: backup
+      tags: reconfigure
+
     - role: services
       tags: seal
 
