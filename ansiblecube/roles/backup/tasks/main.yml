@@ -1,6 +1,6 @@
 ---
 - name: create tar of {{ data_path }}
-    become: yes
+  become: yes
   become_user: "{{ username }}"
   args:
     chdir: "{{ data_path }}"
