@@ -68,23 +68,23 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         logger.stage('master')
         logger.step("Retrieving pibox base image file")
         base_image = get_content('pibox_base_image')
-        # rf = download_content(base_image, logger, build_dir)
-        # if not rf.successful:
-        #     logger.err("Failed to download pibox base image.\n{e}"
-        #                .format(e=rf.exception))
-        #     sys.exit(1)
-        # elif rf.found:
-        #     logger.std("Reusing already downloaded base image ZIP file")
-        # logger.progress(.5)
+        rf = download_content(base_image, logger, build_dir)
+        if not rf.successful:
+            logger.err("Failed to download pibox base image.\n{e}"
+                       .format(e=rf.exception))
+            sys.exit(1)
+        elif rf.found:
+            logger.std("Reusing already downloaded base image ZIP file")
+        logger.progress(.5)
 
-        # # extract base image and rename
-        # logger.step("Extracting base image from ZIP file")
-        # unzip_file(archive_fpath=rf.fpath,
-        #            src_fname=base_image['name'].replace('.zip', ''),
-        #            build_folder=build_dir,
-        #            dest_fpath=image_building_path)
-        # logger.std("Extraction complete: {p}".format(p=image_building_path))
-        # logger.progress(.9)
+        # extract base image and rename
+        logger.step("Extracting base image from ZIP file")
+        unzip_file(archive_fpath=rf.fpath,
+                   src_fname=base_image['name'].replace('.zip', ''),
+                   build_folder=build_dir,
+                   dest_fpath=image_building_path)
+        logger.std("Extraction complete: {p}".format(p=image_building_path))
+        logger.progress(.9)
 
         import shutil
         shutil.move(os.path.join(build_dir, 'test.img'), image_building_path)
@@ -123,25 +123,25 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         archives_total_size = sum([c['archive_size'] for c in downloads])
         retrieved = 0
 
-        # for dl_content in downloads:
-        #     logger.step("Retrieving {name} ({size})".format(
-        #         name=dl_content['name'],
-        #         size=human_readable_size(dl_content['archive_size'])))
+        for dl_content in downloads:
+            logger.step("Retrieving {name} ({size})".format(
+                name=dl_content['name'],
+                size=human_readable_size(dl_content['archive_size'])))
 
-        #     rf = download_content(dl_content, logger, build_dir)
-        #     if not rf.successful:
-        #         logger.err("Error downloading {u} to {p}\n{e}"
-        #                    .format(u=dl_content['url'],
-        #                            p=rf.fpath, e=rf.exception))
-        #         raise rf.exception if rf.exception else IOError
-        #     elif rf.found:
-        #         logger.std("Reusing already downloaded {p}".format(p=rf.fpath))
-        #     else:
-        #         logger.std("Saved `{p}` successfuly: {s}"
-        #                    .format(p=dl_content['name'],
-        #                            s=human_readable_size(rf.downloaded_size)))
-        #     retrieved += dl_content['archive_size']
-        #     logger.progress(retrieved / archives_total_size)
+            rf = download_content(dl_content, logger, build_dir)
+            if not rf.successful:
+                logger.err("Error downloading {u} to {p}\n{e}"
+                           .format(u=dl_content['url'],
+                                   p=rf.fpath, e=rf.exception))
+                raise rf.exception if rf.exception else IOError
+            elif rf.found:
+                logger.std("Reusing already downloaded {p}".format(p=rf.fpath))
+            else:
+                logger.std("Saved `{p}` successfuly: {s}"
+                           .format(p=dl_content['name'],
+                                   s=human_readable_size(rf.downloaded_size)))
+            retrieved += dl_content['archive_size']
+            logger.progress(retrieved / archives_total_size)
 
         # instanciate emulator
         logger.stage('setup')
@@ -151,14 +151,14 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                                  image_building_path, logger,
                                  ram=qemu_ram)
 
-        # # Resize image
-        # logger.step("Resizing image file to {s}"
-        #             .format(s=human_readable_size(emulator.get_image_size())))
-        # if size < emulator.get_image_size():
-        #     logger.err("cannot decrease image size")
-        #     raise ValueError("cannot decrease image size")
+        # Resize image
+        logger.step("Resizing image file to {s}"
+                    .format(s=human_readable_size(emulator.get_image_size())))
+        if size < emulator.get_image_size():
+            logger.err("cannot decrease image size")
+            raise ValueError("cannot decrease image size")
 
-        # emulator.resize_image(size)
+        emulator.resize_image(size)
 
         # prepare ansible options
         ansible_options = {
@@ -183,23 +183,23 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         extra_vars, secret_keys = ansiblecube.build_extra_vars(
             **ansible_options)
 
-        # Run emulation
-        # logger.step("Starting-up VM")
-        # with emulator.run(cancel_event) as emulation:
-        #     # copying ansiblecube again into the VM
-        #     # should the master-version been updated
-        #     logger.step("Copy ansiblecube")
-        #     emulation.exec_cmd("sudo /bin/rm -rf {}".format(
-        #         ansiblecube.ansiblecube_path))
-        #     emulation.put_dir(data.ansiblecube_path,
-        #                       ansiblecube.ansiblecube_path)
+        Run emulation
+        logger.step("Starting-up VM")
+        with emulator.run(cancel_event) as emulation:
+            # copying ansiblecube again into the VM
+            # should the master-version been updated
+            logger.step("Copy ansiblecube")
+            emulation.exec_cmd("sudo /bin/rm -rf {}".format(
+                ansiblecube.ansiblecube_path))
+            emulation.put_dir(data.ansiblecube_path,
+                              ansiblecube.ansiblecube_path)
 
-        #     logger.step("Resize in QEMU")
-        #     ansiblecube.run_resize_phase(emulation, extra_vars, secret_keys)
+            logger.step("Resize in QEMU")
+            ansiblecube.run_resize_phase(emulation, extra_vars, secret_keys)
 
-        #     logger.step("Run ansiblecube")
-        #     ansiblecube.run_phase_one(emulation, extra_vars, secret_keys,
-        #                               logo=logo, favicon=favicon, css=css)
+            logger.step("Run ansiblecube")
+            ansiblecube.run_phase_one(emulation, extra_vars, secret_keys,
+                                      logo=logo, favicon=favicon, css=css)
 
         # mount image's 3rd partition on host
         logger.stage('copy')
