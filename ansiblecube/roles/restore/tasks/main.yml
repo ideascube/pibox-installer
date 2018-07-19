@@ -11,3 +11,9 @@
     path: "{{ data_path }}/ideascube/kiwix/data"
     state: directory
   tags: move-content
+
+- name: debug test
+  debug:
+    msg: on restore
+  tags: move-content
+
