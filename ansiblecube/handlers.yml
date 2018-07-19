@@ -18,6 +18,7 @@
   service:
     name: hostapd
     state: restarted
+    enabled: yes
 
 - name: restart nginx
   service:
