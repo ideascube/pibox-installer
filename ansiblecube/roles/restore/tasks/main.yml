@@ -5,3 +5,9 @@
   shell: tar -m --no-same-permissions --no-same-owner --no-overwrite-dir -C {{ data_path }} -xf /home/{{ username }}/data_part.tar
   ignore_errors: yes
   tags: move-content
+
+- name: ensure kiwix data folder is present
+  file:
+    path: "{{ data_path }}/ideascube/kiwix/data"
+    state: directory
+  tags: move-content
