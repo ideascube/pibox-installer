@@ -4,5 +4,5 @@
   become_user: "{{ username }}"
   args:
     chdir: "{{ data_path }}"
-  shell: tar cf /home/{{ username }}/data_part.tar *
+  shell: tar cLf /home/{{ username }}/data_part.tar *
   tags: reconfigure
