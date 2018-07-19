@@ -86,8 +86,8 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         logger.std("Extraction complete: {p}".format(p=image_building_path))
         logger.progress(.9)
 
-        import shutil
-        shutil.move(os.path.join(build_dir, 'test.img'), image_building_path)
+        # import shutil
+        # shutil.move(os.path.join(build_dir, 'test.img'), image_building_path)
 
         if not os.path.exists(image_building_path):
             raise IOError("image path does not exists: {}"
@@ -183,7 +183,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         extra_vars, secret_keys = ansiblecube.build_extra_vars(
             **ansible_options)
 
-        Run emulation
+        # Run emulation
         logger.step("Starting-up VM")
         with emulator.run(cancel_event) as emulation:
             # copying ansiblecube again into the VM
