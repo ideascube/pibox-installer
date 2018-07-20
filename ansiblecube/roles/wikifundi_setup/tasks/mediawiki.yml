@@ -229,6 +229,7 @@
     - favicon.ico
     - logo.png
     - logo-sq.png
+    - A_WikiAfrica_project.png
   tags: setup
 
 - name: copy php conf for nginx
