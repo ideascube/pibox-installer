@@ -27,7 +27,8 @@ matrix:
     install:
     # Package pibox-installer
     - travis_wait 30 brew update
-    - travis_wait 30 brew install openssl readline cairo libffi glib gtk+3 --without-gsettings-desktop-schemas
+    - travis_wait 30 brew install gtk+3 --with-python3 --without-gsettings-desktop-schemas adwaita-icon-theme
+    - travis_wait 30 brew install openssl readline cairo libffi glib
     - travis_wait 30 brew install gobject-introspection || true
 #    - brew install pygobject3 --with-python3 gtk+3 adwaita-icon-theme
     - brew outdated pyenv || brew upgrade pyenv
