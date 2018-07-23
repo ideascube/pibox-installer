@@ -148,7 +148,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                                  image_building_path, logger,
                                  ram=qemu_ram)
 
-        Resize image
+        # Resize image
         logger.step("Resizing image file to {s}"
                     .format(s=human_readable_size(emulator.get_image_size())))
         if size < emulator.get_image_size():
