@@ -16,9 +16,8 @@ platform:
 
 install:
 
-  - cd C:\projects\pibox-installer
-  - ps: if ($env:APPVEYOR_SCHEDULED_BUILD -eq "true") { "/var/www/download.kiwix.org/nightly/" | Out-File C:\projects\pibox-installer\destination-ps.txt ; Get-Date -UFormat "%Y-%m-%d" | Out-File C:\projects\pibox-installer\destination-ps.txt -Append } else  { "/var/www/tmp.kiwix.org/ci" | Out-File C:\projects\pibox-installer\destination-ps.txt }
-  - C:\msys64\usr\bin\bash --login -c "echo $(pwd) ; cat destination-ps.txt"
+  - ps: if ($env:APPVEYOR_SCHEDULED_BUILD -eq "true") { "/var/www/download.kiwix.org/nightly/" | Out-File C:\destination-ps.txt ; Get-Date -UFormat "%Y-%m-%d" | Out-File C:\destination-ps.txt -Append } else  { "/var/www/tmp.kiwix.org/ci" | Out-File C:\destination-ps.txt }
+  - C:\msys64\usr\bin\bash --login -c "ls -l /c/ ; cat /c/destination-ps.txt"
 
   # decrypt certificate
   - nuget install secure-file -ExcludeVersion
