@@ -54,7 +54,7 @@ matrix:
     - mv pibox-installer-0.0.0.dmg pibox-installer-macos.dmg
 
     # Send dmg
-    - if [ $TRAVIS_EVENT_TYPE = "cron" ]; DESTINATION=/var/www/download.kiwix.org/nightly/$(date +"%Y-%m-%d") else DESTINATION=/var/www/tmp.kiwix.org/ci fi
+    - if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then DESTINATION="/var/www/download.kiwix.org/nightly/$(date +'%Y-%m-%d')"; else DESTINATION="/var/www/tmp.kiwix.org/ci"; fi
     - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
     - scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa pibox-installer-macos.dmg nightlybot@download.kiwix.org:$DESTINATION/pibox-installer-macos-$BRANCH.dmg
 
@@ -118,7 +118,7 @@ matrix:
     - cd ..
 
     # Deploy
-    - if [ $TRAVIS_EVENT_TYPE = "cron" ]; DESTINATION=/var/www/download.kiwix.org/nightly/$(date +"%Y-%m-%d") else DESTINATION=/var/www/tmp.kiwix.org/ci fi
+    - if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then DESTINATION="/var/www/download.kiwix.org/nightly/$(date +'%Y-%m-%d')"; else DESTINATION="/var/www/tmp.kiwix.org/ci"; fi
     - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
     - scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa dist/pibox-installer-linux.tar.gz nightlybot@download.kiwix.org:$DESTINATION/pibox-installer-linux-$BRANCH.tar.gz
 
