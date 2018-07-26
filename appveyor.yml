@@ -18,7 +18,9 @@ install:
   # send all non-release build to tmp.kiwix.org except cron to nightly folder
   - ps: if ($env:APPVEYOR_SCHEDULED_BUILD -eq "true") { "/var/www/download.kiwix.org/nightly/" | Out-File C:\destination-ps.txt -NoNewline -Encoding ASCII; Get-Date -UFormat "%Y-%m-%d" | Out-File C:\destination-ps.txt -Append -NoNewline -Encoding ASCII } else  { "/var/www/tmp.kiwix.org/ci" | Out-File C:\destination-ps.txt -NoNewline -Encoding ASCII }
 
-  # decrypt certificate
+  # decrypt certificates
+  - cmd: choco install openssl.light
+  - openssl enc -d -aes-256-cbc -md sha256 -pass pass:%win_certificate_secret% -in kiwix.p12.enc -out kiwix.pfx
   - nuget install secure-file -ExcludeVersion
   - secure-file\tools\secure-file -decrypt pibox_installer_ci_rsa.appveyor_enc -secret %certificate_secret% -out pibox_installer_ci_rsa
   - secure-file\tools\secure-file -decrypt kiwix.p12.appveyor_enc -secret %win_certificate_secret% -out kiwix.pfx
