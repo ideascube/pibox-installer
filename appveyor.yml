@@ -9,6 +9,7 @@ build: off
 environment:
   kiwix_certificate_secret:
     secure: 5NoKiSa8D/4H1mZDpW/QvQ==
+  signtool_exe: C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe
 
 platform:
   - x64
@@ -23,11 +24,11 @@ install:
   - openssl enc -d -aes-256-cbc -md sha256 -pass pass:%win_certificate_secret% -in kiwix.p12.enc -out kiwix.pfx
   - nuget install secure-file -ExcludeVersion
   - secure-file\tools\secure-file -decrypt pibox_installer_ci_rsa.appveyor_enc -secret %certificate_secret% -out pibox_installer_ci_rsa
+  - C:\Program Files (x86)\Windows Kits\10\bin\%platform%\signtool.exe
 
   # Download pibox-installer-vexpress-boot
   - appveyor DownloadFile "http://download.kiwix.org/dev/pibox-installer-vexpress-boot.zip"
   - 7z.exe x pibox-installer-vexpress-boot.zip
-  - signtool sign /f C:\projects\pibox-installer\kiwix.pfx /p %win_certificate_password% /t http://timestamp.verisign.com/scripts/timstamp.dll /d "Kiwix-plug installer" pibox_installer_ci_rsa
 
   # Install pygobject
   # pygi-aio provides a way to install from cmd even if it is not documented
@@ -100,7 +101,7 @@ install:
   - 7z.exe a -m0=Copy C:\projects\pibox-installer\windows_bundle\kiwix-plug_installer.exe *
 
   # sign the build
-  - signtool sign /f C:\projects\pibox-installer\kiwix.pfx /p %win_certificate_password% /t http://timestamp.verisign.com/scripts/timstamp.dll /d "Kiwix-plug installer" C:\projects\pibox-installer\windows_bundle\kiwix-plug_installer.exe
+  - C:\Program Files (x86)\Windows Kits\10\bin\%platform%\signtool.exe sign /f C:\projects\pibox-installer\kiwix.pfx /p %win_certificate_password% /t http://timestamp.verisign.com/scripts/timstamp.dll /d "Kiwix-plug installer" C:\projects\pibox-installer\windows_bundle\kiwix-plug_installer.exe
 
   - if %platform%==x86 move C:\projects\pibox-installer\windows_bundle\kiwix-plug_installer.exe C:\msys64\home\appveyor\kiwix-plug_installer-win32.exe
   - if %platform%==x64 move C:\projects\pibox-installer\windows_bundle\kiwix-plug_installer.exe C:\msys64\home\appveyor\kiwix-plug_installer-win64.exe
