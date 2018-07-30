@@ -5,11 +5,11 @@ from backend.content import (get_collection, get_content,
                              get_alien_content)
 from backend.download import download_content, unzip_file
 from backend.mount import mount_data_partition, unmount_data_partition, test_mount_procedure, format_data_partition, guess_next_loop_device
+from backend.mount import can_write_on, allow_write_on, restore_mode
 from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
 from backend.sysreq import host_matches_requirements, requirements_url
 import data
 from util import human_readable_size, get_cache, ensure_zip_exfat_compatible, EXFAT_FORBIDDEN_CHARS
-from util import can_write_on, allow_write_on, restore_mode
 from datetime import datetime
 import os
 import sys

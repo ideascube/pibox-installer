@@ -14,7 +14,6 @@ import platform
 from data import data_dir
 from backend.content import get_content
 from backend.qemu import get_qemu_image_size
-from util import can_write_on, allow_write_on, restore_mode
 from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
 
 
@@ -176,6 +175,28 @@ def get_avail_drive_letter(logger):
     for letter in string.ascii_uppercase:
         if letter not in list(used):
             return "{}:".format(letter)
+
+
+def can_write_on(fpath):
+    ''' whether user can read+write on specified file (used with loops) '''
+    return os.access(fpath, os.R_OK | os.W_OK)
+
+
+def allow_write_on(fpath, logger):
+    ''' sets o+rw on path and return previous perms for others (0755) '''
+
+    si = os.stat(fpath)
+    subprocess_pretty_call(['chmod', '-c-', 'o+rw', fpath], logger,
+                           check=True, as_admin=True)
+
+    return oct(si.st_mode)[-4:]
+
+
+def restore_mode(fpath, mode, logger):
+    ''' sets specified mode to specified file '''
+    subprocess_pretty_call(['chmod', '-c', mode, fpath], logger,
+                           check=True, as_admin=True)
+
 
 
 def guess_next_loop_device(logger):

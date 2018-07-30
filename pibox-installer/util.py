@@ -387,24 +387,3 @@ def ensure_zip_exfat_compatible(fpath):
     except Exception as exp:
         return False, [str(exp)]
     return len(bad_fnames) == 0, bad_fnames
-
-
-def can_write_on(fpath):
-    ''' whether user can read+write on specified file (used with loops) '''
-    return os.access(fpath, os.R_OK | os.W_OK)
-
-
-def allow_write_on(fpath, logger):
-    ''' sets o+rw on path and return previous perms for others (0755) '''
-
-    si = os.stat(fpath)
-    subprocess_pretty_call(['chmod', '-c-', 'o+rw', fpath], logger,
-                           check=True, as_admin=True)
-
-    return oct(si.st_mode)[-4:]
-
-
-def restore_mode(fpath, mode, logger):
-    ''' sets specified mode to specified file '''
-    subprocess_pretty_call(['chmod', '-c', mode, fpath], logger,
-                           check=True, as_admin=True)
