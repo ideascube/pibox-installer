@@ -100,7 +100,8 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                           .format(image_building_path))
 
         logger.step("Testing mount procedure")
-        test_mount_procedure(image_building_path, logger, thorough=True)
+        if not test_mount_procedure(image_building_path, logger, True):
+            raise ValueError("thorough mount procedure failed")
 
         # harmonize options
         packages = [] if zim_install is None else zim_install
