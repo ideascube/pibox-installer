@@ -287,7 +287,7 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
     finally:
 
 
-        if if sys.platform == "linux" and loop_dev and previous_loop_mode:
+        if sys.platform == "linux" and loop_dev and previous_loop_mode:
             logger.step("Restoring loop device ({}) mode".format(loop_dev))
             restore_mode(loop_dev, previous_loop_mode, logger)
 
