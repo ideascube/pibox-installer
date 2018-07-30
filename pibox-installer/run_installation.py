@@ -4,7 +4,7 @@ from backend.content import (get_collection, get_content,
                              get_all_contents_for, isremote, get_content_cache,
                              get_alien_content)
 from backend.download import download_content, unzip_file
-from backend.mount import mount_data_partition, unmount_data_partition, test_mount_procedure, format_data_partition
+from backend.mount import mount_data_partition, unmount_data_partition, test_mount_procedure, format_data_partition, guess_next_loop_device
 from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
 from backend.sysreq import host_matches_requirements, requirements_url
 import data
