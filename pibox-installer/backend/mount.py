@@ -186,7 +186,7 @@ def allow_write_on(fpath, logger):
     ''' sets o+rw on path and return previous perms for others (0755) '''
 
     si = os.stat(fpath)
-    subprocess_pretty_call(['chmod', '-c-', 'o+rw', fpath], logger,
+    subprocess_pretty_call(['chmod', '-v', 'o+rw', fpath], logger,
                            check=True, as_admin=True)
 
     return oct(si.st_mode)[-4:]
@@ -194,7 +194,7 @@ def allow_write_on(fpath, logger):
 
 def restore_mode(fpath, mode, logger):
     ''' sets specified mode to specified file '''
-    subprocess_pretty_call(['chmod', '-c', mode, fpath], logger,
+    subprocess_pretty_call(['chmod', '-v', mode, fpath], logger,
                            check=True, as_admin=True)
 
 
