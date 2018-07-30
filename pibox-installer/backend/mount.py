@@ -180,7 +180,7 @@ def get_avail_drive_letter(logger):
 
 def guess_next_loop_device(logger):
     try:
-        lines = subprocess_pretty_call([udisksctl, 'dump'], logger,
+        lines = subprocess_pretty_call([udisksctl_exe, 'dump'], logger,
                                        check=True, decode=True)
     except Exception as exp:
         logger.err(exp)
