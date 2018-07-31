@@ -1,0 +1,10 @@
+server {
+    server_name {{ time_fqdn }} {{ time_server_name }};
+
+    location / {
+        auth_basic            "Please log-in";
+        auth_basic_user_file  /var/www/.admin-passwd;
+        include uwsgi_params;
+        uwsgi_pass 127.0.0.1:3032;
+    }
+}
