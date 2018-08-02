@@ -20,6 +20,7 @@ matrix:
     - py.test
 
   - os: osx
+    osx_image: xcode9.2
     language: generic
     python: 3.6.5  # just a label
     install:
@@ -60,12 +61,14 @@ matrix:
     - security import pibox-installer.p12 -k build.keychain -P $MACOS_CERTIFICATE_PASSWORD -A
     - "security set-key-partition-list -S apple-tool:,apple: -s -k mysecretpassword build.keychain"
     - security find-identity -v
-    - "codesign -s \"Developer ID Application: Wikimedia CH (L7HWM3SP3L)\" dist/kiwix-plug_installer.app --deep"
+    - "codesign -v -s \"Developer ID Application: Wikimedia CH (L7HWM3SP3L)\" dist/kiwix-plug_installer.app --deep"
 
     # Install and run create-dmg
     - npm install --global create-dmg@2.0.0 --python=python2.7
     - create-dmg dist/kiwix-plug_installer.app || true
     - mv kiwix-plug_installer-*.dmg kiwix-plug_installer-macos.dmg
+    # sign dmg
+    - "codesign -v -s \"Developer ID Application: Wikimedia CH (L7HWM3SP3L)\" kiwix-plug_installer-macos.dmg"
 
     # Send dmg
     - if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then DESTINATION="/var/www/download.kiwix.org/nightly/$(date +'%Y-%m-%d')"; else DESTINATION="/var/www/tmp.kiwix.org/ci"; fi
