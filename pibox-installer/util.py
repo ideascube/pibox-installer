@@ -63,7 +63,7 @@ class ProgressHelper(object):
 
     def clean_up_stage(self):
         started_on = getattr(self, 'stage_started_on', None) \
-            or self.started_on)
+            or self.started_on
         ended_on = datetime.datetime.now()
         self.durations[self.stage_id] = (started_on, ended_on,
                                          ended_on - started_on)
