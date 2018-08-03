@@ -95,6 +95,8 @@ matrix:
           python-dev
           python3-dev
           libgdk-pixbuf2.0-dev
+          libcanberra-gtk-module
+          libcanberra-gtk3-module
     script:
     - PIBOX_RELEASE=$(echo $TRAVIS_TAG | grep -x 'v[[:digit:]]\+.[[:digit:]]\+\(.[[:digit:]]\+\)*\(-rc[[:digit:]]\+\)\?') || true
     - if [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then DESTINATION="/var/www/download.kiwix.org/nightly/$(date +'%Y-%m-%d')"; else DESTINATION="/var/www/tmp.kiwix.org/ci"; fi
