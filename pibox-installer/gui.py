@@ -57,7 +57,7 @@ def hide_on_delete(widget, event):
 
 class Logger(ProgressHelper):
     def __init__(self, component):
-        super(Logger, self).__init__()
+        super().__init__()
         self.component = component
 
         self.text_buffer = self.component.run_text_view.get_buffer()
