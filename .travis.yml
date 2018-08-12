@@ -66,7 +66,7 @@ matrix:
     - mv kiwix-plug_installer-*.dmg kiwix-plug_installer-macos.dmg
 
     # CI build
-    - if [ "$TRAVIS_EVENT_TYPE" != "cron" ] && [ -z ${PIBOX_RELEASE+x} ]; then scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa kiwix-plug_installer-macos.dmg nightlybot@download.kiwix.org:/var/www/tmp.kiwix.org/ci/kiwix-plug_installer-macos-$BRANCH.dmg
+    - if [ "$TRAVIS_EVENT_TYPE" != "cron" ] && [ -z ${PIBOX_RELEASE+x} ]; then scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa kiwix-plug_installer-macos.dmg nightlybot@download.kiwix.org:/var/www/tmp.kiwix.org/ci/kiwix-plug_installer-macos-$BRANCH.dmg; fi
     # nightly build (cron master)
     - if [ "$TRAVIS_EVENT_TYPE" = "cron" ] && [ -z ${PIBOX_RELEASE+x} ]; then SRCDIR=nightly/$(date +'%Y-%m-%d'); mkdir -p $SRCDIR; cp kiwix-plug_installer-macos.dmg $SRCDIR/; scp -r -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa $SRCDIR nightlybot@download.kiwix.org:/var/www/download.kiwix.org/nightly/; fi
     # release build (tagged)
@@ -135,7 +135,7 @@ matrix:
     - cd ..
 
     # CI build
-    - if [ "$TRAVIS_EVENT_TYPE" != "cron" ] && [ -z ${PIBOX_RELEASE+x} ]; then scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa kiwix-plug_installer-linux.tar.gz nightlybot@download.kiwix.org:/var/www/tmp.kiwix.org/ci/kiwix-plug_installer-macos-$BRANCH.dmg
+    - if [ "$TRAVIS_EVENT_TYPE" != "cron" ] && [ -z ${PIBOX_RELEASE+x} ]; then scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa kiwix-plug_installer-linux.tar.gz nightlybot@download.kiwix.org:/var/www/tmp.kiwix.org/ci/kiwix-plug_installer-macos-$BRANCH.dmg; fi
     # nightly build (cron master)
     - if [ "$TRAVIS_EVENT_TYPE" = "cron" ] && [ -z ${PIBOX_RELEASE+x} ]; then SRCDIR=nightly/$(date +'%Y-%m-%d'); mkdir -p $SRCDIR; cp kiwix-plug_installer-linux.tar.gz $SRCDIR/; scp -r -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa $SRCDIR nightlybot@download.kiwix.org:/var/www/download.kiwix.org/nightly/; fi
     # release build (tagged)
