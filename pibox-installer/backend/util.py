@@ -42,6 +42,8 @@ def subprocess_pretty_call(cmd, logger, stdin=None,
 
         from_cli = logger is None or type(logger) == CLILogger
         cmd = get_admin_command(cmd, from_gui=not from_cli)
+    else:
+        logger.std("Calling: " + str(cmd))
 
     # We should use subprocess.run but it is not available in python3.4
     process = subprocess.Popen(cmd, stdin=stdin,

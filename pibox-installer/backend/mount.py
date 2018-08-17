@@ -30,7 +30,7 @@ def system_has_exfat():
 
 if sys.platform == "win32":
     imdiskinst = os.path.join(data_dir, 'imdiskinst')
-    system32 = os.path.join(os.environ['SystemRoot'], 'System32')
+    system32 = os.path.join(os.environ['SystemRoot'], 'SysNative')
     system = os.path.join(os.environ['SystemRoot'], 'SysWOW64') \
         if 'PROGRAMFILES(X86)' in os.environ else system32
     imdisk_exe = os.path.join(system, 'imdisk.exe')
