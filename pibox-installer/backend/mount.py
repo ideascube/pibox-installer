@@ -32,7 +32,7 @@ if sys.platform == "win32":
     imdiskinst = os.path.join(data_dir, 'imdiskinst')
     system32 = os.path.join(os.environ['SystemRoot'], 'System32')
     system = os.path.join(os.environ['SystemRoot'], 'SysWOW64') \
-        if platform.architecture()[0] == '64bit' else system32
+        if 'PROGRAMFILES(X86)' in os.environ else system32
     imdisk_exe = os.path.join(system, 'imdisk.exe')
 elif sys.platform == "linux":
     udisksctl_exe = '/usr/bin/udisksctl'
