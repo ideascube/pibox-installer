@@ -209,7 +209,6 @@ def restore_mode(fpath, mode, logger):
                            check=True, as_admin=True)
 
 
-
 def guess_next_loop_device(logger):
     try:
         lines = subprocess_pretty_call([udisksctl_exe, 'dump'], logger,
@@ -253,7 +252,6 @@ def test_mount_procedure(image_fpath, logger, thorough=False):
         logger.std(system32)
         logger.std(system)
         logger.std(imdisk_exe)
-        imdiskinst = os.path.join(data_dir, 'imdiskinst')
         install_imdisk(logger)  # make sure we have imdisk installed
         logger.std("install_imdisk ended")
         logger.std("imdisk at {}: {}".format(imdisk_exe,
@@ -362,7 +360,8 @@ def format_data_partition(image_fpath, logger):
 
         try:
             subprocess_pretty_check_call(
-                [diskutil_exe, 'eraseVolume', 'exfat', 'data',  target_part], logger)
+                [diskutil_exe, 'eraseVolume', 'exfat', 'data',  target_part],
+                logger)
         finally:
             # ensure we release the loop device on mount failure
             unmount_data_partition(None, target_dev, logger)
