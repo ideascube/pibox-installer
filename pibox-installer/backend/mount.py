@@ -79,25 +79,35 @@ def install_imdisk(logger, force=False):
     ''' install imdisk manually (replicating steps from install.cmd) '''
 
     # assume already installed
+    logger.std("checking {}".format(imdisk_exe))
     if os.path.exists(imdisk_exe) and not force:
         logger.std("imdisk present at {}".format(imdisk_exe))
         return
+    logger.std("imdisk IS NOT present at {}".format(imdisk_exe))
 
     # disable integrity checks (allow install of unsigned driver)
-    subprocess_pretty_call([os.path.join(system32, 'bcdedit.exe'),
-                           '/set', 'nointegritychecks', 'on'], logger)
+    bcp = [os.path.join(system32, 'bcdedit.exe'),
+           '/set', 'nointegritychecks', 'on']
+    logger.std(" ".join(bcp))
+    subprocess_pretty_call(bcp, logger)
 
     # install the driver and files
     cwd = os.getcwd()
+    logger.std("cwd: {}".format(cwd))
     try:
+        logger.std("cd to: {}".format(imdiskinst))
         os.chdir(imdiskinst)
-        ret, _ = subprocess_pretty_call([
+        rp = [
             os.path.join(system, 'rundll32.exe'),
             'setupapi.dll,InstallHinfSection',
-            'DefaultInstall', '132',  '.\\imdisk.inf'], logger)
+            'DefaultInstall', '132',  '.\\imdisk.inf']
+        logger.std(" ".join(rp))
+        ret, _ = subprocess_pretty_call(rp, logger)
+        logger.std("ret: {}".format(ret))
     except Exception:
         ret = 1
     finally:
+        logger.std("cd to: {}".format(cwd))
         os.chdir(cwd)
 
     if ret != 0:
@@ -107,6 +117,7 @@ def install_imdisk(logger, force=False):
     # start services
     failed = []
     for service in ('imdsksvc', 'awealloc', 'imdisk'):
+        logger.std("starting service {}".format(service))
         if subprocess_pretty_call(['net', 'start', service], logger)[0] != 0:
             failed.append(service)
     if failed:
@@ -236,7 +247,17 @@ def test_mount_procedure(image_fpath, logger, thorough=False):
         `thorough` param tests it in two passes writing/checking a file '''
 
     if sys.platform == "win32":
+        logger.std("WIN32")
+        logger.std(platform.architecture()[0])
+        logger.std(imdiskinst)
+        logger.std(system32)
+        logger.std(system)
+        logger.std(imdisk_exe)
+        imdiskinst = os.path.join(data_dir, 'imdiskinst')
         install_imdisk(logger)  # make sure we have imdisk installed
+        logger.std("install_imdisk ended")
+        logger.std("imdisk at {}: {}".format(imdisk_exe,
+                                             os.path.exists(imdisk_exe)))
 
     try:
         mount_point, device = mount_data_partition(image_fpath, logger)
