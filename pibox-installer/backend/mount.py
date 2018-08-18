@@ -289,8 +289,8 @@ def test_mount_procedure(image_fpath, logger, thorough=False):
         logger.std(system32)
         logger.std(system)
         logger.std(imdisk_exe)
-        # install_imdisk(logger)  # make sure we have imdisk installed
-        install_imdisk_via_cmd(logger)  # make sure we have imdisk installed
+        install_imdisk(logger)  # make sure we have imdisk installed
+        # install_imdisk_via_cmd(logger)  # make sure we have imdisk installed
         logger.std("install_imdisk ended")
         logger.std("imdisk at {}: {}".format(imdisk_exe,
                                              os.path.exists(imdisk_exe)))
