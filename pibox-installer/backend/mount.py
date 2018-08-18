@@ -141,6 +141,12 @@ def install_imdisk_via_cmd(logger, force=False):
         return
     logger.std("imdisk IS NOT present at {}".format(imdisk_exe))
 
+    # disable integrity checks (allow install of unsigned driver)
+    bcp = [os.path.join(system32, 'bcdedit.exe'),
+           '/set', 'nointegritychecks', 'on']
+    logger.std(" ".join(bcp))
+    subprocess_pretty_call(bcp, logger)
+
     cwd = os.getcwd()
     logger.std("cwd: {}".format(cwd))
     try:
