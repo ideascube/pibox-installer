@@ -148,7 +148,7 @@ def install_imdisk_via_cmd(logger, force=False):
         os.chdir(imdiskinst)
         # set silent variable to prevent popup
         os.environ['IMDISK_SILENT_SETUP'] = "1"
-        ip = [os.path.join(system32, 'cmd.exe'), 'install.cmd']
+        ip = ['install.cmd']
         logger.std(" ".join(ip))
         subprocess_pretty_check_call(ip, logger)
     except Exception as exp:
@@ -168,8 +168,7 @@ def uninstall_imdisk(logger):
     cwd = os.getcwd()
     try:
         os.chdir(imdiskinst)
-        subprocess_pretty_check_call([
-            os.parh.join(system32, 'cmd.exe'), 'uninstall_imdisk.cmd'], logger)
+        subprocess_pretty_check_call(['uninstall_imdisk.cmd'], logger)
     except Exception as exp:
         logger.err(exp)
     finally:
