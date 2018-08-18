@@ -4,6 +4,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, GObject
 from backend.catalog import YAML_CATALOGS
 from backend.content import get_expanded_size, get_collection, get_required_image_size, get_content, isremote
+from backend.mount import install_imdisk_via_cmd, uninstall_imdisk_via_cmd
 from run_installation import run_installation
 import pytz
 import tzlocal
@@ -232,6 +233,14 @@ class Application:
             "activate", self.activate_menu_config, True)
         self.component.menu_help.connect(
             "activate", self.activate_menu_help)
+
+        # imdisk menu is windows only
+        if sys.platform == "win32":
+            self.component.menu_imdisk.set_visible(True)
+            self.component.menu_imdisk_install.connect(
+                "activate", self.activate_menu_imdisk_install)
+            self.component.menu_imdisk_uninstall.connect(
+                "activate", self.activate_menu_imdisk_uninstall)
 
         # wifi password
         self.component.wifi_password_switch.connect("notify::active", lambda switch, state: self.component.wifi_password_revealer.set_reveal_child(not switch.get_active()))
@@ -492,6 +501,12 @@ class Application:
 
     def activate_menu_help(self, widget):
         webbrowser.open(data.help_url)
+
+    def activate_menu_imdisk_install(self, widget):
+        install_imdisk_via_cmd(self.logger, force=True, silent=False)
+
+    def activate_menu_imdisk_uninstall(self, widget):
+        uninstall_imdisk_via_cmd(self.logger, silent=False)
 
     def installation_done(self, error):
         ok = error == None
