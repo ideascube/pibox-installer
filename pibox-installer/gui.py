@@ -87,6 +87,8 @@ class Logger(ProgressHelper):
         GLib.idle_add(self.main_thread_failed, error)
 
     def main_thread_text(self, text, end="\n", tag=None):
+        if not isinstance(text, str):
+            text = str(text)
         text += end
         text_iter = self.text_buffer.get_end_iter()
         if tag is None:
