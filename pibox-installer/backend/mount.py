@@ -127,21 +127,34 @@ def install_imdisk(logger, force=False):
                       .format(" ".join(failed)))
 
 
-def install_imdisk_via_cmd(logger):
+def install_imdisk_via_cmd(logger, force=False):
     ''' install imdisk via its .cmd file (silent mode)
 
         doesn't provide much feedback '''
+
+    logger.std("[debug] at install_imdisk_via_cmd")
+
+    # assume already installed
+    logger.std("checking {}".format(imdisk_exe))
+    if os.path.exists(imdisk_exe) and not force:
+        logger.std("imdisk present at {}".format(imdisk_exe))
+        return
+    logger.std("imdisk IS NOT present at {}".format(imdisk_exe))
 
     # set silent variable to prevent popup
     os.environ['IMDISK_SILENT_SETUP'] = "1"
     cwd = os.getcwd()
     try:
         os.chdir(imdiskinst)
-        subprocess_pretty_check_call(['cmd.exe', 'install.cmd'], logger)
-    except Exception:
-        pass
+        ip = [os.parh.join(system32, 'cmd.exe'), 'install.cmd']
+        logger.std(" ".join(ip))
+        subprocess_pretty_check_call(ip, logger)
+    except Exception as exp:
+        logger.err(exp)
     finally:
         os.chdir(cwd)
+
+    assert os.path.exists(imdisk_exe)
 
 
 def uninstall_imdisk(logger):
@@ -152,10 +165,10 @@ def uninstall_imdisk(logger):
     cwd = os.getcwd()
     try:
         os.chdir(imdiskinst)
-        subprocess_pretty_check_call(
-            ['cmd.exe', 'uninstall_imdisk.cmd'], logger)
-    except Exception:
-        pass
+        subprocess_pretty_check_call([
+            os.parh.join(system32, 'cmd.exe'), 'uninstall_imdisk.cmd'], logger)
+    except Exception as exp:
+        logger.err(exp)
     finally:
         os.chdir(cwd)
 
@@ -253,6 +266,7 @@ def test_mount_procedure(image_fpath, logger, thorough=False):
         logger.std(system)
         logger.std(imdisk_exe)
         install_imdisk(logger)  # make sure we have imdisk installed
+        install_imdisk_via_cmd(logger)  # make sure we have imdisk installed
         logger.std("install_imdisk ended")
         logger.std("imdisk at {}: {}".format(imdisk_exe,
                                              os.path.exists(imdisk_exe)))
