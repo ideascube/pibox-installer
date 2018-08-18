@@ -318,32 +318,10 @@
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="menu_imdisk">
-                        <property name="label">ImDisk</property>
+                        <property name="label">(un)Install ImDisk Manually</property>
                         <property name="visible">False</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
-                        <child type="submenu">
-                          <object class="GtkMenu" id="no_id_78">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <child>
-                              <object class="GtkImageMenuItem" id="menu_imdisk_install">
-                                <property name="label">Manual Install</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="use_underline">True</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkMenuItem" id="menu_imdisk_uninstall">
-                                <property name="label">Manual Uninstall</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="use_underline">True</property>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
                       </object>
                     </child>
                     <child>

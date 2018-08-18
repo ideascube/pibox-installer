@@ -112,7 +112,7 @@ def install_imdisk(logger, force=False):
 
     if ret != 0:
         raise OSError("Unable to install ImDisk driver. "
-                      "Please reboot your computer and retry")
+                      "Please try to install manually from the File menu.")
 
     # start services
     failed = []
@@ -123,7 +123,7 @@ def install_imdisk(logger, force=False):
     if failed:
         raise OSError("ImDisk installed but some "
                       "service/driver failed to start:  {}.\n"
-                      "Please reboot your computer and retry"
+                      "Please try to install manually from the File menu."
                       .format(" ".join(failed)))
 
 
@@ -135,6 +135,11 @@ def set_silent_env(silent):
             del(os.environ[key])
         except Exception:
             pass
+
+
+def open_explorer_for_imdisk(logger):
+    fp = os.path.join(imdiskinst, 'install.cmd')
+    subprocess_pretty_call(['explorer.exe', "/select,{}".format(fp)], logger)
 
 
 def install_imdisk_via_cmd(logger, force=False, silent=True):
