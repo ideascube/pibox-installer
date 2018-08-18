@@ -535,7 +535,6 @@ class Application:
         response = dialog.run()
 
         if response == Gtk.ResponseType.OK:
-            print("open explorer")
             open_explorer_for_imdisk(self.logger)
         dialog.close()
 

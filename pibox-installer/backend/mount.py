@@ -10,12 +10,12 @@ import string
 import random
 import tempfile
 import platform
-import subprocess
 
 from data import data_dir
 from backend.content import get_content
 from backend.qemu import get_qemu_image_size
-from backend.util import subprocess_pretty_check_call, subprocess_pretty_call
+from backend.util import (subprocess_pretty_check_call,
+                          subprocess_pretty_call, subprocess_external)
 
 
 def system_has_exfat():
@@ -139,12 +139,10 @@ def set_silent_env(silent):
 
 
 def open_explorer_for_imdisk(logger):
-    fp = os.path.normpath(os.path.join(imdiskinst, 'install.cmd'))
-    explorer_cmd = [os.path.join(os.environ['SystemRoot'], 'explorer.exe'),
-                    '/select,"{}"'.format(fp)]
-    logger.std("Opening: " + str(explorer_cmd))
-    print("Opening: " + str(explorer_cmd))
-    subprocess.Popen(explorer_cmd, logger)
+    subprocess_external([
+        os.path.join(os.environ['SystemRoot'], 'explorer.exe'),
+        '/select,', os.path.normpath(os.path.join(imdiskinst, 'install.cmd'))],
+        logger)
 
 
 def install_imdisk_via_cmd(logger, force=False, silent=True):

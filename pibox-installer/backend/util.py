@@ -116,3 +116,8 @@ def get_admin_command(command, from_gui):
                 .format(command=" ".join(command))]
     if sys.platform == "linux":
         return ["pkexec"] + command
+
+
+def subprocess_external(cmd, logger):
+    logger.std("Opening: " + str(cmd))
+    subprocess.Popen(cmd)
