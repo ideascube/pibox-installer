@@ -108,7 +108,7 @@ install:
   # Copy Imdisk Installer
   - mkdir "C:\Program Files\imdiskinst"
   - cd "C:\Program Files\imdiskinst"
-  - appveyor DownloadFile "http://download.kiwix.org/dev/imdiskinst.zip" -FileName "imdiskinst.zip"
+  - appveyor DownloadFile "http://download.kiwix.org/dev/imdiskinst2.zip" -FileName "imdiskinst.zip"
   - 7z x imdiskinst.zip
   - del imdiskinst.zip
   - dir "C:\Program Files\imdiskinst"
