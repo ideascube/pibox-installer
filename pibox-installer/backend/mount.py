@@ -141,12 +141,12 @@ def install_imdisk_via_cmd(logger, force=False):
         return
     logger.std("imdisk IS NOT present at {}".format(imdisk_exe))
 
-    # set silent variable to prevent popup
     cwd = os.getcwd()
     logger.std("cwd: {}".format(cwd))
     try:
         logger.std("cd to: {}".format(imdiskinst))
         os.chdir(imdiskinst)
+        # set silent variable to prevent popup
         os.environ['IMDISK_SILENT_SETUP'] = "1"
         ip = [os.path.join(system32, 'cmd.exe'), 'install.cmd']
         logger.std(" ".join(ip))
