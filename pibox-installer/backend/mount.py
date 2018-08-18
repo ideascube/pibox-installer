@@ -127,7 +127,11 @@ def install_imdisk(logger, force=False):
                       .format(" ".join(failed)))
 
 
-def install_imdisk_via_cmd(logger, force=False):
+def set_silent_env(silent):
+    os.environ['IMDISK_SILENT_SETUP'] = '{}'.format(1 if silent else 0)
+
+
+def install_imdisk_via_cmd(logger, force=False, silent=True):
     ''' install imdisk via its .cmd file (silent mode)
 
         doesn't provide much feedback '''
@@ -153,7 +157,7 @@ def install_imdisk_via_cmd(logger, force=False):
         logger.std("cd to: {}".format(imdiskinst))
         os.chdir(imdiskinst)
         # set silent variable to prevent popup
-        os.environ['IMDISK_SILENT_SETUP'] = "1"
+        set_silent_env(silent)
         ip = ['install.cmd']
         logger.std(" ".join(ip))
         subprocess_pretty_check_call(ip, logger)
@@ -166,14 +170,14 @@ def install_imdisk_via_cmd(logger, force=False):
     assert os.path.exists(imdisk_exe)
 
 
-def uninstall_imdisk(logger):
+def uninstall_imdisk_via_cmd(logger, silent=True):
     ''' uninstall imdisk using its uninstaller script '''
 
     # set silent variable to prevent popup
-    os.environ['IMDISK_SILENT_SETUP'] = "1"
     cwd = os.getcwd()
     try:
         os.chdir(imdiskinst)
+        set_silent_env(silent)
         subprocess_pretty_check_call(['uninstall_imdisk.cmd'], logger)
     except Exception as exp:
         logger.err(exp)
