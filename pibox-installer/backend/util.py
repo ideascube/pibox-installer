@@ -88,7 +88,7 @@ def is_admin():
 
 def run_as_win_admin(command, logger):
     ''' run specified command with admin rights '''
-    params = " ".join(['"{}"'.format(x) for x in command[1:]])
+    params = " ".join(['"{}"'.format(x) for x in command[1:]]).strip()
     rc = ctypes.windll.shell32.ShellExecuteW(None, "runas",
                                              command[0],
                                              params, None, 1)

@@ -131,7 +131,10 @@ def set_silent_env(silent):
     key = 'IMDISK_SILENT_SETUP'
     os.environ[key] = str(1 if silent else 0)
     if not silent:
-        del(os.environ[key])
+        try:
+            del(os.environ[key])
+        except Exception:
+            pass
 
 
 def install_imdisk_via_cmd(logger, force=False, silent=True):
