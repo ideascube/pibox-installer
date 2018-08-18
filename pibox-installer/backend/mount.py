@@ -128,7 +128,10 @@ def install_imdisk(logger, force=False):
 
 
 def set_silent_env(silent):
-    os.environ['IMDISK_SILENT_SETUP'] = '{}'.format(1 if silent else 0)
+    key = 'IMDISK_SILENT_SETUP'
+    os.environ[key] = str(1 if silent else 0)
+    if not silent:
+        del(os.environ[key])
 
 
 def install_imdisk_via_cmd(logger, force=False, silent=True):
@@ -160,7 +163,7 @@ def install_imdisk_via_cmd(logger, force=False, silent=True):
         set_silent_env(silent)
         ip = ['install.cmd']
         logger.std(" ".join(ip))
-        subprocess_pretty_check_call(ip, logger)
+        subprocess_pretty_check_call(ip, logger, as_admin=not silent)
     except Exception as exp:
         logger.err(exp)
     finally:
@@ -178,7 +181,8 @@ def uninstall_imdisk_via_cmd(logger, silent=True):
     try:
         os.chdir(imdiskinst)
         set_silent_env(silent)
-        subprocess_pretty_check_call(['uninstall_imdisk.cmd'], logger)
+        subprocess_pretty_check_call(['uninstall_imdisk.cmd'],
+                                     logger, as_admin=not silent)
     except Exception as exp:
         logger.err(exp)
     finally:
