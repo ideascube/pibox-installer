@@ -10,6 +10,7 @@ import string
 import random
 import tempfile
 import platform
+import subprocess
 
 from data import data_dir
 from backend.content import get_content
@@ -138,8 +139,12 @@ def set_silent_env(silent):
 
 
 def open_explorer_for_imdisk(logger):
-    fp = os.path.join(imdiskinst, 'install.cmd')
-    subprocess_pretty_call(['explorer.exe', "/select,{}".format(fp)], logger)
+    fp = os.path.normpath(os.path.join(imdiskinst, 'install.cmd'))
+    explorer_cmd = [os.path.join(os.environ['SystemRoot'], 'explorer.exe'),
+                    '/select,"{}"'.format(fp)]
+    logger.std("Opening: " + str(explorer_cmd))
+    print("Opening: " + str(explorer_cmd))
+    subprocess.Popen(explorer_cmd, logger)
 
 
 def install_imdisk_via_cmd(logger, force=False, silent=True):
