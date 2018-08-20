@@ -31,9 +31,7 @@ def system_has_exfat():
 if sys.platform == "win32":
     imdiskinst = os.path.join(data_dir, 'imdiskinst')
     system32 = os.path.join(os.environ['SystemRoot'], 'SysNative')
-    system = os.path.join(os.environ['SystemRoot'], 'SysWOW64') \
-        if 'PROGRAMFILES(X86)' in os.environ else system32
-    imdisk_exe = os.path.join(system, 'imdisk.exe')
+    imdisk_exe = os.path.join(system32, 'imdisk.exe')
 elif sys.platform == "linux":
     udisksctl_exe = '/usr/bin/udisksctl'
     udisks_nou = '--no-user-interaction'
@@ -94,7 +92,7 @@ def install_imdisk(logger, force=False):
     try:
         os.chdir(imdiskinst)
         ret, _ = subprocess_pretty_call([
-            os.path.join(system, 'rundll32.exe'),
+            os.path.join(system32, 'rundll32.exe'),
             'setupapi.dll,InstallHinfSection',
             'DefaultInstall', '132',  '.\\imdisk.inf'], logger)
     except Exception:
