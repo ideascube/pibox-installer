@@ -30,7 +30,11 @@ def system_has_exfat():
 
 if sys.platform == "win32":
     imdiskinst = os.path.join(data_dir, 'imdiskinst')
-    system32 = os.path.join(os.environ['SystemRoot'], 'SysNative')
+    # Windows holds 3 folder:
+    # - Sytem32: files of the system architecture: 32b on x86, 64b on x64
+    # - SysWOW64: 32b files on win-x64
+    # - SysNative: virtual system32 folder to access 64b files from 32b bins
+    system32 = os.path.join(os.environ['SystemRoot'], 'System32')
     imdisk_exe = os.path.join(system32, 'imdisk.exe')
 elif sys.platform == "linux":
     udisksctl_exe = '/usr/bin/udisksctl'
@@ -88,7 +92,7 @@ def install_imdisk(logger, force=False):
     try:
         os.chdir(imdiskinst)
         ret, _ = subprocess_pretty_call([
-            os.path.join(system32, 'rundll32.exe'),
+            'rundll32.exe',
             'setupapi.dll,InstallHinfSection',
             'DefaultInstall', '132',  '.\\imdisk.inf'], logger)
     except Exception:
@@ -98,7 +102,7 @@ def install_imdisk(logger, force=False):
 
     if ret != 0:
         raise OSError("Unable to install ImDisk driver. "
-                      "Please reboot your computer and retry")
+                      "Please install manually from the File menu.")
 
     # start services
     failed = []
@@ -108,7 +112,7 @@ def install_imdisk(logger, force=False):
     if failed:
         raise OSError("ImDisk installed but some "
                       "service/driver failed to start:  {}.\n"
-                      "Please reboot your computer and retry"
+                      "Please install manually from the File menu."
                       .format(" ".join(failed)))
 
     assert os.path.exists(imdisk_exe)
