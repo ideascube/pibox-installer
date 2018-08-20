@@ -48,6 +48,10 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
         image_building_path = os.path.join(build_dir, "plug-{}.BUILDING.img".format(today))
         image_error_path = os.path.join(build_dir, "plug-{}.ERROR.img".format(today))
 
+        logger.step("Testing mount procedure")
+        if not test_mount_procedure(image_building_path, logger, True):
+            raise ValueError("thorough mount procedure failed")
+
         # loop device mode on linux (for mkfs in userspace)
         if sys.platform == "linux":
             loop_dev = guess_next_loop_device(logger)
