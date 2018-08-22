@@ -176,7 +176,7 @@
   environment:
     ADMIN_ACCOUNT: "{{ admin_account }}"
     ADMIN_PASSWORD: "{{ admin_password }}"
-  command: ideascube shell -c "import os; from ideascube.models import User; User.objects.create_superuser(os.environ.get('ADMIN_ACCOUNT'), os.environ.get("ADMIN_PASSWORD"))"
+  command: ideascube shell -c "import os; from ideascube.models import User; User.objects.create_superuser(os.environ.get('ADMIN_ACCOUNT'), os.environ.get('ADMIN_PASSWORD'))"
   when: admin_account is defined and ideascube_admin_shell_output.stdout.split('****')[1]|int == 0
   tags: reconfigure
 
