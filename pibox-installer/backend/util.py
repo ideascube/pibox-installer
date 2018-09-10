@@ -190,7 +190,12 @@ class ImageWriterThread(threading.Thread):
         total_size = os.lseek(image_fd, 0, os.SEEK_END)
         os.lseek(image_fd, 0, os.SEEK_SET)
 
-        buffer_size = 25 * ONE_MiB
+        if os.name == "nt":
+            buffer_size = 512  # safer on windows
+            logger_break = 1000
+        else:
+            buffer_size = 25 * ONE_MiB
+            logger_break = 4
         steps = total_size // buffer_size
 
         for step in range(0, steps):
@@ -199,7 +204,7 @@ class ImageWriterThread(threading.Thread):
                 break
 
             # only update logger every 4 steps (100MiB)
-            if step % 4 == 0:
+            if step % logger_break == 0:
                 logger.progress(step, steps)
                 logger.std(
                     "Copied {copied} of {total} ({pc:.2f}%)"
