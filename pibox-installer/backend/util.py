@@ -279,6 +279,9 @@ def prevent_sleep(logger):
             # Create window to use with xdg-screensaver
             window = make_unmapped_window("caffeinate")
             wid = hex(window.id)
+
+            logger.std("{}".format(os.environ))
+
             cmd = ['/usr/bin/xdg-screensaver', 'suspend', wid]
             logger.std("Calling {}".format(cmd))
             p = subprocess.Popen(cmd,
@@ -289,7 +292,6 @@ def prevent_sleep(logger):
             logger.std("returncode: {}".format(p.returncode))
             logger.std("output: ".format(
                 [l.decode('utf-8', 'ignore') for l in p.stdout.readlines()]))
-            raise OSError("rah")
             # subprocess_pretty_check_call(cmd, logger)
         except Exception as exp:
             logger.err("Unable to prevent sleep...")
