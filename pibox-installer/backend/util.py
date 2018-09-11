@@ -293,7 +293,7 @@ def prevent_sleep(logger):
             logger.std("output: ".format(
                 out if out is None else out.decode('utf-8', 'ignore')))
             logger.std("errors: ".format(
-                errs if out is None errs.decode('utf-8', 'ignore')))
+                errs if errs is None else errs.decode('utf-8', 'ignore')))
             # subprocess_pretty_check_call(cmd, logger)
         except Exception as exp:
             logger.err("Unable to prevent sleep...")
