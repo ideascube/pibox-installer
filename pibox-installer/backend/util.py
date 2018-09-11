@@ -280,8 +280,9 @@ def prevent_sleep(logger):
             wid = hex(window.id)
             subprocess_pretty_check_call(
                 ['/usr/bin/xdg-screensaver', 'suspend', wid], logger)
-        except Exception:
+        except Exception as exp:
             logger.err("Unable to prevent sleep...")
+            raise
         return wid
 
     if sys.platform == "darwin":
@@ -310,3 +311,4 @@ def restore_sleep_policy(reference, logger):
         reference.kill()
         reference.wait(5)
         return
+
