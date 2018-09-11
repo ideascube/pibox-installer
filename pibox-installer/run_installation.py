@@ -88,196 +88,201 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
                 logger.std("sleeping for 15s to acknowledge diskpart changes")
                 time.sleep(15)
 
-        # Download Base image
-        logger.stage('master')
-        logger.step("Retrieving base image file")
-        base_image = get_content('pibox_base_image')
-        rf = download_content(base_image, logger, build_dir)
-        if not rf.successful:
-            logger.err("Failed to download base image.\n{e}"
-                       .format(e=rf.exception))
-            sys.exit(1)
-        elif rf.found:
-            logger.std("Reusing already downloaded base image ZIP file")
-        logger.progress(.5)
+        # # Download Base image
+        # logger.stage('master')
+        # logger.step("Retrieving base image file")
+        # base_image = get_content('pibox_base_image')
+        # rf = download_content(base_image, logger, build_dir)
+        # if not rf.successful:
+        #     logger.err("Failed to download base image.\n{e}"
+        #                .format(e=rf.exception))
+        #     sys.exit(1)
+        # elif rf.found:
+        #     logger.std("Reusing already downloaded base image ZIP file")
+        # logger.progress(.5)
 
-        # extract base image and rename
-        logger.step("Extracting base image from ZIP file")
-        unzip_file(archive_fpath=rf.fpath,
-                   src_fname=base_image['name'].replace('.zip', ''),
-                   build_folder=build_dir,
-                   dest_fpath=image_building_path)
-        logger.std("Extraction complete: {p}".format(p=image_building_path))
-        logger.progress(.9)
+        # # extract base image and rename
+        # logger.step("Extracting base image from ZIP file")
+        # unzip_file(archive_fpath=rf.fpath,
+        #            src_fname=base_image['name'].replace('.zip', ''),
+        #            build_folder=build_dir,
+        #            dest_fpath=image_building_path)
+        # logger.std("Extraction complete: {p}".format(p=image_building_path))
+        # logger.progress(.9)
 
-        if not os.path.exists(image_building_path):
-            raise IOError("image path does not exists: {}"
-                          .format(image_building_path))
+        # if not os.path.exists(image_building_path):
+        #     raise IOError("image path does not exists: {}"
+        #                   .format(image_building_path))
 
-        logger.step("Testing mount procedure")
-        if not test_mount_procedure(image_building_path, logger, True):
-            raise ValueError("thorough mount procedure failed")
+        # logger.step("Testing mount procedure")
+        # if not test_mount_procedure(image_building_path, logger, True):
+        #     raise ValueError("thorough mount procedure failed")
 
-        # harmonize options
-        packages = [] if zim_install is None else zim_install
-        kalite_languages = [] if kalite is None else kalite
-        wikifundi_languages = [] if wikifundi is None else wikifundi
-        aflatoun_languages = ['fr', 'en'] if aflatoun else []
+        # # harmonize options
+        # packages = [] if zim_install is None else zim_install
+        # kalite_languages = [] if kalite is None else kalite
+        # wikifundi_languages = [] if wikifundi is None else wikifundi
+        # aflatoun_languages = ['fr', 'en'] if aflatoun else []
 
-        if edupi_resources and not isremote(edupi_resources):
-            logger.step("Copying EduPi resources into cache")
-            shutil.copy(edupi_resources, cache_folder)
+        # if edupi_resources and not isremote(edupi_resources):
+        #     logger.step("Copying EduPi resources into cache")
+        #     shutil.copy(edupi_resources, cache_folder)
 
-        # collection contains both downloads and processing callbacks
-        # for all requested contents
-        collection = get_collection(
-            edupi=edupi,
-            edupi_resources=edupi_resources,
-            packages=packages,
-            kalite_languages=kalite_languages,
-            wikifundi_languages=wikifundi_languages,
-            aflatoun_languages=aflatoun_languages)
+        # # collection contains both downloads and processing callbacks
+        # # for all requested contents
+        # collection = get_collection(
+        #     edupi=edupi,
+        #     edupi_resources=edupi_resources,
+        #     packages=packages,
+        #     kalite_languages=kalite_languages,
+        #     wikifundi_languages=wikifundi_languages,
+        #     aflatoun_languages=aflatoun_languages)
 
-        # download contents into cache
-        logger.stage('download')
-        logger.step("Starting all content downloads")
-        downloads = list(get_all_contents_for(collection))
-        archives_total_size = sum([c['archive_size'] for c in downloads])
-        retrieved = 0
+        # # download contents into cache
+        # logger.stage('download')
+        # logger.step("Starting all content downloads")
+        # downloads = list(get_all_contents_for(collection))
+        # archives_total_size = sum([c['archive_size'] for c in downloads])
+        # retrieved = 0
 
-        for dl_content in downloads:
-            logger.step("Retrieving {name} ({size})".format(
-                name=dl_content['name'],
-                size=human_readable_size(dl_content['archive_size'])))
+        # for dl_content in downloads:
+        #     logger.step("Retrieving {name} ({size})".format(
+        #         name=dl_content['name'],
+        #         size=human_readable_size(dl_content['archive_size'])))
 
-            rf = download_content(dl_content, logger, build_dir)
-            if not rf.successful:
-                logger.err("Error downloading {u} to {p}\n{e}"
-                           .format(u=dl_content['url'],
-                                   p=rf.fpath, e=rf.exception))
-                raise rf.exception if rf.exception else IOError
-            elif rf.found:
-                logger.std("Reusing already downloaded {p}".format(p=rf.fpath))
-            else:
-                logger.std("Saved `{p}` successfuly: {s}"
-                           .format(p=dl_content['name'],
-                                   s=human_readable_size(rf.downloaded_size)))
-            retrieved += dl_content['archive_size']
-            logger.progress(retrieved, archives_total_size)
+        #     rf = download_content(dl_content, logger, build_dir)
+        #     if not rf.successful:
+        #         logger.err("Error downloading {u} to {p}\n{e}"
+        #                    .format(u=dl_content['url'],
+        #                            p=rf.fpath, e=rf.exception))
+        #         raise rf.exception if rf.exception else IOError
+        #     elif rf.found:
+        #         logger.std("Reusing already downloaded {p}".format(p=rf.fpath))
+        #     else:
+        #         logger.std("Saved `{p}` successfuly: {s}"
+        #                    .format(p=dl_content['name'],
+        #                            s=human_readable_size(rf.downloaded_size)))
+        #     retrieved += dl_content['archive_size']
+        #     logger.progress(retrieved, archives_total_size)
 
-        # check edupi resources compliance
-        if edupi_resources:
-            logger.step("Verifying EduPi resources file names")
-            exfat_compat, exfat_errors = ensure_zip_exfat_compatible(get_content_cache(get_alien_content(edupi_resources),
-                                                    cache_folder, True))
-            if not exfat_compat:
-                raise ValueError("Your EduPi resources archive is incorrect.\n"
-                                 "It should be a ZIP file of a root folder "
-                                 "in which all files have exfat-compatible "
-                                 "names (no {chars})\n... {fnames}"
-                                 .format(chars=" ".join(EXFAT_FORBIDDEN_CHARS),
-                                         fnames="\n... ".join(exfat_errors)))
-            else:
-                logger.std("EduPi resources archive OK")
+        # # check edupi resources compliance
+        # if edupi_resources:
+        #     logger.step("Verifying EduPi resources file names")
+        #     exfat_compat, exfat_errors = ensure_zip_exfat_compatible(get_content_cache(get_alien_content(edupi_resources),
+        #                                             cache_folder, True))
+        #     if not exfat_compat:
+        #         raise ValueError("Your EduPi resources archive is incorrect.\n"
+        #                          "It should be a ZIP file of a root folder "
+        #                          "in which all files have exfat-compatible "
+        #                          "names (no {chars})\n... {fnames}"
+        #                          .format(chars=" ".join(EXFAT_FORBIDDEN_CHARS),
+        #                                  fnames="\n... ".join(exfat_errors)))
+        #     else:
+        #         logger.std("EduPi resources archive OK")
 
-        # instanciate emulator
-        logger.stage('setup')
-        logger.step("Preparing qemu VM")
-        emulator = qemu.Emulator(data.vexpress_boot_kernel,
-                                 data.vexpress_boot_dtb,
-                                 image_building_path, logger,
-                                 ram=qemu_ram)
+        # # instanciate emulator
+        # logger.stage('setup')
+        # logger.step("Preparing qemu VM")
+        # emulator = qemu.Emulator(data.vexpress_boot_kernel,
+        #                          data.vexpress_boot_dtb,
+        #                          image_building_path, logger,
+        #                          ram=qemu_ram)
 
-        # Resize image
-        logger.step("Resizing image file to {s}"
-                    .format(s=human_readable_size(emulator.get_image_size())))
-        if size < emulator.get_image_size():
-            logger.err("cannot decrease image size")
-            raise ValueError("cannot decrease image size")
+        # # Resize image
+        # logger.step("Resizing image file to {s}"
+        #             .format(s=human_readable_size(emulator.get_image_size())))
+        # if size < emulator.get_image_size():
+        #     logger.err("cannot decrease image size")
+        #     raise ValueError("cannot decrease image size")
 
-        emulator.resize_image(size)
+        # emulator.resize_image(size)
 
-        # prepare ansible options
-        ansible_options = {
-            'name': name,
-            'timezone': timezone,
-            'language': language,
-            'language_name': dict(data.ideascube_languages)[language],
+        # # prepare ansible options
+        # ansible_options = {
+        #     'name': name,
+        #     'timezone': timezone,
+        #     'language': language,
+        #     'language_name': dict(data.ideascube_languages)[language],
 
-            'edupi': edupi,
-            'edupi_resources': edupi_resources,
-            'wikifundi_languages': wikifundi_languages,
-            'aflatoun_languages': aflatoun_languages,
-            'kalite_languages': kalite_languages,
-            'packages': packages,
+        #     'edupi': edupi,
+        #     'edupi_resources': edupi_resources,
+        #     'wikifundi_languages': wikifundi_languages,
+        #     'aflatoun_languages': aflatoun_languages,
+        #     'kalite_languages': kalite_languages,
+        #     'packages': packages,
 
-            'wifi_pwd': wifi_pwd,
-            'admin_account': admin_account,
+        #     'wifi_pwd': wifi_pwd,
+        #     'admin_account': admin_account,
 
-            'disk_size': emulator.get_image_size(),
-            'root_partition_size': base_image.get('root_partition_size'),
-        }
-        extra_vars, secret_keys = ansiblecube.build_extra_vars(
-            **ansible_options)
+        #     'disk_size': emulator.get_image_size(),
+        #     'root_partition_size': base_image.get('root_partition_size'),
+        # }
+        # extra_vars, secret_keys = ansiblecube.build_extra_vars(
+        #     **ansible_options)
 
-        # Run emulation
-        logger.step("Starting-up VM")
-        with emulator.run(cancel_event) as emulation:
-            # copying ansiblecube again into the VM
-            # should the master-version been updated
-            logger.step("Copy ansiblecube")
-            emulation.exec_cmd("sudo /bin/rm -rf {}".format(
-                ansiblecube.ansiblecube_path))
-            emulation.put_dir(data.ansiblecube_path,
-                              ansiblecube.ansiblecube_path)
+        # # Run emulation
+        # logger.step("Starting-up VM")
+        # with emulator.run(cancel_event) as emulation:
+        #     # copying ansiblecube again into the VM
+        #     # should the master-version been updated
+        #     logger.step("Copy ansiblecube")
+        #     emulation.exec_cmd("sudo /bin/rm -rf {}".format(
+        #         ansiblecube.ansiblecube_path))
+        #     emulation.put_dir(data.ansiblecube_path,
+        #                       ansiblecube.ansiblecube_path)
 
-            logger.step("Run ansiblecube")
-            ansiblecube.run_phase_one(emulation, extra_vars, secret_keys,
-                                      logo=logo, favicon=favicon, css=css)
+        #     logger.step("Run ansiblecube")
+        #     ansiblecube.run_phase_one(emulation, extra_vars, secret_keys,
+        #                               logo=logo, favicon=favicon, css=css)
 
-        # mount image's 3rd partition on host
-        logger.stage('copy')
+        # # mount image's 3rd partition on host
+        # logger.stage('copy')
 
-        logger.step("Formating data partition on host")
-        format_data_partition(image_building_path, logger)
+        # logger.step("Formating data partition on host")
+        # format_data_partition(image_building_path, logger)
 
-        logger.step("Mounting data partition on host")
-        # copy contents from cache to mount point
-        try:
-            mount_point, device = mount_data_partition(
-                image_building_path, logger)
-            logger.step("Processing downloaded content onto data partition")
-            expanded_total_size = sum([c['expanded_size'] for c in downloads])
-            processed = 0
+        # logger.step("Mounting data partition on host")
+        # # copy contents from cache to mount point
+        # try:
+        #     mount_point, device = mount_data_partition(
+        #         image_building_path, logger)
+        #     logger.step("Processing downloaded content onto data partition")
+        #     expanded_total_size = sum([c['expanded_size'] for c in downloads])
+        #     processed = 0
 
-            for category, content_dl_cb, \
-                    content_run_cb, cb_kwargs in collection:
+        #     for category, content_dl_cb, \
+        #             content_run_cb, cb_kwargs in collection:
 
-                logger.step("Processing {cat}".format(cat=category))
-                content_run_cb(cache_folder=cache_folder,
-                               mount_point=mount_point,
-                               logger=logger, **cb_kwargs)
-                # size of expanded files for this category (for progress)
-                processed += sum([c['expanded_size']
-                                  for c in content_dl_cb(**cb_kwargs)])
-                logger.progress(processed, expanded_total_size)
-        except Exception as exp:
-            try:
-                unmount_data_partition(mount_point, device, logger)
-            except NameError:
-                pass  # if mount_point or device are not defined
-            raise exp
+        #         logger.step("Processing {cat}".format(cat=category))
+        #         content_run_cb(cache_folder=cache_folder,
+        #                        mount_point=mount_point,
+        #                        logger=logger, **cb_kwargs)
+        #         # size of expanded files for this category (for progress)
+        #         processed += sum([c['expanded_size']
+        #                           for c in content_dl_cb(**cb_kwargs)])
+        #         logger.progress(processed, expanded_total_size)
+        # except Exception as exp:
+        #     try:
+        #         unmount_data_partition(mount_point, device, logger)
+        #     except NameError:
+        #         pass  # if mount_point or device are not defined
+        #     raise exp
 
-        # unmount partition
-        logger.step("Unmounting data partition")
-        unmount_data_partition(mount_point, device, logger)
+        # # unmount partition
+        # logger.step("Unmounting data partition")
+        # unmount_data_partition(mount_point, device, logger)
 
-        # rerun emulation for discovery
-        logger.stage('move')
-        logger.step("Starting-up VM again for content-discovery")
-        with emulator.run(cancel_event) as emulation:
-            logger.step("Re-run ansiblecube for move-content")
-            ansiblecube.run_phase_two(emulation, extra_vars, secret_keys)
+        # # rerun emulation for discovery
+        # logger.stage('move')
+        # logger.step("Starting-up VM again for content-discovery")
+        # with emulator.run(cancel_event) as emulation:
+        #     logger.step("Re-run ansiblecube for move-content")
+        #     ansiblecube.run_phase_two(emulation, extra_vars, secret_keys)
+
+        shutil.move(os.path.join(build_dir, 'test.img'), image_building_path)
+        logger.std("sleeping")
+        time.sleep(16 * 60)
+        logger.std("waking-up")
 
     except Exception as e:
         logger.failed(str(e))
@@ -350,6 +355,10 @@ def run_installation(name, timezone, language, wifi_pwd, admin_account, kalite, 
     finally:
         logger.std("Restoring system sleep policy")
         restore_sleep_policy(sleep_ref, logger)
+
+        logger.std("sleeping")
+        time.sleep(3 * 60)
+        logger.std("waking-up")
 
         if sys.platform == "linux" and loop_dev and previous_loop_mode:
             logger.step("Restoring loop device ({}) mode".format(loop_dev))
