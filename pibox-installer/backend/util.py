@@ -286,12 +286,14 @@ def prevent_sleep(logger):
             logger.std("Calling {}".format(cmd))
             p = subprocess.Popen(cmd,
                                  stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT,
+                                 stderr=subprocess.PIPE,
                                  shell=True)
             out, errs = p.communicate(timeout=5)
             logger.std("returncode: {}".format(p.returncode))
-            logger.std("output: ".format(out.decode('utf-8', 'ignore')))
-            logger.std("errors: ".format(errs.decode('utf-8', 'ignore')))
+            logger.std("output: ".format(
+                out if out is None else out.decode('utf-8', 'ignore')))
+            logger.std("errors: ".format(
+                errs if out is None errs.decode('utf-8', 'ignore')))
             # subprocess_pretty_check_call(cmd, logger)
         except Exception as exp:
             logger.err("Unable to prevent sleep...")
