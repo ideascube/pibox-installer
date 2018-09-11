@@ -82,7 +82,8 @@ def subprocess_pretty_call(cmd, logger, stdin=None,
 
     if check:
         if process.returncode != 0:
-            raise CheckCallException("Process %s failed" % process.args)
+            raise CheckCallException("Process {} failed with: {}"
+                                     .format(process.args, process.returncode))
         return lines
 
     return process.returncode, lines
@@ -278,8 +279,17 @@ def prevent_sleep(logger):
             # Create window to use with xdg-screensaver
             window = make_unmapped_window("caffeinate")
             wid = hex(window.id)
-            subprocess_pretty_check_call(
-                ['/usr/bin/xdg-screensaver', 'suspend', wid], logger)
+            cmd = ['/usr/bin/xdg-screensaver', 'suspend', wid]
+            logger.std("Calling {}".format(cmd))
+            p = subprocess.call(cmd)
+            logger.std("returncode: {}".format(p.returncode))
+            if not p.returncode == 0:
+                logger.std("retrying with shell")
+                p2 = subprocess.call(cmd, shell=True)
+                logger.std("returncode: {}".format(p2.returncode))
+            if p.returncode != 0 and p2.returncode != 0:
+                raise OSError("rah")
+            # subprocess_pretty_check_call(cmd, logger)
         except Exception as exp:
             logger.err("Unable to prevent sleep...")
             raise
@@ -311,4 +321,3 @@ def restore_sleep_policy(reference, logger):
         reference.kill()
         reference.wait(5)
         return
-
