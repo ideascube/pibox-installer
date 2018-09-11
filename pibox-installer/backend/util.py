@@ -288,10 +288,10 @@ def prevent_sleep(logger):
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT,
                                  shell=True)
-            p.wait()
+            out, errs = p.communicate(timeout=5)
             logger.std("returncode: {}".format(p.returncode))
-            logger.std("output: ".format(
-                [l.decode('utf-8', 'ignore') for l in p.stdout.readlines()]))
+            logger.std("output: ".format(out.decode('utf-8', 'ignore')))
+            logger.std("errors: ".format(errs.decode('utf-8', 'ignore')))
             # subprocess_pretty_check_call(cmd, logger)
         except Exception as exp:
             logger.err("Unable to prevent sleep...")
