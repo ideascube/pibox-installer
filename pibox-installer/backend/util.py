@@ -281,13 +281,13 @@ def prevent_sleep(logger):
             wid = hex(window.id)
             cmd = ['/usr/bin/xdg-screensaver', 'suspend', wid]
             logger.std("Calling {}".format(cmd))
-            p = subprocess.call(cmd)
-            logger.std("returncode: {}".format(p.returncode))
-            if not p.returncode == 0:
+            retcode = subprocess.call(cmd)
+            logger.std("returncode: {}".format(retcode))
+            if not retcode == 0:
                 logger.std("retrying with shell")
-                p2 = subprocess.call(cmd, shell=True)
-                logger.std("returncode: {}".format(p2.returncode))
-            if p.returncode != 0 and p2.returncode != 0:
+                retcode2 = subprocess.call(cmd, shell=True)
+                logger.std("returncode: {}".format(retcode2))
+            if retcode != 0 and retcode2 != 0:
                 raise OSError("rah")
             # subprocess_pretty_check_call(cmd, logger)
         except Exception as exp:
