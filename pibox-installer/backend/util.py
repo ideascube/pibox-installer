@@ -284,7 +284,7 @@ def prevent_sleep(logger):
 
             cmd = ['/usr/bin/xdg-screensaver', 'suspend', wid]
             logger.std("Calling {}".format(cmd))
-            p = subprocess.Popen(cmd,
+            p = subprocess.Popen(" ".join(cmd),
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.PIPE,
                                  shell=True)
