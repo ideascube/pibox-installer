@@ -9,6 +9,7 @@ import time
 import string
 import random
 import tempfile
+import traceback
 
 from data import data_dir
 from backend.content import get_content
@@ -216,21 +217,39 @@ def test_mount_procedure(image_fpath, logger, thorough=False):
     try:
         mount_point, device = mount_data_partition(image_fpath, logger)
 
+        print("mount_point", mount_point)
+        print("device", device)
+
         if thorough:
+            print("thorough mode")
             # write a file on the partition
             value = random.randint(0, 1000)
+            print("value", value)
             with open(os.path.join(mount_point, '.check-part'), 'w') as f:
+                print("opened", f)
                 f.write(str(value))
+            print("file written")
+
             # unmount partitition
+            print("unmounting", mount_point, device)
             unmount_data_partition(mount_point, device, logger)
+            print("unmounted")
 
             # remount partition
+            print("remounting", image_fpath)
             mount_point, device = mount_data_partition(image_fpath, logger)
+            print("remounted", mount_point, device)
 
             # read the file and check it's what we just wrote
+            print("opening", os.path.join(mount_point, '.check-part'))
             with open(os.path.join(mount_point, '.check-part'), 'r') as f:
-                return int(f.read()) == value
-    except Exception:
+                print("opened", f)
+                content = f.read()
+                print("content", content)
+                return int(content) == value
+    except Exception as exp:
+        print("exp", exp)
+        print(traceback.format_exc())
         return False
     finally:
         try:
