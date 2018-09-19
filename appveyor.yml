@@ -42,9 +42,9 @@ install:
   - cmd: choco install openssl.light
   - openssl enc -d -aes-256-cbc -md sha256 -pass pass:%win_certificate_secret% -in kiwix.p12.enc -out kiwix.pfx
   - nuget install secure-file -ExcludeVersion
-  - nuget install ResourceHacker.CommandLineTool -Version 4.7.34 
+  #- nuget install ResourceHacker.CommandLineTool -ExcludeVersion
   - secure-file\tools\secure-file -decrypt pibox_installer_ci_rsa.appveyor_enc -secret %certificate_secret% -out pibox_installer_ci_rsa
-  - ResourceHacker.CommandLineTool\tools\ResourceHacker.exe -help
+  #- ResourceHacker.CommandLineTool\tools\ResourceHacker.exe -help
 
   # Download vexpress-boot
   - appveyor DownloadFile "http://download.kiwix.org/dev/vexpress-boot.zip"
@@ -127,17 +127,17 @@ install:
   # download tools
   - cd C:\projects\kiwix-hotspot\windows_bundle\
   - appveyor DownloadFile "http://download.kiwix.org/dev/GoRC.exe" -FileName "GoRC.exe"
-  # - appveyor DownloadFile "http://download.kiwix.org/dev/resource_hacker.zip" -FileName "resource_hacker.zip"
-  # - 7z x resource_hacker.zip
+  - appveyor DownloadFile "http://download.kiwix.org/dev/resource_hacker.zip" -FileName "resource_hacker.zip"
+  - 7z x resource_hacker.zip
   # create SFX exe from 7z archive
   - copy /b "C:\Program Files\7zextra\7zS.sfx" + sfxconfig.txt + kiwix-hotspot.7z kiwix-hotspot.exe
   # change icon and add version info to exe
   - GoRC.exe /fo resources.res resources.rc
   - copy ..\kiwix-hotspot-logo.ico icon.ico
   - ResourceHacker.exe -help
-  - ResourceHacker.exe -script reshack.txt
-  - c:\projects\kiwix-hotspot\ResourceHacker.CommandLineTool\tools\ResourceHacker.exe -script reshack.txt
-  # - cd C:\projects\kiwix-hotspot\dist\kiwix-hotspot
+  #- ResourceHacker.exe -script reshack.txt
+  #- c:\projects\kiwix-hotspot\ResourceHacker.CommandLineTool\tools\ResourceHacker.exe -script reshack.txt
+  - cd C:\projects\kiwix-hotspot\dist\kiwix-hotspot
 
   # sign the build
   # - signtool.exe sign /f C:\projects\kiwix-hotspot\kiwix.pfx /p %win_certificate_password% /t http://timestamp.verisign.com/scripts/timstamp.dll /d "Kiwix Hotspot" C:\projects\kiwix-hotspot\windows_bundle\kiwix-hotspot.exe
