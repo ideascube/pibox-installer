@@ -1,5 +1,6 @@
 2.0-rc11
 * Fixed an unmount issue on Linux
+* Rebranded as Kiwix-hotspot
 
 2.0-rc10
 * Fixed wikifundi config regression
