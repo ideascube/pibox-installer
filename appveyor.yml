@@ -127,7 +127,8 @@ install:
   # download tools
   - cd C:\projects\kiwix-hotspot\windows_bundle\
   - appveyor DownloadFile "http://download.kiwix.org/dev/GoRC.exe" -FileName "GoRC.exe"
-  - appveyor DownloadFile "http://download.kiwix.org/dev/ResourceHacker.exe" -FileName "ResourceHacker.exe"
+  - appveyor DownloadFile "http://download.kiwix.org/dev/resource_hacker.zip" -FileName "resource_hacker.zip"
+  - 7z x resource_hacker.zip
   # create SFX exe from 7z archive
   - copy /b "C:\Program Files\7zextra\7zS.sfx" + sfxconfig.txt + kiwix-hotspot.7z kiwix-hotspot.exe
   # change icon and add version info to exe
