@@ -42,9 +42,9 @@ install:
   - cmd: choco install openssl.light
   - openssl enc -d -aes-256-cbc -md sha256 -pass pass:%win_certificate_secret% -in kiwix.p12.enc -out kiwix.pfx
   - nuget install secure-file -ExcludeVersion
-  - nuget install ResourceHacker.CommandLineTool -ExcludeVersion
+  # - nuget install ResourceHacker.CommandLineTool -ExcludeVersion
   - secure-file\tools\secure-file -decrypt pibox_installer_ci_rsa.appveyor_enc -secret %certificate_secret% -out pibox_installer_ci_rsa
-  - ResourceHacker.CommandLineTool\tools\ResourceHacker.exe -help
+  # - ResourceHacker.CommandLineTool\tools\ResourceHacker.exe -help
 
   # Download vexpress-boot
   - appveyor DownloadFile "http://download.kiwix.org/dev/vexpress-boot.zip"
@@ -126,12 +126,15 @@ install:
 
   # download tools
   - cd C:\projects\kiwix-hotspot\windows_bundle\
-  # - appveyor DownloadFile "http://download.kiwix.org/dev/GoRC.exe" -FileName "GoRC.exe"
+  - appveyor DownloadFile "http://download.kiwix.org/dev/GoRC.exe" -FileName "GoRC.exe"
+  - appveyor DownloadFile "http://download.kiwix.org/dev/ResourceHacker.exe" -FileName "ResourceHacker.exe"
   # create SFX exe from 7z archive
   - copy /b "C:\Program Files\7zextra\7zS.sfx" + sfxconfig.txt + kiwix-hotspot.7z kiwix-hotspot.exe
   # change icon and add version info to exe
-  # - GoRC.exe /fo resources.res resources.rc
-  # - copy ..\kiwix-hotspot-logo.ico icon.ico
+  - GoRC.exe /fo resources.res resources.rc
+  - copy ..\kiwix-hotspot-logo.ico icon.ico
+  - ResourceHacker.exe -help
+  - ResourceHacker.exe -script reshack.txt
   # - c:\projects\kiwix-hotspot\ResourceHacker.CommandLineTool\tools\ResourceHacker.exe -script reshack.txt
   - cd C:\projects\kiwix-hotspot\dist\kiwix-hotspot
 
