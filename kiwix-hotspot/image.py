@@ -91,7 +91,7 @@ def main(logger, disk_size, root_size, build_folder, qemu_ram, image_fname=None)
         sys.exit(1)
 
     logger.step(
-        "Starting master creation: {} ({} data)".format(
+        "Starting master creation: {} ({} root)".format(
             human_readable_size(disk_size, False), human_readable_size(root_size, False)
         )
     )
