@@ -133,7 +133,7 @@ install:
   # not changing version info due to a bug in Appveyor/ResourceHacker
   #- C:\ProgramData\chocolatey\lib\reshack.portable\tools\ResourceHacker.exe -open kiwix-hotspot.exe -save kiwix-hotspot.exe -action addoverwrite -res resources.res -mask VERSIONINFO,1, -log CONSOLE
   - C:\ProgramData\chocolatey\lib\reshack.portable\tools\ResourceHacker.exe -open kiwix-hotspot.exe -save kiwix-hotspot.exe -action addoverwrite -res icon.ico -mask ICONGROUP,MAINICON, -log CONSOLE
-  - timeout 10
+  - timeout 60
   - cd C:\projects\kiwix-hotspot\dist\kiwix-hotspot
 
   # sign the build
