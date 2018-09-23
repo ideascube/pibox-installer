@@ -14,9 +14,15 @@ elif sys.argv[1] == "cli":
 elif sys.argv[1] == "image":
     sys.argv.pop(1)
     runpy.run_module("image")
+elif sys.argv[1] == "cache":
+    sys.argv.pop(1)
+    from cache import main
+
+    main()
 else:
     parser = argparse.ArgumentParser(description="Kiwix Hotspot creation tool")
     sub_parser = parser.add_subparsers()
     sub_parser.add_parser("cli", help="run it on the console")
     sub_parser.add_parser("image", help="prepare a master image")
+    sub_parser.add_parser("cache", help="manage cache folder to reclaim disk space")
     parser.parse_args()
