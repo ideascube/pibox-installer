@@ -233,6 +233,9 @@ def test_mount_procedure(image_fpath, logger, thorough=False):
         logger.std(". mounting {}".format(image_fpath))
         mount_point, device = mount_data_partition(image_fpath, logger)
         logger.std(". mounted {} on {}".format(device, mount_point))
+        logger.std(". listing {}".format(mount_point))
+        for fname in os.listdir(mount_point):
+            logger.std(".. {}".format(fname))
 
         if thorough:
             # write a file on the partition
@@ -244,15 +247,32 @@ def test_mount_procedure(image_fpath, logger, thorough=False):
             )
             with open(os.path.join(mount_point, ".check-part"), "w") as f:
                 f.write(str(value))
+                logger.std(". syncing")
+                f.flush()
+                os.fsync(f.fileno())
+
+            logger.std(". listing {} (after write)".format(mount_point))
+            for fname in os.listdir(mount_point):
+                logger.std(".. {}".format(fname))
+
+            logger.std(". small delay...")
+            time.sleep(10)
 
             # unmount partitition
             logger.std(". unmounting {}".format(mount_point))
             unmount_data_partition(mount_point, device, logger)
 
+            logger.std(". small delay...")
+            time.sleep(10)
+
             # remount partition
             logger.std(". remounting {}".format(image_fpath))
             mount_point, device = mount_data_partition(image_fpath, logger)
             logger.std(". remounted {} on {}".format(device, mount_point))
+
+            logger.std(". listing {} (once remounted)".format(mount_point))
+            for fname in os.listdir(mount_point):
+                logger.std(".. {}".format(fname))
 
             # read the file and check it's what we just wrote
             with open(os.path.join(mount_point, ".check-part"), "r") as f:
