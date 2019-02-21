@@ -40,6 +40,8 @@ matrix:
     - python3 -m pip install -U pip
     - python3 -m pip install -r requirements-macos.txt
     - python3 -m pip install -U pyinstaller
+    # following line needed locally (venv)
+    #- ln -s /usr/local/lib/python3.7/site-packages/gi $(python3 -c "import sys; print(sys.path[-1])")/
     # - python3 -m pip install https://github.com/pyinstaller/pyinstaller/archive/93eec04eb2fbfc714d2c3453e04fd126e6a86f52.zip
 
     # Download vexpress-boot
@@ -57,6 +59,10 @@ matrix:
 
     # Run PyInstaller
     - pyinstaller --log-level=DEBUG kiwix-hotspot-macos.spec
+
+    # fix gdk-pixbuf for codesign (https://github.com/pyinstaller/pyinstaller/pull/2596)
+    - mv dist/Kiwix\ Hotspot.app/Contents/MacOS/lib/gdk-pixbuf-2.0/2.10.0 dist/Kiwix\ Hotspot.app/Contents/MacOS/lib/gdk-pixbuf
+    - rm -rf dist/Kiwix\ Hotspot.app/Contents/MacOS/lib/gdk-pixbuf-2.0
 
     # Sign application
     - security create-keychain -p mysecretpassword build.keychain
