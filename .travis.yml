@@ -37,6 +37,8 @@ matrix:
     # - git checkout e128fa1bce3377de32cbf11bd8e46f7334dfd7a6 Formula/python.rb Formula/pygobject.rb Formula/pygobject3.rb Formula/py2cairo.rb Formula/py3cairo.rb Formula/cairo.rb Formula/gtk+3.rb Formula/glib.rb Formula/adwaita-icon-theme.rb Formula/gobject-introspection.rb Formula/gdk-pixbuf.rb Formula/harfbuzz.rb Formula/pango.rb Formula/atk.rb
     # - cd -
     - brew install pygobject3 gtk+3 adwaita-icon-theme
+    # needed for create-dmg
+    - brew switch icu4c 62.1
     - python3 -m pip install -U pip
     - python3 -m pip install -r requirements-macos.txt
     - python3 -m pip install -U pyinstaller
