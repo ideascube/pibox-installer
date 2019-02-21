@@ -23,12 +23,6 @@ matrix:
     osx_image: xcode8.3
     language: generic
     python: 3.6.5  # just a label
-    addons:
-      homebrew:
-        packages:
-        - pygobject3 --with-python3
-        - gtk+3
-        - adwaita-icon-theme
     install:
     - PIBOX_RELEASE=$(echo $TRAVIS_TAG | grep -x 'v[[:digit:]]\+.[[:digit:]]\+\(.[[:digit:]]\+\)*\(-rc[[:digit:]]\+\)\?') || true
     - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
@@ -37,6 +31,7 @@ matrix:
     - sed -i.bak "s/VERSION = \"devel\"/VERSION = \"${PIBOX_VERSION}\"/g" kiwix-hotspot/data.py
 
     # Package kiwix-hotspot
+    - brew install pygobject3 --with-python3 gtk+3 adwaita-icon-theme
     # - brew update
     # checking our formulas out to how they were when python 3.6.5 was around
     # - cd /usr/local/Homebrew/Library/Taps/homebrew/homebrew-core
