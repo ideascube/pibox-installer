@@ -74,8 +74,8 @@ matrix:
     - "codesign -s \"Developer ID Application: Wikimedia CH (L7HWM3SP3L)\" \"dist/Kiwix Hotspot.app\" --deep"
 
     # Install and run create-dmg
-    - npm install --global create-dmg@2.0.0 --python=python2.7
-    - create-dmg dist/Kiwix\ Hotspot.app || true
+    - npm install --global create-dmg
+    - create-dmg dist/Kiwix\ Hotspot.app
     - mv Kiwix-Hotspot-*.dmg kiwix-hotspot-macos.dmg
 
     # CI build
