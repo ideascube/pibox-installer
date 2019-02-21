@@ -78,7 +78,7 @@ matrix:
     # Install and run create-dmg
     - npm install --global create-dmg
     - create-dmg dist/Kiwix\ Hotspot.app
-    - mv Kiwix-Hotspot-*.dmg kiwix-hotspot-macos.dmg
+    - mv Kiwix*.dmg kiwix-hotspot-macos.dmg
 
     # CI build
     - if [ "$TRAVIS_EVENT_TYPE" != "cron" ] && [ "a$PIBOX_RELEASE" = "a" ]; then scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa kiwix-hotspot-macos.dmg ci@tmp.kiwix.org:/data/tmp/ci/kiwix-hotspot-macos-$BRANCH.dmg; fi
