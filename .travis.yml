@@ -78,7 +78,7 @@ matrix:
     - security import pibox-installer.p12 -k build.keychain -P $MACOS_CERTIFICATE_PASSWORD -A
     - "security set-key-partition-list -S apple-tool:,apple: -s -k mysecretpassword build.keychain"
     - security find-identity -v
-    - codesign --force --sign "Developer ID Application: Wikimedia CH (L7HWM3SP3L)" dist/Kiwix\ Hotspot.app --deep
+    - "codesign --force --sign \"Developer ID Application: Wikimedia CH (L7HWM3SP3L)\" \"dist/Kiwix Hotspot.app\" --deep"
 
     # Install and run create-dmg
     - npm install --global create-dmg
