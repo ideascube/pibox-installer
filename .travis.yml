@@ -64,7 +64,12 @@ matrix:
 
     # fix gdk-pixbuf for codesign (https://github.com/pyinstaller/pyinstaller/pull/2596)
     - mv dist/Kiwix\ Hotspot.app/Contents/MacOS/lib/gdk-pixbuf-2.0/2.10.0 dist/Kiwix\ Hotspot.app/Contents/MacOS/lib/gdk-pixbuf
+    - mv dist/Kiwix\ Hotspot.app/Contents/Resources/lib/gdk-pixbuf-2.0/2.10.0 dist/Kiwix\ Hotspot.app/Contents/Resources/lib/gdk-pixbuf
     - rm -rf dist/Kiwix\ Hotspot.app/Contents/MacOS/lib/gdk-pixbuf-2.0
+    - rm -rf dist/Kiwix\ Hotspot.app/Contents/Resources/lib/gdk-pixbuf-2.0
+    - cd dist/Kiwix\ Hotspot.app/Contents/MacOS/lib/gdk-pixbuf
+    - ln -sf ../../../Resources/lib/gdk-pixbuf/loaders.cache loaders.cache
+    - cd -
 
     # Sign application
     - security create-keychain -p mysecretpassword build.keychain
@@ -73,7 +78,7 @@ matrix:
     - security import pibox-installer.p12 -k build.keychain -P $MACOS_CERTIFICATE_PASSWORD -A
     - "security set-key-partition-list -S apple-tool:,apple: -s -k mysecretpassword build.keychain"
     - security find-identity -v
-    - "codesign -s \"Developer ID Application: Wikimedia CH (L7HWM3SP3L)\" \"dist/Kiwix Hotspot.app\" --deep"
+    - codesign --force --sign "Developer ID Application: Wikimedia CH (L7HWM3SP3L)" dist/Kiwix\ Hotspot.app --deep
 
     # Install and run create-dmg
     - npm install --global create-dmg
