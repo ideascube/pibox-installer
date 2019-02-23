@@ -23,6 +23,12 @@ matrix:
     osx_image: xcode10.1
     language: generic
     python: 3.7.1  # just a label
+    addons:
+      homebrew:
+        packages:
+        - pygobject3
+        - gtk+3
+        - adwaita-icon-theme
     install:
     - PIBOX_RELEASE=$(echo $TRAVIS_TAG | grep -x 'v[[:digit:]]\+.[[:digit:]]\+\(.[[:digit:]]\+\)*\(-rc[[:digit:]]\+\)\?') || true
     - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
@@ -30,9 +36,6 @@ matrix:
     - if [ $PIBOX_RELEASE ]; then PIBOX_VERSION=${PIBOX_RELEASE:1}; elif [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then PIBOX_VERSION="nightly ($SCOMMIT)"; else PIBOX_VERSION="CI ($SCOMMIT)"; fi
     - sed -i.bak "s/VERSION = \"devel\"/VERSION = \"${PIBOX_VERSION}\"/g" kiwix-hotspot/data.py
 
-    # Package kiwix-hotspot
-    - brew update
-    - brew install pygobject3 gtk+3 adwaita-icon-theme
     # following needed for create-dmg
     - brew switch icu4c 62.1
     - python3 -m pip install -U pip
