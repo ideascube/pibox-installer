@@ -151,7 +151,7 @@ matrix:
     # - pip3 install https://github.com/thiolliere/pyinstaller/archive/develop.zip
     - pip3 install -U pyinstaller
     - pyinstaller --log-level=DEBUG kiwix-hotspot-linux.spec
-    - cat build/kiwix-hotspot-linux/warnkiwix-hotspot-linux.txt
+    - cat build/kiwix-hotspot-linux/warnkiwix-hotspot-linux.txt || true
 
     # Archive
     - cd dist
