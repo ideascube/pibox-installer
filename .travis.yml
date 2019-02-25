@@ -89,8 +89,7 @@ matrix:
     - if [ "$TRAVIS_EVENT_TYPE" != "cron" ] && [ $PIBOX_RELEASE ]; then mkdir -p releases/$PIBOX_RELEASE; cp kiwix-hotspot-macos.dmg releases/$PIBOX_RELEASE/; scp -r -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa releases/$PIBOX_RELEASE ci@download.kiwix.org:/data/download/release/kiwix-hotspot/; fi
 
   - os: linux
-    language: python
-    python: 3.6
+    language: generic
     dist: xenial
     sudo: required
     addons:
@@ -115,6 +114,13 @@ matrix:
     - SCOMMIT=$(git rev-parse --short ${TRAVIS_COMMIT})
     - if [ $PIBOX_RELEASE ]; then PIBOX_VERSION=${PIBOX_RELEASE:1}; elif [ "$TRAVIS_EVENT_TYPE" = "cron" ]; then PIBOX_VERSION="nightly ($SCOMMIT)"; else PIBOX_VERSION="CI ($SCOMMIT)"; fi
     - sed -i.bak "s/VERSION = \"devel\"/VERSION = \"${PIBOX_VERSION}\"/g" kiwix-hotspot/data.py
+
+    # python preps
+    - sudo add-apt-repository -y ppa:deadsnakes/ppa
+    - sudo apt-get update -y
+    - sudo apt-get install -y python3.7
+    - virtualenv -p /usr/bin/python3.6 hotspot-env
+    - source hotspot-env/bin/activate
 
     # pygobjects
     - pip3 install pycairo
