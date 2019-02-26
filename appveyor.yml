@@ -79,8 +79,8 @@ install:
 
   # Install pyinstaller and requirements
   - cd C:\projects\kiwix-hotspot
-  - if %platform%==x86 C:\Python34\python.exe -m pip install pypiwin32 pyinstaller -r requirements-windows.txt
-  - if %platform%==x64 C:\Python34-x64\python.exe -m pip install pypiwin32 pyinstaller -r requirements-windows.txt
+  - if %platform%==x86 C:\Python34\python.exe -m pip install pypiwin32<=220 pyinstaller -r requirements-windows.txt
+  - if %platform%==x64 C:\Python34-x64\python.exe -m pip install pypiwin32<=220 pyinstaller -r requirements-windows.txt
 
   # Install qemu
   - mkdir "C:\Program Files\qemu"
