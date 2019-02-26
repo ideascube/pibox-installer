@@ -123,8 +123,6 @@ install:
   - cd C:\projects\kiwix-hotspot
   - if %platform%==x86 C:\Python34\python.exe C:\Python34\Scripts\pyinstaller-script.py --log-level=DEBUG kiwix-hotspot-win32.spec
   - if %platform%==x64 C:\Python34-x64\python.exe C:\Python34-x64\Scripts\pyinstaller-script.py --log-level=DEBUG kiwix-hotspot-win64.spec
-  - if %platform%==x86 type build\kiwix-hotspot-win32\warnkiwix-hotspot-win32.txt
-  - if %platform%==x64 type build\kiwix-hotspot-win64\warnkiwix-hotspot-win64.txt
 
   # Deploy
   - cd C:\projects\kiwix-hotspot\dist\kiwix-hotspot
