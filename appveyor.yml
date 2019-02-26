@@ -39,8 +39,7 @@ install:
       (Get-Content kiwix-hotspot\data.py).replace('devel', $version) | Set-Content kiwix-hotspot\data.py
 
   # decrypt certificates
-  - cmd: choco install openssl.light
-  - openssl enc -d -aes-256-cbc -md sha256 -pass pass:%win_certificate_secret% -in kiwix.p12.enc -out kiwix.pfx
+  - C:\OpenSSL-v111-Win32\bin\openssl.exe enc -d -aes-256-cbc -md sha256 -pass pass:%win_certificate_secret% -in kiwix.p12.enc -out kiwix.pfx
   - nuget install secure-file -ExcludeVersion
   - choco install reshack.portable -y
   - secure-file\tools\secure-file -decrypt pibox_installer_ci_rsa.appveyor_enc -secret %certificate_secret% -out pibox_installer_ci_rsa
