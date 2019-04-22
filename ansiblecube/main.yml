@@ -30,7 +30,10 @@
       tags: master
 
       # master, rename, setup, reconfigure
-    - role: ideascube
+    - role: dnsmasq
+    - role: hostapd
+    - role: iptables
+    - role: network-manager
 
       # master, rename
     - role: kiwix

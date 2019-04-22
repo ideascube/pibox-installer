@@ -31,7 +31,7 @@
   file:
     path: /var/www/clock
     owner: "{{ username }}"
-    group: ideascube
+    group: "{{ group }}"
     mode: 0755
     state: directory
   tags: master
@@ -41,7 +41,7 @@
     src: clock.py
     dest: /var/www/clock/clock.py
     owner: "{{ username }}"
-    group: ideascube
+    group: "{{ group }}"
     mode: 0755
   notify: restart uwsgi
   tags: master

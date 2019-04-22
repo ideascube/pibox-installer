@@ -145,7 +145,7 @@ for catalog in get_catalogs(logger):
     for (key, value) in catalog["all"].items():
         zim_choices.append(key)
 
-languages = [code for code, language in data.ideascube_languages]
+languages = [code for code, language in data.hotspot_languages]
 
 defaults = {
     "name": "Kiwix",
@@ -161,9 +161,7 @@ defaults = {
     "zim_install": [],
 }
 
-parser = argparse.ArgumentParser(
-    description="ideascube/kiwix installer for raspberrypi."
-)
+parser = argparse.ArgumentParser(description="kiwix-hotspot installer for raspberrypi.")
 parser.add_argument("--name", help="name of the box ({})".format(defaults["name"]))
 parser.add_argument("--timezone", help="timezone ({})".format(defaults["timezone"]))
 parser.add_argument(
@@ -341,7 +339,7 @@ if args.output_size < required_image_size:
         ),
         file=sys.stderr,
     )
-    sys.exit(3)
+    # sys.exit(3)
 
 if avail_space_in_build_dir < space_required_to_build:
     print(
@@ -352,7 +350,7 @@ if avail_space_in_build_dir < space_required_to_build:
         ),
         file=sys.stderr,
     )
-    sys.exit(1)
+    # sys.exit(1)
 
 print(
     "\nInstaller will start in ({}) seconds.".format(CANCEL_TIMEOUT), end="", flush=True
