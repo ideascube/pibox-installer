@@ -339,7 +339,7 @@ if args.output_size < required_image_size:
         ),
         file=sys.stderr,
     )
-    # sys.exit(3)
+    sys.exit(3)
 
 if avail_space_in_build_dir < space_required_to_build:
     print(
@@ -350,7 +350,7 @@ if avail_space_in_build_dir < space_required_to_build:
         ),
         file=sys.stderr,
     )
-    # sys.exit(1)
+    sys.exit(1)
 
 print(
     "\nInstaller will start in ({}) seconds.".format(CANCEL_TIMEOUT), end="", flush=True
