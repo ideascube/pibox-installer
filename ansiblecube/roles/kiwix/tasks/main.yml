@@ -38,8 +38,8 @@
 - name: Create the ZIM destination folder
   file:
     path: "{{zim_path}}/"
-    owner: "{{ username }}"
-    group: "{{ group }}"
+    # owner: "{{ username }}"
+    # group: "{{ group }}"
     state: directory
   tags: master
 
@@ -47,8 +47,8 @@
   copy:
     src: library.xml
     dest: "{{ zim_path }}/library.xml"
-    owner: "{{ username }}"
-    group: "{{ group }}"
+    # owner: "{{ username }}"
+    # group: "{{ group }}"
   tags: master
 
 
