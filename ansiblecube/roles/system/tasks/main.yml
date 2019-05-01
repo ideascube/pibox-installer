@@ -184,6 +184,12 @@
     dest: /etc/hosts
   tags: ['master', 'rename']
 
+- name: Create a {{ group }} group on the system
+  group:
+    name: "{{ group }}"
+    state: present
+  tags: master
+
 - name: Create an {{ username }} user on the system
   user:
     name: "{{ username }}"
