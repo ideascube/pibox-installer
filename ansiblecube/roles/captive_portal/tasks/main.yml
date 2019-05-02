@@ -79,7 +79,7 @@
   tags: ['master', 'rename']
 
 - name: Create Certificate Signing Request
-  command: openssl req -config /tmp/csr.conf -new -x509 -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/hotspot.key -days 3650 -out /etc/nginx/ssl/hotspot.cert
+  command: openssl req -config /tmp/csr.conf -new -x509 -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/hotspot.key -days 3650 -out /etc/nginx/ssl/hotspot.cert -batch
   tags: ['master', 'rename']
 
 - name: Add UWSGI specific configuration file
