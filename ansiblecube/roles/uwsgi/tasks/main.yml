@@ -27,13 +27,13 @@
 - name: create apps-available folder
   file:
     path: /etc/uwsgi/apps-available
-    state: present
+    state: directory
   tags: master
 
 - name: create apps-enabled folder
   file:
     path: /etc/uwsgi/apps-enabled
-    state: present
+    state: directory
   tags: master
 
 - name: just force systemd to reread its services
