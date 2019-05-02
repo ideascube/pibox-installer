@@ -26,6 +26,9 @@
     - role: nginx
       tags: master
 
+    - role: home
+      tags: master
+
     - role: uwsgi
       tags: master
 
