@@ -42,7 +42,7 @@
     src: "{{ custom_branding_path }}/home.html"
     dest: /var/www/home/index.html
     mode: 0644
-  tags: rename
+  tags: reconfigure
 
 - block:
   - debug: msg="Customize branding"
