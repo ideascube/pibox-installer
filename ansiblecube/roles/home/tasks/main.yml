@@ -21,12 +21,19 @@
     dest: /var/www/
   tags: master
 
+- name: copy blank homepage
+  template:
+    src: master.html.j2
+    dest: /var/www/home/index.html
+    mode: 0644
+  tags: master
+
 - name: Copy homepage
   copy:
     src: "{{ custom_branding_path }}/home.html"
     dest: /var/www/home/index.html
     mode: 0644
-  tags: ['master']
+  tags: rename
 
 - block:
   - debug: msg="Customize branding"
