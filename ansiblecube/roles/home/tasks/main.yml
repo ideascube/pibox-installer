@@ -1,4 +1,13 @@
 ---
+- name: Ensure home directory exists
+  file:
+    path: /var/www/home
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  tags: master
+
 - name: install nginx vhost
   template:
     src: nginx.vhost.j2
