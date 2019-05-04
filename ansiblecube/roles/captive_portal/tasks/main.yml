@@ -39,8 +39,8 @@
   tags: ['master', 'rename']
 
 - name: Add nginx specific configuration file
-  copy:
-    src: nginx-captiveportal
+  template:
+    src: nginx.vhost.j2
     dest: /etc/nginx/sites-available/captiveportal
     owner: root
     group: root
@@ -79,7 +79,7 @@
   tags: ['master', 'rename']
 
 - name: Create Certificate Signing Request
-  command: openssl req -config /tmp/csr.conf -new -x509 -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/hotspot.key -days 3650 -out /etc/nginx/ssl/hotspot.cert -batch
+  command: openssl req -config /tmp/csr.conf -new -x509 -newkey rsa:2048 -nodes -keyout /etc/nginx/ssl/hotspot.key -days 3650 -out /etc/nginx/ssl/hotspot.crt -batch
   tags: ['master', 'rename']
 
 - name: Add UWSGI specific configuration file
