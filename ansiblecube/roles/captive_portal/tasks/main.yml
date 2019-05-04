@@ -83,8 +83,8 @@
   tags: ['master', 'rename']
 
 - name: Add UWSGI specific configuration file
-  copy:
-    src: captive.ini
+  template:
+    src: captive.ini.j2
     dest: /etc/uwsgi/apps-available/captive.ini
     owner: root
     group: root
