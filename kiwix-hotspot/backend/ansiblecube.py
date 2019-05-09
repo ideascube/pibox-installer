@@ -180,7 +180,7 @@ def run_phase_one(
     tags = ["resize", "rename", "reconfigure"]
 
     # copy homepage
-    machine.put_file(homepage, "/var/www/home/index.html")
+    machine.put_file(homepage, "/tmp/home.html")
 
     # copy branding files if set
     branding = {"favicon.png": favicon, "logo.png": logo, "style.css": css}
