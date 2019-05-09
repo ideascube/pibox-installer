@@ -38,18 +38,14 @@
 - name: Create the ZIM destination folder
   file:
     path: "{{zim_path}}/"
-    # owner: "{{ username }}"
-    # group: "{{ group }}"
     state: directory
-  tags: master
+  tags: ['master', 'resize']
 
 - name: Create library.xml (placeholder if no ZIM)
   copy:
     src: library.xml
     dest: "{{ zim_path }}/library.xml"
-    # owner: "{{ username }}"
-    # group: "{{ group }}"
-  tags: master
+  tags: ['master', 'resize']
 
 
 - name: Setup startup file

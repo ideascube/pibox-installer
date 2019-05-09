@@ -37,7 +37,7 @@
     - role: iptables
     - role: network-manager
 
-      # master, rename
+      # master, resize, rename
     - role: kiwix
 
     # master, rename (nginx hostname), reconfigure (password)
