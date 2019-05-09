@@ -37,10 +37,7 @@ jinja_env.filters["language_bidi"] = language_is_bidirectional
 
 
 def save_homepage(html):
-    # with tempfile.NamedTemporaryFile("w", delete=False, suffix=".html") as fp:
-    with open(
-        os.path.join(data_dir, "ansiblecube", "roles", "home", "index.html"), "w"
-    ) as fp:
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".html") as fp:
         fp.write(html)
         fp.close()
         return fp.name
