@@ -45,7 +45,7 @@
   copy:
     src: library.xml
     dest: "{{ zim_path }}/library.xml"
-  tags: ['master', 'resize']
+  tags: ['master', 'move-content']
 
 
 - name: Setup startup file
