@@ -151,7 +151,9 @@ def generate_homepage(logger, options):
             print(package)
             cards.append(
                 {
-                    "url": "http://{fqdn}/{id}".format(fqdn=kiwix_fqdn, id=package_id),
+                    "url": "http://{fqdn}/{id}".format(
+                        fqdn=kiwix_fqdn, id=package.get("langid", package_id)
+                    ),
                     "css_class": "zim_{}".format(package_id.rsplit(".", 1)[0]),
                     "category_class": "read",
                     "category": "ZIM",

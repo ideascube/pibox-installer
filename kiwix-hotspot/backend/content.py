@@ -202,7 +202,7 @@ def get_package_content(package_id):
             package.update({"langid": package.get("langid") or package_id})
             return {
                 "url": package["url"],
-                "name": "{langid}-{version}.{ext}".format(**package),
+                "name": "{langid}.{ext}".format(**package),
                 "checksum": package["sha256sum"],
                 "archive_size": package["size"],
                 # add a 10% margin for non-zim (zip file mostly)
@@ -363,7 +363,7 @@ def run_packages_actions(cache_folder, mount_point, logger, packages=[]):
         package_fpath = get_content_cache(content, cache_folder, True)
 
         # copy to the packages folder
-        shutil.copy(package_fpath, content["name"])
+        shutil.copy(package_fpath, os.path.join(packages_folder, content["name"]))
 
 
 def content_is_cached(content, cache_folder, check_sum=False):
