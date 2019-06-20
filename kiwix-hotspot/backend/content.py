@@ -2,12 +2,12 @@
 # vim: ai ts=4 sts=4 et sw=4 nu
 
 import os
-import re
 import json
 import shutil
 import itertools
 
 import requests
+import humanfriendly
 
 from data import content_file, mirror
 from backend.catalog import get_catalogs
@@ -111,6 +111,7 @@ def get_collection(
             (
                 "EduPi",
                 get_edupi_contents,
+                get_edupi_overhead,
                 run_edupi_actions,
                 {"enable": edupi, "resources_path": edupi_resources},
             )
@@ -121,6 +122,7 @@ def get_collection(
             (
                 "Packages",
                 get_packages_contents,
+                get_packages_overhead,
                 run_packages_actions,
                 {"packages": packages},
             )
@@ -131,6 +133,7 @@ def get_collection(
             (
                 "KA-Lite",
                 get_kalite_contents,
+                get_kalite_overhead,
                 run_kalite_actions,
                 {"languages": kalite_languages},
             )
@@ -141,6 +144,7 @@ def get_collection(
             (
                 "Wikifundi",
                 get_wikifundi_contents,
+                get_wikifundi_overhead,
                 run_wikifundi_actions,
                 {"languages": wikifundi_languages},
             )
@@ -151,6 +155,7 @@ def get_collection(
             (
                 "Aflatoun",
                 get_aflatoun_contents,
+                get_aflatoun_overhead,
                 run_aflatoun_actions,
                 {"languages": aflatoun_languages},
             )
@@ -162,7 +167,7 @@ def get_collection(
 def get_all_contents_for(collection):
     """ flat list of contents for the collection """
     return itertools.chain.from_iterable(
-        [content_dl_cb(**cb_kwargs) for _, content_dl_cb, _, cb_kwargs in collection]
+        [content_dl_cb(**cb_kwargs) for _, content_dl_cb, _, _, cb_kwargs in collection]
     )
 
 
@@ -221,6 +226,26 @@ def get_packages_contents(packages=[]):
         for package in packages
         if get_package_content(package) is not None
     ]
+
+
+def get_edupi_overhead():
+    return humanfriendly.parse_size("150MiB")
+
+
+def get_packages_overhead():
+    return 0
+
+
+def get_kalite_overhead():
+    return humanfriendly.parse_size("500MiB")
+
+
+def get_wikifundi_overhead():
+    return humanfriendly.parse_size("200MiB")
+
+
+def get_aflatoun_overhead():
+    return humanfriendly.parse_size("450MiB")
 
 
 def extract_and_move(content, cache_folder, root_path, final_path, logger):
@@ -417,6 +442,7 @@ def get_required_image_size(collection):
             get_content("hotspot_master_image").get("root_partition_size"),
             get_expanded_size(collection),
         ]
+        + [get_overhead_cb() for _, _, get_overhead_cb, _, _ in collection]
     )
 
     return required_size + ONE_MiB * 256  # make sure we have some free space
