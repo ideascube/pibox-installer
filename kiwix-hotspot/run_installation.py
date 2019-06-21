@@ -330,7 +330,7 @@ def run_installation(
             expanded_total_size = sum([c["expanded_size"] for c in downloads])
             processed = 0
 
-            for category, content_dl_cb, content_run_cb, cb_kwargs in collection:
+            for category, content_dl_cb, _, content_run_cb, cb_kwargs in collection:
 
                 logger.step("Processing {cat}".format(cat=category))
                 content_run_cb(
