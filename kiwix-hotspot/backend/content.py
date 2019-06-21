@@ -432,8 +432,48 @@ def get_expanded_size(collection):
         ]
     )
     # add a 5% margin ; make sure it's at least 2GB
-    margin = min([2 * ONE_GiB, total_size * 0.05])
+    margin = max([2 * ONE_GiB, total_size * 0.03])
     return total_size + margin
+
+
+def get_detailed_expanded_size(collection):
+    """ sum of extracted sizes of all collection with 10%|2GB margin """
+    items = [
+        item.get("expanded_size") * 2
+        if item.get("copied_on_destination", False)
+        else item.get("expanded_size")
+        for item in get_all_contents_for(collection)
+    ]
+
+    total_size = sum(items)
+
+    # add a 5% margin ; make sure it's at least 2GB
+    margin = max([2 * ONE_GiB, total_size * 0.03])
+    return items + [margin]
+
+
+def get_detailed_required_image_size(collection):
+    from util import human_readable_size
+
+    items = (
+        [get_content("hotspot_master_image").get("root_partition_size")]
+        + get_detailed_expanded_size(collection)
+        + [get_overhead_cb() for _, _, get_overhead_cb, _, _ in collection]
+        + [ONE_MiB * 256]
+    )
+
+    for item in items:
+        print(item, "-", human_readable_size(item, False), human_readable_size(item))
+
+    total = sum(items)
+    print(
+        "total",
+        total,
+        "-",
+        human_readable_size(total, False),
+        human_readable_size(total),
+    )
+    return total
 
 
 def get_required_image_size(collection):

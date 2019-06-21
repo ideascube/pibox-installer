@@ -14,7 +14,7 @@ import data
 from backend.content import (
     get_collection,
     get_required_building_space,
-    get_required_image_size,
+    get_detailed_required_image_size,
     get_content,
     isremote,
 )
@@ -317,7 +317,7 @@ try:
         collection, cache_folder, args.output_size
     )
     # how large should the image be?
-    required_image_size = get_required_image_size(collection)
+    required_image_size = get_detailed_required_image_size(collection)
 except FileNotFoundError as exp:
     print("Supplied File Not Found: {}".format(exp.filename), file=sys.stderr)
     sys.exit(1)
