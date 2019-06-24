@@ -126,12 +126,14 @@ install:
 
   # Deploy
   - cd C:\projects\kiwix-hotspot\dist\kiwix-hotspot
-  - 7z.exe a -m0=Copy C:\projects\kiwix-hotspot\windows_bundle\kiwix-hotspot.7z *
+  - 7z.exe a kiwix-hotspot.exe *
+  - move C:\projects\kiwix-hotspot\dist\kiwix-hotspot\kiwix-hotspot.exe C:\projects\kiwix-hotspot\windows_bundle\kiwix-hotspot.exe
+  # - 7z.exe a -m0=Copy C:\projects\kiwix-hotspot\windows_bundle\kiwix-hotspot.7z *
 
   # download tools
-  - cd C:\projects\kiwix-hotspot\windows_bundle\
+  # - cd C:\projects\kiwix-hotspot\windows_bundle\
   # create SFX exe from 7z archive
-  - copy /b "C:\Program Files\7zextra\7zS.sfx" + sfxconfig.txt + kiwix-hotspot.7z kiwix-hotspot.exe
+  # - copy /b "C:\Program Files\7zextra\7zS.sfx" + sfxconfig.txt + kiwix-hotspot.7z kiwix-hotspot.exe
   # change icon and add version info to exe
   # - copy ..\kiwix-hotspot-logo.ico icon.ico
   # - C:\ProgramData\chocolatey\lib\reshack.portable\tools\ResourceHacker.exe -open resources.rc -save resources.res -action compile -log CONSOLE
