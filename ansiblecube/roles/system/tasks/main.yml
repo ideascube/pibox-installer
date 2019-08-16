@@ -94,6 +94,12 @@
     update_cache: yes
   tags: master
 
+- name: install buster debian keyring
+  apt:
+    deb: http://ftp.fr.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2019.1_all.deb
+  when: ansible_distribution_release == "buster"
+  tags: master
+
 - name: install stretch debian keyring
   apt:
     deb: http://ftp.fr.debian.org/debian/pool/main/d/debian-archive-keyring/debian-archive-keyring_2017.5_all.deb
@@ -306,6 +312,14 @@
     backup: yes
   notify: update timezone
   tags: ['master', 'setup', 'reconfigure']
+
+- name: add rfkill unblock to startup
+  cron:
+    name: "Unblock RF devices"
+    special_time: reboot
+    job: "/usr/sbin/rfkill unblock all"
+    state: present
+  tags: master
 
 - name: Checking if grub conf file is there
   stat:
