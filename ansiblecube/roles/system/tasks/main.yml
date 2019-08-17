@@ -51,7 +51,7 @@
     - "{{ kernel_version }}-v7l"
   tags: master
 
-- name: create symlinks to fool depmod
+- name: create symlinks to fool depmod (qemu)
   file:
     src: /lib/modules/{{ item }}+
     dest: /tmp/{{ item }}/lib/modules/{{ qemu_kernel_version }}
@@ -60,6 +60,51 @@
     - "{{ kernel_version }}"
     - "{{ kernel_version }}-v7"
     - "{{ kernel_version }}-v7l"
+  when: running_kernel_version.stdout[:7] == qemu_kernel_version
+  tags: master
+
+- name: create symlinks to fool depmod on Pi 1
+  file:
+    src: /lib/modules/{{ item }}+
+    dest: /tmp/{{ item }}/lib/modules/{{ item }}
+    state: link
+  with_items:
+    - "{{ kernel_version }}"
+    - "{{ kernel_version }}-v7"
+    - "{{ kernel_version }}-v7l"
+  when: running_kernel_version.stdout[:7] == kernel_version
+  tags: master
+
+- name: create symlinks to fool depmod on Pi 2
+  file:
+    src: /lib/modules/{{ item }}+
+    dest: /tmp/{{ kernel_version }}/lib/modules/{{ item }}+
+    state: link
+  with_items:
+    - "{{ kernel_version }}"
+    - "{{ kernel_version }}-v7"
+    - "{{ kernel_version }}-v7l"
+  when: running_kernel_version.stdout[:7] == kernel_version
+  tags: master
+
+- name: create symlinks to fool depmod on Pi 3
+  file:
+    src: /lib/modules/{{ item }}+
+    dest: /tmp/{{ item }}/lib/modules/{{ item }}+
+    state: link
+  with_items:
+    - "{{ kernel_version }}"
+    - "{{ kernel_version }}-v7"
+    - "{{ kernel_version }}-v7l"
+  when: running_kernel_version.stdout[:7] == kernel_version
+  tags: master
+
+- name: create symlinks to fool depmod on Pi 4
+  file:
+    src: /lib/modules/{{ kernel_version }}-v7l+
+    dest: /tmp/{{ kernel_version }}-v7/lib/modules/{{ kernel_version }}-v7l+
+    state: link
+  when: running_kernel_version.stdout[:7] == kernel_version
   tags: master
 
 - name: regenerate modules list

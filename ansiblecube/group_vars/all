@@ -32,7 +32,7 @@ language_name: "English"
 
 # versions
 qemu_kernel_version: "4.10.0"
-kernel_version: "4.14.34"
+kernel_version: "4.19.57"
 kiwix_version: "2.1.0"
 kalite_version: "0.17.4"
 edupi_version: "1.4.10"

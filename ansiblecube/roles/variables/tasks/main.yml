@@ -2,6 +2,15 @@
 - debug: msg="Start playbook {{ ansible_date_time["date"] }} - {{ ansible_date_time["time"] }}"
   tags: always
 
+- name: Check running kernel version
+  command: uname -r
+  register: running_kernel_version
+  tags: always
+
+- debug:
+    msg: "Running Kernel: {{ running_kernel_version.stdout }} / {{ running_kernel_version.stdout[:7] }}"
+  tags: always
+
 - name: DEBUG list {{ data_path }} content
   command: ls -lh {{ data_path }}
   ignore_errors: yes

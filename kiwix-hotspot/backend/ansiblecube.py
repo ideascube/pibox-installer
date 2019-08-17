@@ -72,7 +72,7 @@ def run_for_image(machine, root_partition_size, disk_size):
     """ initial launch of a bare raspbian to create a base (master) image """
     tags = ["master", "rename", "setup"]
 
-    machine.exec_cmd("sudo apt-get update")
+    machine.exec_cmd("sudo apt-get update -y")
     # install ansible dependencies (packages)
     machine.exec_cmd(
         "sudo apt-get install -y python-dev libffi-dev libssl-dev git lsb-release"
