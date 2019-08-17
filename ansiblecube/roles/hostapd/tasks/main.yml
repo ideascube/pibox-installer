@@ -42,5 +42,12 @@
   systemd:
     daemon-reload: yes
 
+- name: unmask hostapd
+  systemd:
+    masked: no
+    name: hostapd
+  tags: master
+
+
 - include_tasks: enable_service.yml service=hostapd
   tags: master
