@@ -16,11 +16,6 @@
 
 - block:
   
-  - name: set python3.4 for jessie
-    set_fact:
-      python3_version: "3.4"
-    when: ansible_distribution_release == "jessie"
-
   - name: set python3.5 for stretch
     set_fact:
       python3_version: "3.5"
@@ -29,6 +24,16 @@
   - name: set python3.7 for buster
     set_fact:
       python3_version: "3.7"
+    when: ansible_distribution_release == "buster"
+
+  - name: set php7.0 for stretch
+    set_fact:
+      php_version: "7.0"
+    when: ansible_distribution_release == "stretch"
+
+  - name: set php7.3 for buster
+    set_fact:
+      php_version: "7.3"
     when: ansible_distribution_release == "buster"
 
   tags: always
