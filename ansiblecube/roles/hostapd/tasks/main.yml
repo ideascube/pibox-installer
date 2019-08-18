@@ -1,5 +1,5 @@
 ---
-- name: Unblock wlan
+- name: Unblock RF
   command: rfkill unblock all
   ignore_errors: yes
   tags: master
@@ -40,6 +40,11 @@
 - name: reload systemd
   systemd:
     daemon-reload: yes
+
+- name: unmask hostapd
+  become: true
+  command: systemctl unmask hostapd
+  tags: master
 
 - name: unmask hostapd
   become: true
