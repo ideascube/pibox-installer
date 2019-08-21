@@ -267,6 +267,13 @@
     - en_US.UTF-8
   tags: master
 
+- name: set default locale to en_US
+  copy:
+    src: locale
+    dest: /etc/default/locale
+    mode: 0644
+  tags: master
+
 - name: Copy a blank rc.local
   copy:
     src: rc.local
