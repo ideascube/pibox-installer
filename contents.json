@@ -11,8 +11,8 @@
         "url": "{mirror}/hotspots/base/hotspot-master_2019-08-21.img.zip",
         "name": "hotspot-master_2019-08-21.img.zip",
         "root_partition_size": 7000000000,
-        "checksum": "7b9bf14b6ac28d6de642315553a97fa787a3282f4a22575b1a4a204b67bf7f58",
-        "archive_size": 2244868918,
+        "checksum": "da14ddfffef59619dd92aa88d40272a69f587bed7c65825a8776007d902296e9",
+        "archive_size": 2229946798,
         "expanded_size": 7760000000
     },
     "aflatoun_content": {
