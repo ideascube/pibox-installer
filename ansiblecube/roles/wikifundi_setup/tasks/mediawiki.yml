@@ -6,7 +6,7 @@
   environment:
     RUNLEVEL: 1
   apt:
-    name: nodejs,node
+    name: nodejs,node,npm
     state: latest
     autoremove: yes
     autoclean: yes
