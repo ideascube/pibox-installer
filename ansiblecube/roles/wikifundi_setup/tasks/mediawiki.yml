@@ -2,22 +2,11 @@
 - import_tasks: clean_apt.yml
   tags: setup
 
-- name: Get nodejs repository installer
-  get_url:
-    url: https://deb.nodesource.com/setup_10.x
-    dest: /tmp/setup_10.x
-    mode: 0755
-  tags: setup
-
-- name: Run nodejs repository installer
-  command: /tmp/setup_10.x
-  tags: setup
-
 - name: Install nodejs
   environment:
     RUNLEVEL: 1
   apt:
-    name: nodejs
+    name: nodejs,node
     state: latest
     autoremove: yes
     autoclean: yes
