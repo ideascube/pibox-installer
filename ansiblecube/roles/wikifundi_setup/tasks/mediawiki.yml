@@ -109,9 +109,9 @@
     dest: "{{ parsoid_root }}"
   tags: setup
 
-- name: downgrade npm first
-  command: npm install -g npm@4
-  tags: setup
+# - name: downgrade npm first
+#   command: npm install -g npm@4
+#   tags: setup
 
 - name: install node dependencies for parsoid
   command: npm install
@@ -132,9 +132,9 @@
     chdir: "{{ mediawiki_root }}"
   tags: setup
 
-- name: upgrade npm back
-  command: npm install -g npm
-  tags: setup
+# - name: upgrade npm back
+#   command: npm install -g npm
+#   tags: setup
 
 - name: updating node to lastest stable
   command: n stable
