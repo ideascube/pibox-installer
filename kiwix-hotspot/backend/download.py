@@ -151,7 +151,9 @@ def download_file(url, fpath, logger, checksum=None):
     args += ["--http-accept-gzip=true"]  # only for catalog?
     args += [url]
 
-    aria2c = subprocess.Popen(args, stdout=subprocess.PIPE, universal_newlines=True)
+    aria2c = subprocess.Popen(
+        args, stdout=subprocess.PIPE, universal_newlines=True, **startup_info_args()
+    )
     # logger.std(" ".join(args))
 
     if not logger.on_tty:
@@ -293,7 +295,7 @@ def win_unarchive_compressed_tar_pipe(archive_fpath, dest_folder, logger):
         [szip_exe, "x", "-so", archive_fpath],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        **startup_info_args(),
+        **startup_info_args()
     )
     logger.std("Call: " + str(uncompress.args))
 
@@ -303,7 +305,7 @@ def win_unarchive_compressed_tar_pipe(archive_fpath, dest_folder, logger):
         stdin=uncompress.stdout,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        **startup_info_args(),
+        **startup_info_args()
     )
     logger.std("Call: " + str(untar.args))
 
