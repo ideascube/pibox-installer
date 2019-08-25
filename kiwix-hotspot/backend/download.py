@@ -116,7 +116,7 @@ class RequestedFile(object):
         )
 
 
-def download_file(url, fpath, logger, checksum=None):
+def download_file(url, fpath, logger, checksum=None, debug=False):
 
     """ download an URL into a named path and reports progress to logger
 
@@ -147,14 +147,18 @@ def download_file(url, fpath, logger, checksum=None):
         "--console-log-level=error",
         "--summary-interval=1",  # display a line with progress every X seconds
         "--human-readable={}".format(str(logger.on_tty).lower()),
+        "--ca-certificate={}".format(os.path.join(data_dir, "ca-certificates.crt")),
     ]
-    args += ["--http-accept-gzip=true"]  # only for catalog?
+    # zip* files might send incorrect gzip header and get auto-extracted by aria2
+    if not fname.endswith("zip"):
+        args += ["--http-accept-gzip=true"]
     args += [url]
 
     aria2c = subprocess.Popen(
         args, stdout=subprocess.PIPE, universal_newlines=True, **startup_info_args()
     )
-    # logger.std(" ".join(args))
+    if debug:
+        logger.std(" ".join(args))
 
     if not logger.on_tty:
         logger.ascii_progressbar(0, 100)
@@ -196,7 +200,7 @@ def download_file(url, fpath, logger, checksum=None):
             checksum,
         )
 
-    if metalink_target is not None:
+    if metalink_target is not None and metalink_target != fpath:
         shutil.move(metalink_target, fpath)
 
     return RequestedFile.from_download(url, fpath, os.path.getsize(fpath))
@@ -215,7 +219,7 @@ def download_if_missing(url, fpath, logger, checksum=None):
     elif os.path.exists(fpath):
         return RequestedFile.from_disk(url, fpath)
 
-    return download_file(url, fpath, logger, checksum)
+    return download_file(url, fpath, logger, checksum, debug=True)
 
 
 def test_connection(proxies=None):
