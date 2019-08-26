@@ -182,7 +182,9 @@ def download_file(url, fpath, logger, checksum=None, debug=False):
                     downloaded_size, total_size = 1, -1
                 logger.ascii_progressbar(downloaded_size, total_size)
         if metalink_target is None and line.startswith("FILE:"):
-            metalink_target = line.split(":")[-1].strip()
+            metalink_target = os.path.join(
+                output_dir, os.path.basename(line.split(":")[-1].strip())
+            )
 
     if aria2c.poll() is None:
         try:
@@ -201,7 +203,7 @@ def download_file(url, fpath, logger, checksum=None, debug=False):
         )
 
     if metalink_target is not None and metalink_target != fpath:
-        shutil.move(metalink_target, fpath)
+        os.replace(metalink_target, fpath)
 
     return RequestedFile.from_download(url, fpath, os.path.getsize(fpath))
 
