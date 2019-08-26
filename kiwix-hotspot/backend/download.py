@@ -4,6 +4,7 @@
 import os
 import re
 import sys
+import time
 import shutil
 import zipfile
 import subprocess
@@ -203,6 +204,8 @@ def download_file(url, fpath, logger, checksum=None, debug=False):
         )
 
     if metalink_target is not None and metalink_target != fpath:
+        logger.std("mv {src} {dst}".format(src=metalink_target, dst=fpath))
+        time.sleep(5)
         os.replace(metalink_target, fpath)
 
     return RequestedFile.from_download(url, fpath, os.path.getsize(fpath))
