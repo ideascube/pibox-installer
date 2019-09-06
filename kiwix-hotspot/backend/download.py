@@ -166,11 +166,13 @@ def download_file(url, fpath, logger, checksum=None, debug=False):
 
     metalink_target = None
     for line in iter(aria2c.stdout.readline, ""):
+        logger.std(line)
         line = line.strip()
         # [#915371 5996544B/90241109B(6%) CN:4 DL:1704260B ETA:49s]
         if line.startswith("[#") and line.endswith("]"):  # quick check, no re
             if logger.on_tty:
-                logger.flash(line + "          ")
+                pass
+                # logger.flash(line + "          ")
             else:
                 try:
                     downloaded_size, total_size = [
@@ -181,23 +183,26 @@ def download_file(url, fpath, logger, checksum=None, debug=False):
                     ]
                 except Exception:
                     downloaded_size, total_size = 1, -1
-                logger.ascii_progressbar(downloaded_size, total_size)
+                # logger.ascii_progressbar(downloaded_size, total_size)
         # parse filename from progress report
         if (
             metalink_target is None
             and line.startswith("FILE:")
             and "[MEMORY]" not in line
         ):
+            logger.std("previous line is metalink FILE:")
             metalink_target = os.path.join(
                 output_dir, os.path.basename(line.split(":")[-1].strip())
             )
+            logger.std("metalink_target: {}".format(metalink_target))
 
         # parse metalink filename from results summary (if not caught before)
         if metalink_target is None and "|OK  |" in line and "[MEMORY]" not in line:
-
+            logger.std("previous line is metalink |OK  |")
             metalink_target = os.path.join(
                 output_dir, os.path.basename(line.split("|", 4)[-1].strip())
             )
+            logger.std("metalink_target: {}".format(metalink_target))
 
     if aria2c.poll() is None:
         try:
@@ -214,6 +219,9 @@ def download_file(url, fpath, logger, checksum=None, debug=False):
             ValueError("aria2c returned {}".format(aria2c.returncode)),
             checksum,
         )
+
+    logger.std("END. metalink_target: {}".format(metalink_target))
+    logger.std("END. fpath: {}".format(fpath))
 
     if metalink_target is not None and metalink_target != fpath:
         logger.std("mv {src} {dst}".format(src=metalink_target, dst=fpath))
