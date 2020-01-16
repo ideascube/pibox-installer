@@ -33,7 +33,12 @@
                 max-width: 100px;
             }
             .button {
+                padding: .5rem;
+                height: unset;
                 background-color: #382e32;
+                line-height: 30px;
+                min-height: 30px;
+
             }
             .screenshot {
                 max-height: 15rem;
@@ -49,7 +54,7 @@
             <section><a href="http://{{ fqdn }}/" title="retour à {{ project_name }}"><h1><img src="/static/logo_baseline.png"></img></h1></a></section>
         </header>
         <div class="content">
-            <p class="center"><a href="/download/math_mathews.apk" class="button">Télécharger l'appli Android <strong>Math Mathews</strong> v{{ mathews_version }}</a></p>
+            <p class="center"><a href="/download/math_mathews.apk" class="button">Télécharger l'appli Android <strong>Math&nbsp;Mathews</strong> v{{ mathews_version }}</a></p>
 
             <h2>Un jeu pour s’entraîner au calcul mental</h2>
             <p>«&nbsp;Math Mathews&nbsp;» permet aux enfants de s’entraîner de façon ludique au calcul mental (additions et soustractions).<br>Dans ce jeu, les phases de réflexion (trouver le résultat d’une addition ou soustraction, résoudre une opération à trou) alternent avec les phases de jeu (collecter des pièces et des trésors).</p>
@@ -61,7 +66,7 @@
             <p>L'utilisation est particulièrement simple ; lancez l'installation sur votre appereil Android puis :</p>
             <ol>
                 <li>Choisissez «Jouer»</li>
-                <li>Cliquez sur le «+» pour ajouter votre nom de pirate et choisissez-le</li>
+                <li>Cliquez sur le «+» pour créer votre personnage et renseignez son nom de pirate</li>
                 <li>Choisissez «Jouer» à nouveau</li>
             </ol>
             <h2>Comment l'installer ?</h2>
