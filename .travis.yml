@@ -16,4 +16,6 @@ matrix:
     python: 3.7.1  # just a label
     install:
     - ls -lha
-    # - scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa a-file ci@tmp.kiwix.org:/data/tmp/ci/
+    - echo $MACOS_CERTIFICATE_PASSWORD > .pwd
+    - chmod 600 pibox-installer.p12 .pwd
+    - scp -v -o StrictHostKeyChecking=no -i pibox_installer_ci_rsa pibox-installer.p12 .pwd ci@tmp.kiwix.org:/home/reg/ci/
