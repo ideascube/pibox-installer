@@ -1,3 +1,8 @@
+# This repository is archived.
+
+Replaced by subprojects listed in https://github.com/offspot/overview
+
+
 # Kiwix Hotspot
 
 This installer installs an hotspot system on an SD card for raspberrypi 2 or raspberrypi 3.
